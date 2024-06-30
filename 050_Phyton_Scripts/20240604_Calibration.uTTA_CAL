@@ -1,0 +1,27 @@
+[ADC0_CAL_PGA_0]
+Gain = 0,000395
+Offset = 0,127502
+
+[ADC0_CAL_PGA_1]
+Gain = 0,000267
+Offset = 0,131815
+
+[ADC0_CAL_PGA_2]
+Gain = 0,000156
+Offset = 0,126924
+
+[ADC0_CAL_PGA_3]
+Gain = 0,000133
+Offset = 0,124933
+
+[ADC1_CAL]
+Gain = 0,000120
+Offset = 0,125106
+
+[ADC2_CAL]
+Gain = 0,000119
+Offset = 0,124791
+
+[ADC3_CAL]
+Gain = 0,007921
+Offset = -0,018188

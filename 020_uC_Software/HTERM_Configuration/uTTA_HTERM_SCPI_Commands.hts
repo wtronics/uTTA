@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<HtermSequenceFile name="Hterm Sequence File" version="0.8.7">
+  <ItemList>
+    <SequenceItem name="*IDN?">
+      <sequence value="a[*IDN?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="*RST">
+      <sequence value="a[*RST] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Statusbytes (*STB?)">
+      <sequence value="a[*STB?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Error Status Register (*ESR?)">
+      <sequence value="a[*ESR?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Memory Read File">
+      <sequence value="a[MEM:READ Measure.csv] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Memory Writetest">
+      <sequence value="a[MEM:WRITE] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Memory Read File DUT.t3r">
+      <sequence value="a[MEM:READ DUT.t3r] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Memory Read Directory">
+      <sequence value="a[MEM:DIR /] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Memory Read Directory Details">
+      <sequence value="a[MEM:DIR \\,ALL] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Memory Delete File">
+      <sequence value="a[MEM:DEL]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set max. Multiplier">
+      <sequence value="a[MEAS:SAMP:MAXMULT ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get max. Multiplier">
+      <sequence value="a[MEAS:SAMP:MAXMULT?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set max. SampleRate">
+      <sequence value="a[MEAS:SAMP:FAST ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get max. SampleRate">
+      <sequence value="a[MEAS:SAMP:FAST?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Sampling Settings">
+      <sequence value="a[MEAS:SAMP?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set Preheating Time">
+      <sequence value="a[MEAS:TIM:PRE ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Preheating Time">
+      <sequence value="a[MEAS:TIM:PRE?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set Heating Time">
+      <sequence value="a[MEAS:TIM:HEAT ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set Heating Time 60s">
+      <sequence value="a[MEAS:TIM:HEAT 60000] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Heating Time">
+      <sequence value="a[MEAS:TIM:HEAT?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set Cooling Time">
+      <sequence value="a[MEAS:TIM:COOL ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set Cooling Time 60s">
+      <sequence value="a[MEAS:TIM:COOL 60000] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Cooling Time">
+      <sequence value="a[MEAS:TIM:COOL?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Timing">
+      <sequence value="a[MEAS:TIM?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Stop Measurement">
+      <sequence value="a[MEAS:STOP] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Start Measurement">
+      <sequence value="a[MEAS:START] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set DUT Name">
+      <sequence value="a[MEAS:DUT ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set NORMAL Mode">
+      <sequence value="a[SYST:MODE NORMAL] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set CALIBRATION Mode">
+      <sequence value="a[SYST:MODE CAL] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set Cal. SampleRate">
+      <sequence value="a[SYST:RATE ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set PGA Gain">
+      <sequence value="a[SYST:GAIN ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get PGA Gain">
+      <sequence value="a[SYST:GAIN?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Enable PSU">
+      <sequence value="a[SYST:PSU ON] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Disable PSU">
+      <sequence value="a[SYST:PSU OFF] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get PSU Status">
+      <sequence value="a[SYST:PSU?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Enable Powerstage">
+      <sequence value="a[SYST:POWER ON] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Disable Powerstage">
+      <sequence value="a[SYST:POWER OFF] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Powerstage Status">
+      <sequence value="a[SYST:POWER?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set System Time">
+      <sequence value="a[SYST:CLOCK TIME,]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set System Date">
+      <sequence value="a[SYST:CLOCK DATE,]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get System Date/Time">
+      <sequence value="a[SYST:CLOCK?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+  </ItemList>
+</HtermSequenceFile>
