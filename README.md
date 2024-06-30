@@ -69,7 +69,7 @@ TODO: Document jumper settings of the Nucleo-Board
 ### The measure PCB
 The top most PCB hold everything which is related to measurement. On this PCB there is the Offset voltage reference generator which provides a common offset voltage for all 4 Montior channels. Then there are 4 so called monitor channels. These channels provide a measurement current of ~1mA to each body diode and sense the voltage drop across the body diode. This voltage drop if amplified and offset with the voltage from the offset generator. Afterwards it is fed into the microcontrollers ADC. In Addition to the monitor channels there are 4 thermocouple transducer ICs MAX6675 to directly convert thermocouple values into temperatures. Finally there's the FLASH memory on the PCB which is used to save the measurement data during the measurement.
 
-![uTTA_Measure_PCB_Overview](https://github.com/wtronics/uTTA_private/assets/169440509/790b0234-207f-433f-a974-9c57c3c77584)
+![uTTA_Power_PCB_Overview](https://github.com/wtronics/uTTA/assets/169440509/c7caf485-0921-4115-a7b5-6a46c6df0f11)
 
 
 ## How the measurement works
@@ -179,12 +179,12 @@ This value reflects the total number of blocks generated during the measurement.
 ## Measurement data postprocessing
 
 Postprocessing of the measurements is done in Python (but there is also a very crusty LabVIEW GUI if someone likes :P ). 
-At the momment there is not nice GUI. It's just a little script which creates a figure via matplotlib. 
+At the momment there is no nice Python GUI. It's just a little script which creates a figure via matplotlib. 
 By running the file "uTTA_Postprocess_Measurement.py" you will get these plots.
 
 ![DUT_Measurement_Graph](https://github.com/wtronics/uTTA_private/assets/169440509/20d022ce-bf6a-4d50-aba3-7b3a0e97c4fa)
 
-### What do you seein these plots?
+### What do you see in these plots?
 + Let's start at the top left. This plot shows the change of the JUT voltages over the whole measurement period. As previously described the heated JUT jumpos to a significantly higher voltage during heating, due to the high heating current.
 + Right to the JUT voltages you can see the measured heating current. This graph has little information content. It's just there to verify nothing mysterious happend during the measurement.
 + In the second line you can see the same measurement data as above, whereas the preheating and heating section were cut off. The JUT voltages show the electrical transient which is created by the junction capacitance and the wire inductance. The heating current should ideally go to zero, but it seems like we can observe the cooling of the differential amplifier in this graph.
@@ -194,7 +194,7 @@ By running the file "uTTA_Postprocess_Measurement.py" you will get these plots.
 + Last row on the right show the coupling impedances between the heated JUT and the monitored JUTs.
 
 In addition to the figure two files are created. The first one is a text file with all the scaled diode voltages of the whole cooling section.
-The second file has the extension *.t3i (Don't ask, I forgot why). This  file contains intermediate results which can be used by the 
+The second file has the extension *.t3i (Don't ask, I forgot why). This  file contains intermediate results which can be used by the "uTTA_FFT_Deconvolution.py" script for further processing.
 
 ## ToDo
 - [ ] Document jumper settings of the Nucleo-Board
