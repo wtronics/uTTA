@@ -1,4 +1,4 @@
-# uTTA - Micro Thermal Transient Analyzer
+# uTTA - The  (µ) micro Thermal Transient Analyzer
 ## What's this TTA stuff anyhow?
 
 TTA (Thermal Transient Analysis) is a technique to retrieve the thermal impedance model of a cooling path by measuring its thermal step response.
@@ -17,16 +17,16 @@ For a MOSFET you might get thermal models, but most of these are often only prov
 ## How to perfom these measurements?
 ### The proper way
 To measure thermal transients needed to perform the analysis a specialized measurement system is needed. This system is called T3ster and was developed by MicReD (which was later sold to Siemens).
-This system costs enormous amounts of money (high 5 digit to 6 digit €). That's why I decided to try and build my own little system for private educational purposes.
+This system costs enormous amounts of money (high 5 to 6 digit €). That's why I decided to try and build my own little system for private and educational purposes.
 
 
 ### My own little Thermal Transient Analyzer (uTTA)
 uTTA started off as a pasttime project during short-time work in the first COVID lockdown. During this time I was playing around with various kinds of power electronics and always faced the  same problems... 
-How long can I dissipate this or that power dissipation in a MOSFET until I read a critical temperature?
+How long can I dissipate this or that power dissipation in a MOSFET until it reaches a critical temperature? As mentioned above there are various ways to accomplish this task. But all of them require you to know the thermal impedance curve of your specific hardware setup.
 
 
-### Target Picture
-The following points are my target picture for this little project.
+#### Target Picture
+The following points are my target picture for this little project and what I achieved so far.
 + [x] Build a measurment hardware which is capable to perform thermal impedance measurements on one channel, whereby it should be able to monitor at least 2 further channels for doing thermal coupling analysis in the future.
 + [x] Build a software toolkit to postprocess measurement data to obtain thermal impedance curves (Z<sub>th</sub>-curves).
 + [x] Add functionalities for thermal coupling measurement between adjacent semiconductors.
@@ -36,7 +36,7 @@ The following points are my target picture for this little project.
 + [ ] Obtain RC-thermal equivalent models from the time constant spectrum.
 
 
-### Design Requirements
+#### Design Requirements
 The device shall...
 + ...be easy to use.
 + ...be cheap and easy to build. Target: 150€ for all components incl. PCB.
@@ -56,35 +56,35 @@ The current design consists of 3 PCBs which are stacked on top of each other. Th
 ![uTTA_System_Overview](https://github.com/wtronics/uTTA_private/assets/169440509/349de40f-0f6b-4d72-b7f7-e29c1427363e)
 
 
-### The power PCB
+## The power PCB
 This is the PCB at the bottom of the stack. It holds all the parts which are somehow related to power. Therefore on there is the overall power supply for the whole system. The system is fed by a bipolar power supply which should be able to deliver +/-12V with max. 120mA. In addition on the power PCB there is the main heating current switch and the heating current measurement which is used to switch and measure the heating current trough the JUT. Last but not least the power PCB holds a CR2032 backup battery which is used to run the RTC of the microcontroller.
 
 ![uTTA_Power_PCB_Overview1](https://github.com/wtronics/uTTA/assets/169440509/389ed171-3da6-4c48-be30-57c26e5d8b67)
 
 
-### The Microcontroller PCB
+## The Microcontroller PCB
 This PCB is an off the shelf STM32F303RE Nucleo-64 Board. It is a little modified in terms of jumper settings. 
 
 TODO: Document jumper settings of the Nucleo-Board
 
-### The measure PCB
+## The measure PCB
 The top most PCB hold everything which is related to measurement. On this PCB there is the Offset voltage reference generator which provides a common offset voltage for all 4 Montior channels. Then there are 4 so called monitor channels. These channels provide a measurement current of ~1mA to each body diode and sense the voltage drop across the body diode. This voltage drop if amplified and offset with the voltage from the offset generator. Afterwards it is fed into the microcontrollers ADC. In Addition to the monitor channels there are 4 thermocouple transducer ICs MAX6675 to directly convert thermocouple values into temperatures. Finally there's the FLASH memory on the PCB which is used to save the measurement data during the measurement.
 
 ![uTTA_Power_PCB_Overview](https://github.com/wtronics/uTTA/assets/169440509/c7caf485-0921-4115-a7b5-6a46c6df0f11)
 
 
-## How the measurement works
+# How the measurement works
 ![image](https://github.com/wtronics/uTTA_private/assets/169440509/00a154a3-48e4-46bb-b495-6e1eae6e8ec8)
-### Pre-Heating Phase
+## Pre-Heating Phase
 The whole measurement starts with a so called pre-heating phase. The pre-heating phase is intended to measure the initial voltage drops of the junctions under test (JUT). This is needed to be able to judge after the measurment if the JUTs have cooled completely to thermal equilibrium. During the pre-heating phase the sample rate on all channels is reduced to its lowest setting, which is a sampling period of 65536µs or ~15.26 Samples/s. Furthermore the programmable gain stage of the driven JUT is set to its initial setting (higher gain).
 
-### Heating Phase
+## Heating Phase
 In the heating phasse the uTTA switches on the heating current switch to enable external power supply which provides the heating current for the DUT. In theory you should be able to use any power supply with current limit you have on hand. Output voltage requirements may depend a little on your specific setup. My setup always worked at ~3V with a heating current of ~10-12A, whereby the wires between uTTA and DUT were almost 2 metres long. In the heating phase uTTA switches the PGA into the preset setting (typically lower gain) to be able to measure the diode voltage while the heating current is running through the JUT. The diode voltage at the end of the heating phase is important to be able to calculate the dissipated power in the JUT. During the whole phase the sampling rate is still at its lowest setting because the data during heating do not provide much valuable content. At the end of the heating phase uTTA does multiple things in very short succesion.
 1. Switch the PGA back to its higher gain setting to have the full measure range during the coming cooling phase
 2. Set the ADC sampling rate to maximum speed. This means a sample rate of 2MS/s per channel. The samples are taken simultaneously on all 4 channels (because the STM32 has 4 built in ADCs).
 3. Switch off the heating current switch and cut off the heating current.
 
-### Cooling Phase
+## Cooling Phase
 
 With these settings done the heating current through the device is cut really fast (~1-2µs) and all the inductive energy is dissipated in the Freewheeling network in parallel to the JUT (on the uTTA power PCB). While the current is freewheeling the microcontroller is continuously sampling at 2MS/s. After 250 samples the ADC halfes its sampling rate to 1MS/s, and after another 250Samples to 500kS/s. This process of taking 250samples and reducing the sample rate is done until the minimum sample rate of ~15.26 Samples/s is reached. From there the sampling continiues until the preset measurement time is reached. As the correct timing is extremely cricuial to the whole process the sampling is controlled by an internal timer which is set to these sampling rates. The change of sampling rates is performed by the timers preload registers which are automatically reloaded as soon as 250 samples were generated.
 
@@ -177,8 +177,8 @@ This line is a helping line for the postprocessing software. As the exact number
 #### Total Blocks
 This value reflects the total number of blocks generated during the measurement. 
 
-## Measurement data postprocessing
-
+# Measurement data postprocessing
+## Conversion from measurement data to Z<sub>th</sub>-Curves
 Postprocessing of the measurements is done in Python (but there is also a very crusty LabVIEW GUI if someone likes :P ). 
 At the momment there is no nice Python GUI. It's just a little script which creates a figure via matplotlib. 
 By running the file "uTTA_Postprocess_Measurement.py" you will get these plots.
@@ -197,6 +197,10 @@ By running the file "uTTA_Postprocess_Measurement.py" you will get these plots.
 In addition to the figure two files are created. The first one is a text file with all the scaled diode voltages of the whole cooling section.
 The second file has the extension *.t3i (Don't ask, I forgot why). This  file contains intermediate results which can be used by the "uTTA_FFT_Deconvolution.py" script for further processing.
 
+## Conversion from Z<sub>th</sub>-Curves to time constant spectra
+Here the real drama begins. I've been working on this topic for quite some time, but somehow I'm stuck 
+
+# Additional Comments
 ## ToDo
 - [ ] Document jumper settings of the Nucleo-Board
 - [x] Build calibration GUI for uTTA
@@ -219,4 +223,6 @@ I know this system is far from perfect. As said previously this started as a pri
 + Why do you use LabVIEW for your GUI?
   + Because I also use it in my day time job, where I have the role of an "lazy" senior hardware developer :). There software for testing needs to be build fast and that's whats LabVIEW good for.
   + I know there's a lot of people which don't like LabVIEW, but for creating an easy GUI its my number one choice (Its fast, easy and you don't have to mess around with TKinter libraries).
++ why do you use an external battery for the gate driver of the heating current switch? You could also use a power supply!
+  + At the beginning I was in fact using another power supply for the gate driver. But I was constantly fighting with common mode issues, that's why I changed this part to a 9V or 12V battery which eliminated all problems completely. 
 
