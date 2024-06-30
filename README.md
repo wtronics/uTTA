@@ -59,7 +59,8 @@ The current design consists of 3 PCBs which are stacked on top of each other. Th
 ### The power PCB
 This is the PCB at the bottom of the stack. It holds all the parts which are somehow related to power. Therefore on there is the overall power supply for the whole system. The system is fed by a bipolar power supply which should be able to deliver +/-12V with max. 120mA. In addition on the power PCB there is the main heating current switch and the heating current measurement which is used to switch and measure the heating current trough the JUT. Last but not least the power PCB holds a CR2032 backup battery which is used to run the RTC of the microcontroller.
 
-![uTTA Power PCB Overview](/030_Documentation/uTTA_Power_PCB_Overview.png)
+![uTTA_Power_PCB_Overview1](https://github.com/wtronics/uTTA/assets/169440509/389ed171-3da6-4c48-be30-57c26e5d8b67)
+
 
 ### The Microcontroller PCB
 This PCB is an off the shelf STM32F303RE Nucleo-64 Board. It is a little modified in terms of jumper settings. 
