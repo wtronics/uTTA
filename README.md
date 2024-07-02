@@ -3,7 +3,7 @@
 
 TTA (Thermal Transient Analysis) is a technique to retrieve the thermal impedance model of a cooling path by measuring its thermal step response.
 This method was detailed specified in JESD 51-14 and is briefly described in the following tutorial:
-[THERMINIC 20005 Tutorial](https://therminic.org/therminic2005/APoppe_Tutorial.pdf)
+[THERMINIC 20005 Tutorial](https://therminic.org/therminic2005/APoppe_Tutorial.pdf) (Highly recommended!)
 
 Ideally after performing the measurement, you should be able to transform the measured data into a so called thermal impedance curve. This curve can be found in almost every datasheet of any power semiconductor. In a nutshell out of a thermal impedance curve the user can read the thermal resistance which applies to the device when a rectangular power pulse of the time x is applied. From this thermal resistance, in combination with the dissipated power the user can calculate the junction temperature of the power semiconductor at the end of the rectangular pulse. This only works as long as the power pulse is short enough to not reach the thermal boundaries of the power semiconductor. As soon as the thermal boundaries of the power semiconductor are reached a dedicated thermal impedance curve of your specific cooling path is needed. 
 Nexperia released a very interesting application note on this topic: [Nexperia AN11156](https://assets.nexperia.com/documents/application-note/AN11156.pdf)
@@ -30,10 +30,10 @@ The following points are my target picture for this little project and what I ac
 + [x] Build a measurement hardware which is capable to perform thermal impedance measurements on one channel, whereby it should be able to monitor at least 2 further channels for doing thermal coupling analysis in the future.
 + [x] Build a software toolkit to postprocess measurement data to obtain thermal impedance curves (Z<sub>th</sub>-curves).
 + [x] Add functionalities for thermal coupling measurement between adjacent semiconductors.
-+ [ ] Software tools for the calibration of the junction.
 + [x] Software tools for the calibration of the hardware itself.
 + [ ] Ability to calculate the time constant spectra of the Z<sub>th</sub>-curve via the NID method (either the "classical" method by FFT deconvolution, or by using the Bayesian method).
 + [ ] Obtain RC-thermal equivalent models from the time constant spectrum.
++ [ ] Software and hardware tools for the calibration of the junction.
 
 
 #### Design Requirements
@@ -198,13 +198,25 @@ In addition to the figure two files are created. The first one is a text file wi
 The second file has the extension *.t3i (Don't ask, I forgot why). This file contains intermediate results which can be used by the "uTTA_FFT_Deconvolution.py" script for further processing.
 
 ## Conversion from Z<sub>th</sub>-Curves to time constant spectra
-Here the real drama begins. I've been working on this topic for quite some time, but somehow, I'm stuck 
+Here the real drama begins. In principle all the aforementioned documents contain the methods how to obtain the time constant spectrum, but all of them lack a few details which are vital for the correct function. 
+In the following chapter I will try to give a summary of the process which is implemented right now. All steps are also descibed in [THERMINIC 20005 Tutorial, page 58.ff](https://therminic.org/therminic2005/APoppe_Tutorial.pdf), but some important details are missing.
+
+1. After importing the *.t3i file the data is split into the timebase and the 3 calculated Zth curves and in the following steps only the Zth curve of the heated JUT is processed, all other channels are ignored for the moment. The imported measurement data still have the same sampling scheme as the original measurement data, therefore they are not evenly spaced (only within the blocks of 250 samples), but this is not dramatic as you will see in the next steps
+2. As described the timebase needs to be logarithmic for the follwing steps. Therefore the imported timebase is converted with $z=ln(t)$. Nevertheless, this step has basically no fruitful impact, because the already unevenly spaced samples are now even more uneven.
+3. To get the unevenly spaced samples into a format which can be processed later on, the samples need to be layed out on the logarithmic time axis with an even spacing. This is done by creating a new linear timebase with evenly spaced samples. The range of this timebase is $[min(z), max(z)]$ (I will call this axis the z-axis).
+4. Now the unevenly spaced samples and its corresponding timebase can be interpolated to new samples onto the z-axis.
+5. With this interpolated curve the derivative of the signal is calculated. This step will amplify the noise in the measurement drastically. 
+6. After the derivation the curve curve needs to be modified for the FFT later on. Zero padding need to be added to the curve. This is necessary because the FFT always assumes a repetitve input signal. The signal isn't repetitve therefore, it needs to add the same amount of samples as zeros to the signal.
+7. Before the deconvolution can be started two addtional curves need to be created.
+   1. The weighing function $w_z(z)=e^{z-e^z}$
+   2. The filter function $$ (This is not mentioned in the THERMINIC Tutorial but here: [](https://diglib.tugraz.at/download.php?id=5cc8223dd3723&location=browse)
+I've been working on this topic for quite some time, but somehow, I'm stuck 
 
 # Additional Comments
 ## ToDo
-- [ ] Document jumper settings of the Nucleo-Board
 - [x] Build calibration GUI for uTTA
-- [ ] Build calibration GUI for DUT scaling factors
+- [x] Build calibration GUI for DUT scaling factors
+- [ ] Document jumper settings of the Nucleo-Board
 
 ## Possible improvements for future designs
 - [ ] More gain steps for diode voltage measurement
