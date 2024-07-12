@@ -17,9 +17,9 @@ ADC_Calibration_Offset = np.array([0.0, -0.051671, -0.049331, -0.07651], dtype=f
 
 NoOfDUTs = 3
 CH_Names = ["DUT", "Monitor1", "Monitor2"]
-DUT_TSP_Sensitivity_offset = np.array([0.0, 0.0, 0.0],dtype=float)
-DUT_TSP_Sensitivity_linear = np.array([-0.0026, -0.0026, -0.0026],dtype=float)
-DUT_TSP_Sensitivity_square = np.array([0.0, 0.0, 0.0],dtype=float)
+DUT_TSP_Sensitivity_offset = np.array([0.0, 0.0, 0.0], dtype=float)
+DUT_TSP_Sensitivity_linear = np.array([-0.0026, -0.0026, -0.0026], dtype=float)
+DUT_TSP_Sensitivity_square = np.array([0.0, 0.0, 0.0], dtype=float)
 
 
 def select_file():
@@ -37,7 +37,7 @@ def read_cal_file():
     print("Reading calibration values from file: " + CalFilePath)
     config = configparser.ConfigParser()
     config.read_file(open(CalFilePath))
-    ConfSect = config.sections()
+#    confSect = config.sections()
 
     for ChIdx in range(0, 4):
         if ChIdx == 0:
@@ -53,9 +53,8 @@ def read_cal_file():
             ADC_Calibration_Gain[ChIdx] = float(config["ADC"+str(ChIdx) + "_CAL"]["Gain"].replace(",", "."))
             ADC_Calibration_Offset[ChIdx] = float(config["ADC"+str(ChIdx) + "_CAL"]["Offset"].replace(",", "."))
             print("Calibration Values for Ch{ChNo}:      Gain: {Slope:.6f} V/Digit, Offset: {Offs:.6f} V".format(ChNo=ChIdx,
-                    Slope=ADC_Calibration_Gain[ChIdx],
-                    Offs=ADC_Calibration_Offset[ChIdx]))
-
+                                                                                                                 Slope=ADC_Calibration_Gain[ChIdx],
+                                                                                                                 Offs=ADC_Calibration_Offset[ChIdx]))
     return
 
 
@@ -208,7 +207,7 @@ del ADC_Idx
 # print("PGA Array resized: " + str(PGA.shape))
 # print("Block Array resized: " + str(BlockNo.shape))
 print("")
-TimeBaseHeating = np.arange(0.0, (CoolingStartBlock * SampDecade) * TsampSlow, TsampSlow,dtype=numpy.float64)
+TimeBaseHeating = np.arange(0.0, (CoolingStartBlock * SampDecade) * TsampSlow, TsampSlow, dtype=numpy.float64)
 TimeBaseTotal = np.copy(TimeBaseHeating)
 # print("Heating Timebase size: " + str(TimeBaseHeating.shape))
 
@@ -271,7 +270,8 @@ for Ch in range(0, NoOfDUTs):
     TDio[Ch, :] = (ADC_Cooling[Ch, :] + DUT_TSP_Sensitivity_offset[Ch]) / DUT_TSP_Sensitivity_linear[Ch]
 
     # Calculate the start temperature of both monitoring channels to have a good starting point for Zth-Matrix
-    T_Monitor_Heated[Ch] = (np.mean(ADC[Ch, ((CoolingStartBlock-2) * SampDecade):((CoolingStartBlock-1) * SampDecade) - 1]) + DUT_TSP_Sensitivity_offset[Ch]) / DUT_TSP_Sensitivity_linear[Ch]
+    T_Monitor_Heated[Ch] = (np.mean(ADC[Ch, ((CoolingStartBlock-2) * SampDecade):((CoolingStartBlock-1) * SampDecade) - 1])
+                            + DUT_TSP_Sensitivity_offset[Ch]) / DUT_TSP_Sensitivity_linear[Ch]
     if Ch == 0:
         print("COLD VOLTAGE: DUT{DUTno} at Start: {Ucold: 3.4f}V; at End: {UColdEnd: 3.4f}V; Delta U: {dU_DUT: 3.4f}V; Delta T: {dT_DUT: 3.4f}°C".format(
             DUTno=Ch,
@@ -280,13 +280,13 @@ for Ch in range(0, NoOfDUTs):
             dU_DUT=UDio_Cold_Start[Ch] - UDio_Cold_End[Ch],
             dT_DUT=((UDio_Cold_End[Ch] - UDio_Cold_Start[Ch]) / DUT_TSP_Sensitivity_linear[Ch])))
     else:
-        print("COLD VOLTAGE: DUT{DUTno} at Start: {Ucold: 3.4f}V; at End: {UColdEnd: 3.4f}V; Delta U: {dU_DUT: 3.4f}V; Delta T: {dT_DUT: 3.4f}°C; Heated Temp: {T_heated: 3.4f}°C".format(
-            DUTno=Ch,
-            Ucold=UDio_Cold_Start[Ch],
-            UColdEnd=UDio_Cold_End[Ch],
-            dU_DUT=UDio_Cold_Start[Ch] - UDio_Cold_End[Ch],
-            dT_DUT=((UDio_Cold_End[Ch] - UDio_Cold_Start[Ch]) / DUT_TSP_Sensitivity_linear[Ch]),
-            T_heated=T_Monitor_Heated[Ch]))
+        print("COLD VOLTAGE: DUT{DUTno} at Start: {Ucold: 3.4f}V; at End: {UColdEnd: 3.4f}V; Delta U: {dU_DUT: 3.4f}V; Delta T: {dT_DUT: 3.4f}°C; "
+              "Heated Temp: {T_heated: 3.4f}°C".format(DUTno=Ch,
+                                                       Ucold=UDio_Cold_Start[Ch],
+                                                       UColdEnd=UDio_Cold_End[Ch],
+                                                       dU_DUT=UDio_Cold_Start[Ch] - UDio_Cold_End[Ch],
+                                                       dT_DUT=((UDio_Cold_End[Ch] - UDio_Cold_Start[Ch]) / DUT_TSP_Sensitivity_linear[Ch]),
+                                                       T_heated=T_Monitor_Heated[Ch]))
 
 DioVoltageMaxLines = len(TimeBase_Cooling)
 Diode_Output = np.zeros(shape=(2, DioVoltageMaxLines))
@@ -341,12 +341,12 @@ InterpolatedStart = np.sqrt(TimeBase_Cooling[0:InterpPointsIdxStart]) * Interpol
 # Build the final Zth-curve with interpolated start
 TDio[3, :] = TDio[0, :]
 TDio[3, 0:InterpPointsIdxStart] = InterpolatedStart[0:InterpPointsIdxStart]
-print("INTERPOLATION: Start: {StartY: .3f}K; End: {EndY: .3f}K; Factor M: {IntFactM: .4f}; Offset: {IntOffs: .4f}; Estimated Die Size: {DieSize: .2f}mm²".format(
-    StartY=InterpolYStart,
-    EndY=InterpolYEnd,
-    IntFactM=InterpolationFactorM,
-    IntOffs=InterpolationOffset,
-    DieSize=EstimatedDieSize))
+print("INTERPOLATION: Start: {StartY: .3f}K; End: {EndY: .3f}K; Factor M: {IntFactM: .4f}; "
+      "Offset: {IntOffs: .4f}; Estimated Die Size: {DieSize: .2f}mm²".format(StartY=InterpolYStart,
+                                                                             EndY=InterpolYEnd,
+                                                                             IntFactM=InterpolationFactorM,
+                                                                             IntOffs=InterpolationOffset,
+                                                                             DieSize=EstimatedDieSize))
 
 Zth = np.zeros(shape=ADC_Cooling.shape)
 Zth_static = np.zeros(NoOfDUTs)
@@ -372,13 +372,13 @@ Zth_output[2, :] = Zth[1, :]
 Zth_output[3, :] = Zth[2, :]
 Zth_output = np.transpose(Zth_output)
 np.savetxt(FilePath + "\\" + DataFileNoExt + '.t3i', Zth_output,
-          delimiter='\t',
-          fmt='%1.6e',
-          newline='\n',
-          header="Time\t" + str(CH_Names[0]) + "\t" + str(CH_Names[1]) + "\t" + str(CH_Names[2]))
+           delimiter='\t',
+           fmt='%1.6e',
+           newline='\n',
+           header="Time\t" + str(CH_Names[0]) + "\t" + str(CH_Names[1]) + "\t" + str(CH_Names[2]))
 del Zth_output
 
-fig,axs = plt.subplots(nrows=4, ncols=2, layout="constrained")
+fig, axs = plt.subplots(nrows=4, ncols=2, layout="constrained")
 axs[0, 0].plot(TimeBaseTotal, ADC[0, :], label=CH_Names[0])  # Plot some data on the axes.
 axs[0, 0].plot(TimeBaseTotal, ADC[1, :], label=CH_Names[1])  # Plot some data on the axes.
 axs[0, 0].plot(TimeBaseTotal, ADC[2, :], label=CH_Names[2])  # Plot some data on the axes.
@@ -454,4 +454,3 @@ end = time.time()
 print("Execution Time: {time:.3f}s".format(time=end - start))
 
 plt.show()
-

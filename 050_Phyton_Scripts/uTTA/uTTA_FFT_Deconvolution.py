@@ -5,7 +5,7 @@ from numpy import genfromtxt
 from tkinter import filedialog as fd
 import os
 
-StartFilePath = 'C:\\temp\\Eigenentwicklungen\\'
+StartFilePath = os.path.realpath(__file__)
 
 
 def select_file():
@@ -22,7 +22,7 @@ def select_file():
 FileNam = select_file()
 
 DataFile = os.path.basename(FileNam).split('/')[-1]
-DataFileNoExt = DataFile.replace('.t3i','')
+DataFileNoExt = DataFile.replace('.t3i', '')
 FilePath = os.path.dirname(FileNam)
 
 NoOfMonitors = 2
@@ -39,9 +39,10 @@ Cols = Zth_Import.dtype.names
 t = Zth_Import[Cols[0]]
 Zth_Drive = Zth_Import[Cols[1]]
 print("Zth end value: {ZthEnd:.3f}".format(ZthEnd=Zth_Drive[-1]))
-Zth_Monitor = np.zeros(shape=(len(t), NoOfMonitors))
-Zth_Monitor[:, 0] = Zth_Import[Cols[2]]
-Zth_Monitor[:, 1] = Zth_Import[Cols[3]]
+if Cols[1] != "Z_th_Simulated":
+    Zth_Monitor = np.zeros(shape=(len(t), NoOfMonitors))
+    Zth_Monitor[:, 0] = Zth_Import[Cols[2]]
+    Zth_Monitor[:, 1] = Zth_Import[Cols[3]]
 
 z_raw = np.log(t)
 zStart = z_raw[0]
@@ -63,10 +64,10 @@ da_dz_pad = np.pad(da_dz_pad, (NoSamplePointsLog, ))
 
 wz = np.exp(z - np.exp(z))
 wz_pad = np.pad(wz, (NoSamplePointsLog,))
-wzRoll = zStart/(zEnd-zStart)
+wzRoll = -zStart*NoSamplePointsLog #/(zEnd-zStart)
 print("Start Time {tstart:3.3f} ln(s), EndTime {tend:3.3f} ln(s) Span: {tspan:3.3f} ln(s) ".format(tstart=zStart, tend=zEnd, tspan=zEnd-zStart))
-print("Rolling Array wz_pad by {roll:3.3f} elements".format(roll=wzRoll*NoSamplePointsLog))
-wz_pad = np.roll(wz_pad, int(wzRoll*NoSamplePointsLog))
+print("Rolling Array wz_pad by {roll:3.3f} elements".format(roll=wzRoll))
+wz_pad = np.roll(wz_pad, int(wzRoll))
 
 
 M_In_PHI = np.fft.fft(da_dz_pad)
@@ -119,7 +120,7 @@ axs[LineIdx, 1].legend()
 axs[LineIdx, 1].grid(which='both')
 LineIdx = LineIdx + 1
 
-axs[LineIdx, 0].plot(z,r_filt_z.real[len(z):2*len(z)], label="Filtered Output")  # Plot some data on the axes.
+axs[LineIdx, 0].plot(z, r_filt_z.real[len(z):2*len(z)], label="Filtered Output")  # Plot some data on the axes.
 axs[LineIdx, 0].plot(z, r_z.real[0:len(z)]*10, label="RE Deconvolved Input")  # Plot some data on the axes.
 axs[LineIdx, 0].set_title("Interpolated and differentiated Zth Curve")
 axs[LineIdx, 0].set_ylabel('Diode Voltage / [V]')

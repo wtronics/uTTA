@@ -4,11 +4,11 @@ from numpy import genfromtxt
 from tkinter import filedialog as fd
 import os
 
-FilePath = 'C:\\temp\\Eigenentwicklungen\\Octave_Thermal_Modelling\\Measurement_Data\\'
+FilePath = os.path.realpath(__file__)
 
 
 def select_file():
-    filetypes = (('T3I Measurement Files', '*.t3i'),('All files', '*.*'))
+    filetypes = (('T3I Measurement Files', '*.t3i'), ('All files', '*.*'))
 
     filename = fd.askopenfilename(
         title='Open a T3R-File',
@@ -25,7 +25,7 @@ fig, axs = plt.subplots(nrows=3, ncols=1, layout="constrained")
 for CurveIdx in range(0, int(NumCurves)):
     FileNam = select_file()
     DataFile = os.path.basename(FileNam).split('/')[-1]
-    DataFileNoExt = DataFile.replace('.t3i','')
+    DataFileNoExt = DataFile.replace('.t3i', '')
 
     Zth_Import = genfromtxt(FileNam, delimiter='\t', dtype=float, names=True)
     Cols = Zth_Import.dtype.names
