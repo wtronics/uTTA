@@ -35,7 +35,6 @@ The following points are my target picture for this little project and what I ac
 + [ ] Obtain RC-thermal equivalent models from the time constant spectrum.
 + [ ] Software and hardware tools for the calibration of the junction.
 
-
 #### Design Requirements
 The device shall...
 + ...be easy to use.
@@ -50,178 +49,33 @@ The device shall...
 + ...store all data within a built-in memory.
 + ...be controlled via a PC with some GUI which is easy to use.
 
-# The current design
-The current design consists of 3 PCBs which are stacked on top of each other. This stacked design was chosen to thermally decouple the power part from the measurement part.
+# The Implementation
+## µTTA Hardware
+This is how µTTA looks like (this is an older PCB version which has been modified to match the current µTTA hardware version. 
+![Board_Stackup](https://github.com/user-attachments/assets/138ebe40-68f3-4df5-a533-04464e3c2e3f)
 
-![uTTA_System_Overview](https://github.com/wtronics/uTTA_private/assets/169440509/349de40f-0f6b-4d72-b7f7-e29c1427363e)
+## The final test setup
+Below you can see all the parts involved in the test setup. The JUT setup is placed next to the power supply. In a real setup this part will be placed within a still air chamber to minimize effects of uncontrolled ambient air circulation. Ideally this part should be placed on a temperature controlled coolplate, but this is something I will not build for my purposes.
+![Test Setup](https://github.com/user-attachments/assets/3a8780f4-51e5-43f8-9253-6b1bf6234ee3)
 
+## The JUT setup
 
-## The power PCB
-This is the PCB at the bottom of the stack. It holds all the parts which are somehow related to power. Therefore, on there is the overall power supply for the whole system. The system is fed by a bipolar power supply which should be able to deliver +/-12V with max. 120mA. In addition, on the power PCB there is the main heating current switch and the heating current measurement which is used to switch and measure the heating current trough the JUT. Last but not least the power PCB holds a CR2032 backup battery which is used to run the RTC of the microcontroller.
-
-![uTTA_Power_PCB_Overview1](https://github.com/wtronics/uTTA/assets/169440509/389ed171-3da6-4c48-be30-57c26e5d8b67)
-
-
-## The Microcontroller PCB
-This PCB is an off the shelf STM32F303RE Nucleo-64 Board. It is a little modified in terms of jumper settings. 
-
-TODO: Document jumper settings of the Nucleo-Board
-
-## The measure PCB
-The top most PCB hold everything which is related to measurement. On this PCB there is the Offset voltage reference generator which provides a common offset voltage for all 4 Monitor channels. Then there are 4 so called monitor channels. These channels provide a measurement current of ~1mA to each body diode and sense the voltage drop across the body diode. This voltage drop if amplified and offset with the voltage from the offset generator. Afterwards it is fed into the microcontrollers ADC. In Addition to the monitor channels there are 4 thermocouple transducer ICs MAX6675 to directly convert thermocouple values into temperatures. Finally, there's the FLASH memory on the PCB which is used to save the measurement data during the measurement.
-
-![uTTA_Power_PCB_Overview](https://github.com/wtronics/uTTA/assets/169440509/c7caf485-0921-4115-a7b5-6a46c6df0f11)
+Sadly I don't have a real world application test setup. Therefore I built a little setup which somehow looks like a real world setup. The setup contains 3 MOSFETs which I had lying around which are mounted onto the same heatsink. The devices are mounted with isolating glimmer and silicone pads, but to provide a return path for the sensing current of the monitored devices, the isolating washers were removed to connect the drains of the MOSFETs together. The Gate and Source of each MOSFET are shorted together to prevent spurious turn on by static charges. Additionally each MOSFET is connected to a coaxial sense cable for monitoring the forward voltage of the Body Diodes and to provide the sense current for each JUT. The heated junction is also connected to the wires which carry the heating current. These cables are special self made wires which are braided out ouf HF stranded wire. This was done to reduce the inductance of the wires. Furthermore the positive and negative wire are bundled into a braided insulation tube to keep the loop area between the wires as small as possible.
+![JUT_on_Heatsink](https://github.com/user-attachments/assets/10768b4d-3334-4fc3-a089-28a2de61916c)
 
 
-# How the measurement works
-![image](https://github.com/wtronics/uTTA_private/assets/169440509/00a154a3-48e4-46bb-b495-6e1eae6e8ec8)
-## Pre-Heating Phase
-The whole measurement starts with a so-called pre-heating phase. The pre-heating phase is intended to measure the initial voltage drops of the junctions under test (JUT). This is needed to be able to judge after the measurement if the JUTs have cooled completely to thermal equilibrium. During the pre-heating phase the sample rate on all channels is reduced to its lowest setting, which is a sampling period of 65536µs or ~15.26 Samples/s. Furthermore, the programmable gain stage of the driven JUT is set to its initial setting (higher gain).
+# ToDo
+- [x] Build calibration GUI for uTTA.
+- [x] Build calibration GUI for DUT scaling factors.
+- [ ] Document jumper settings of the Nucleo-Board.
+- [ ] Get the deconvolution to work.
+- [ ] Calculate RC-Models from the time constant spectrum.
+- [ ] Build a nice (non LabVIEW) GUI.
 
-## Heating Phase
-In the heating phase the uTTA switches on the heating current switch to enable external power supply which provides the heating current for the DUT. In theory you should be able to use any power supply with current limit you have on hand. Output voltage requirements may depend a little on your specific setup. My setup always worked at ~3V with a heating current of ~10-12A, whereby the wires between uTTA and DUT were almost 2 meters long. In the heating phase uTTA switches the PGA into the preset setting (typically lower gain) to be able to measure the diode voltage while the heating current is running through the JUT. The diode voltage at the end of the heating phase is important to be able to calculate the dissipated power in the JUT. During the whole phase the sampling rate is still at its lowest setting because the data during heating do not provide much valuable content. At the end of the heating phase uTTA does multiple things in very short succession.
-1. Switch the PGA back to its higher gain setting to have the full measure range during the coming cooling phase
-2. Set the ADC sampling rate to maximum speed. This means a sample rate of 2MS/s per channel. The samples are taken simultaneously on all 4 channels (because the STM32 has 4 built in ADCs).
-3. Switch off the heating current switch and cut off the heating current.
-
-## Cooling Phase
-
-With these settings done the heating current through the device is cut really fast (~1-2µs) and all the inductive energy is dissipated in the Freewheeling network in parallel to the JUT (on the uTTA power PCB). While the current is freewheeling, the microcontroller is continuously sampling at 2MS/s. After 250 samples the ADC halves its sampling rate to 1MS/s, and after another 250Samples to 500kS/s. This process of taking 250samples and reducing the sample rate is done until the minimum sample rate of ~15.26 Samples/s is reached. From there the sampling continues until the preset measurement time is reached. As the correct timing is extremely crucial to the whole process the sampling is controlled by an internal timer which is set to these sampling rates. The change of sampling rates is performed by the timers’ preload registers which are automatically reloaded as soon as 250 samples were generated.
-
-# Measurement postprocessing
-## Measurement data retrieval
-
-All measurement values of the ADC are transferred via DMA into a circular buffer array with a length of 5000 samples. From there the values are taken in blocks of 250 samples, transformed into a human readable format and transferred into the flash memory. As soon as the measurement is completed the user can transfer these measurement data files onto the PC via the serial port. For this purpose a LabView GUI was built to ease up the transfer process. After the transfer you will get a measurement file with the file extension *.t3r. This file extension was borrowed from the T3STER system, but is __NOT__ compatible with any of these systems.
-
-![uTTA_GetFileUI](https://github.com/wtronics/uTTA_private/assets/169440509/9dfc242e-9216-414c-85aa-31bac8ef42d5)
-
-## The measurement data file
-
-As said before the measurement file has a *.t3r file extension to give it a unique name. Nevertheless, this is still just a plain text file you can open with any text editor.
-
-### File Header
-
-Each measurement file starts with a file header which includes general information and settings which are needed for the postprocessing. All values are separated by a semicolon (the German delimiter for CSV-files).
-
-![T3R_FileStructureHeader](https://github.com/wtronics/uTTA_private/assets/169440509/e03449df-1a28-4713-881e-e86667506e4b)
-
-#### File Version
-  The first line always indicates the file version. At the moment this should be version 2.2. Earlier file versions contained less information
-
-#### CH_ Name
-The following three lines always define a set of parameters for the measurement channels:
-+ The symbolic name of the channel. This is intended to ease up the postprocessing process. Especially when you do a lot of measurements.
-+ $JUT_{Offset}$: The offset voltage of the diode voltage to temperature conversion line in µV. This value is not used by anything and can therefore be set to 0. The postprocessing function simply does a difference temperature measurement, therefore an accurate offset is not needed.
-+ $JUT_{LinearGain}$: The linear portion of the voltage to temperature conversion slope in µV/K.
-+ $JUT_{QuadraticGain}$:The quadratic portion of the voltage to temperature conversion slow in µV/K<sup>2</sup>. This value is currently not used and can therefore be set to 0.
-
-For conversion of the measured voltage to a temperature the postprocessing function does the following calculation: $\frac{U_{JUT.cold} + JUT_{Offset}}{JUT_{LinearGain}}$
-
-#### StartTime
-Contains the start time of the measurement. Sometimes it's helpful to know when you started your measurement (especially when you're debugging).
-
-#### StartDate
-The date when the measurement was performed in DD.MM.YYYY format.
-
-#### T<sub>samp,fast</sub>
-Is the setting of the fast sample rate which is used at the start of the cooling section. This cryptic value can be converted to Samples per second with the following formula:
-$\frac{8 MHz}{T_{samp,fast}}$
-
-#### T<sub>samp,low</sub>
-Is the setting of the lowest sample rate which is used most of the measurement time. This cryptic value can be converted to Samples per second with the following formula:
-$\frac{8 MHz}{T_{samp,low}}$
-
-#### Samples/Decade ($N_{SamplesDecade}$)
-The name might be a bit misleading. It is not a decade but the length of a sampling block. The name is a historical choice I didn't bother to change.
-
-#### Max. Divider
-Is a slightly redundant value to T<sub>samp,low</sub>. This value basically describe how many times the sample time is halved at the beginning of the cooling section. Therefore T<sub>samp,low</sub> can be calculated from T<sub>samp,fast</sub> with the following formula:
-$T_{samp,low} = T_{samp,fast} * 2^{MaxDivider}$
-
-#### T_Preheat
-This value represents the preheating time used for the measurement in seconds. Please note that this value might not be precisely reflected in the measurement as the internal state machine switched only at the beginning of a new block. Therefore a skew between the setting and the real measurement of $T_{samp.low}*N_{SamplesDecade}$ might occur.
-
-#### T_Heat
-This value represents the heating time used for the measurement in seconds. Please note that this value might not be precisely reflected in the measurement as the internal state machine switched only at the beginning of a new block. Therefore a skew between the setting and the real measurement of $T_{samp.low}*N_{SamplesDecade}$ might occur.
-
-#### T_Cool
-This value represents the cooling time used for the measurement in seconds. Please note that this value might not be precisely reflected in the measurement as the internal state machine switched only at the beginning of a new block. Therefore a skew between the setting and the real measurement of $T_{samp.low}*N_{SamplesDecade}$ might occur.
-
-#### ADC1;ADC2;ADC3;ADC4
-This is the final line of the file header. After this line the measurement data block starts.
-### Measurement Data
-
-![T3R_FileStructureNewBlock](https://github.com/wtronics/uTTA_private/assets/169440509/05b67c7d-082d-40f1-b809-1e404dfec69a)
-
-
-#### #T lines
-Lines starting with #T indicate a measurement data set from the type K thermocouples. After this prefix there are 4 values reflecting the 4 type K thermocouples. The values given are in tens of degrees Celsius, thus you need to divide this value by 10.
-
-#### #B lines
-Lines starting with #B indicate the start of a new block. After this prefix there is the block number which is continuously counted up to the end of the measurement. In theory you don't need this tag because with complete data (without data loss) there shouldn't be the need for it. In practice these lines have proven useful while debugging, therefore I kept them in.
-
-#### #P lines
-Lines starting with #P indicated the current gain configuration of the programmable gain amplifier. This is needed for the postprocessing to know which calibration factors need to be applied to channel 1.
-
-#### Lines with raw numbers
-All lines with raw numbers are raw ADC measurement values. The measurement values are not scaled within the measurement system, this is done at the postprocessing stage.
-
-### File Footer
-
-![T3R_FileStructureFooter](https://github.com/wtronics/uTTA_private/assets/169440509/1f4f2d4f-655f-4a46-af9b-c4edf30be552)
-
-
-#### Cooling Start Block
-This line is a helping line for the postprocessing software. As the exact number of blocks from start of the measurement to the start of the cooling phase might vary due to aforementioned timing inaccuracies an indicator was needed to find the first block of the cooling section more easily.
-
-#### Total Blocks
-This value reflects the total number of blocks generated during the measurement. 
-
-# Measurement data postprocessing
-## Conversion from measurement data to Z<sub>th</sub>-Curves
-Postprocessing of the measurements is done in Python (but there is also a very crusty LabVIEW GUI if someone likes :P ). 
-Currently there is no nice Python GUI. It's just a little script which creates a figure via matplotlib. 
-By running the file "uTTA_Postprocess_Measurement.py" you will get these plots.
-
-![DUT_Measurement_Graph](https://github.com/wtronics/uTTA_private/assets/169440509/20d022ce-bf6a-4d50-aba3-7b3a0e97c4fa)
-
-### What do you see in these plots?
-+ Let's start at the top left. This plot shows the change of the JUT voltages over the whole measurement period. As previously described the heated JUT jumps to a significantly higher voltage during heating, due to the high heating current.
-+ Right to the JUT voltages you can see the measured heating current. This graph has little information content. It's just there to verify nothing mysterious happened during the measurement.
-+ In the second line you can see the same measurement data as above, whereas the preheating and heating section were cut off. The JUT voltages show the electrical transient which is created by the junction capacitance and the wire inductance. The heating current should ideally go to zero, but it seems like we can observe the cooling of the differential amplifier in this graph.
-+ The third row on the left depicts the converted temperatures from the JUT scaling factors. The curve of the heated JUT is extended further to the switch off by using the interpolation formula. For the other two channels this is currently not implemented.
-+ Third row on the right shows the measured values of the thermocouples. At the moment this plot is not scaled to the same time base as the rest of the measurement data.
-+ Last row on the least depicts the calculated thermal impedance curve. You can clearly see where the interpolation curve ends and where real measurement start.
-+ Last row on the right shows the coupling impedances between the heated JUT and the monitored JUTs.
-
-In addition to the figure two files are created. The first one is a text file with all the scaled diode voltages of the whole cooling section.
-The second file has the extension *.t3i (Don't ask, I forgot why). This file contains intermediate results which can be used by the "uTTA_FFT_Deconvolution.py" script for further processing.
-
-## Conversion from Z<sub>th</sub>-Curves to time constant spectra
-Here the real drama begins. In principle all the aforementioned documents contain the methods how to obtain the time constant spectrum, but all of them lack a few details which are vital for the correct function. 
-In the following chapter I will try to give a summary of the process which is implemented right now. All steps are also descibed in [THERMINIC 20005 Tutorial, page 58.ff](https://therminic.org/therminic2005/APoppe_Tutorial.pdf), but some important details are missing.
-
-1. After importing the *.t3i file the data is split into the timebase and the 3 calculated Zth curves and in the following steps only the Zth curve of the heated JUT is processed, all other channels are ignored for the moment. The imported measurement data still have the same sampling scheme as the original measurement data, therefore they are not evenly spaced (only within the blocks of 250 samples), but this is not dramatic as you will see in the next steps
-2. As described the timebase needs to be logarithmic for the follwing steps. Therefore the imported timebase is converted with $z=ln(t)$. Nevertheless, this step has basically no fruitful impact, because the already unevenly spaced samples are now even more uneven.
-3. To get the unevenly spaced samples into a format which can be processed later on, the samples need to be layed out on the logarithmic time axis with an even spacing. This is done by creating a new linear timebase with evenly spaced samples. The range of this timebase is $[min(z), max(z)]$ (I will call this axis the z-axis).
-4. Now the unevenly spaced samples and its corresponding timebase can be interpolated to new samples onto the z-axis.
-5. With this interpolated curve the derivative of the signal is calculated. This step will amplify the noise in the measurement drastically. 
-6. After the derivation the curve curve needs to be modified for the FFT later on. Zero padding need to be added to the curve. This is necessary because the FFT always assumes a repetitve input signal. The signal isn't repetitve therefore, it needs to add the same amount of samples as zeros to the signal.
-7. Before the deconvolution can be started two addtional curves need to be created.
-   1. The weighing function $w_z(z)=e^{z-e^z}$
-   2. The filter function $$ (This is not mentioned in the THERMINIC Tutorial but here: [](https://diglib.tugraz.at/download.php?id=5cc8223dd3723&location=browse)
-I've been working on this topic for quite some time, but somehow, I'm stuck 
-
-# Additional Comments
-## ToDo
-- [x] Build calibration GUI for uTTA
-- [x] Build calibration GUI for DUT scaling factors
-- [ ] Document jumper settings of the Nucleo-Board
-
-## Possible improvements for future designs
-- [ ] More gain steps for diode voltage measurement
-- [ ] Software adjustable offset control (DAC)
-- [ ] Software adjustable measure current (maybe enhanced Howland current sources with DAC?)
+# Possible improvements for future designs
+- [ ] More gain steps for diode voltage measurement.
+- [ ] Software adjustable offset control (DAC).
+- [ ] Software adjustable measure current (maybe enhanced Howland current sources with DAC?).
 - [ ] Removal of the Nucleo Board and replacement with a own development. (Improvements: Get rid of all these connectors, improve signal integrity, improve ADC reference voltage, maybe even dedicated USB interface not just through the ST-Link.
 
 ## Design choices
