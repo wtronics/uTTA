@@ -1,5 +1,6 @@
 # Theory of Operation
-![image](https://github.com/wtronics/uTTA_private/assets/169440509/00a154a3-48e4-46bb-b495-6e1eae6e8ec8)
+![image](https://github.com/user-attachments/assets/13192070-7060-41b5-80cc-b9c983e4eeda)
+
 ## Pre-Heating Phase
 The whole measurement starts with a so-called pre-heating phase. The pre-heating phase is intended to measure the initial voltage drops of the junctions under test (JUT). This is needed to be able to judge after the measurement if the JUTs have cooled completely to thermal equilibrium. During the pre-heating phase the sample rate on all channels is reduced to its lowest setting, which is a sampling period of 65536µs or ~15.26 Samples/s. Furthermore, the programmable gain stage of the driven JUT is set to its initial setting (higher gain).
 
