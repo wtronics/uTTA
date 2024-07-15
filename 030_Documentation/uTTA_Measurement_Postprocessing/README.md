@@ -3,7 +3,8 @@
 
 All measurement values of the ADC are transferred via DMA into a circular buffer array with a length of 5000 samples. From there the values are taken in blocks of 250 samples, transformed into a human readable format and transferred into the flash memory. As soon as the measurement is completed the user can transfer these measurement data files onto the PC via the serial port. For this purpose a LabView GUI was built to ease up the transfer process. After the transfer you will get a measurement file with the file extension *.t3r. This file extension was borrowed from the T3STER system, but is __NOT__ compatible with any of these systems.
 
-![uTTA_GetFileUI](https://github.com/wtronics/uTTA_private/assets/169440509/9dfc242e-9216-414c-85aa-31bac8ef42d5)
+![image](https://github.com/user-attachments/assets/a3dba701-24d7-4477-b0a1-089ddd8503ab)
+
 
 ## The measurement data file
 
@@ -13,7 +14,8 @@ As said before the measurement file has a *.t3r file extension to give it a uniq
 
 Each measurement file starts with a file header which includes general information and settings which are needed for the postprocessing. All values are separated by a semicolon (the German delimiter for CSV-files).
 
-![T3R_FileStructureHeader](https://github.com/wtronics/uTTA_private/assets/169440509/e03449df-1a28-4713-881e-e86667506e4b)
+![image](https://github.com/user-attachments/assets/faa9e262-1cba-4002-8281-dba8d7bdf8c3)
+
 
 #### File Version
   The first line always indicates the file version. At the moment this should be version 2.2. Earlier file versions contained less information
@@ -61,7 +63,8 @@ This value represents the cooling time used for the measurement in seconds. Plea
 This is the final line of the file header. After this line the measurement data block starts.
 ### Measurement Data
 
-![T3R_FileStructureNewBlock](https://github.com/wtronics/uTTA_private/assets/169440509/05b67c7d-082d-40f1-b809-1e404dfec69a)
+![image](https://github.com/user-attachments/assets/a4f91378-fdc0-49c0-bf9d-de3a11be3a3d)
+
 
 
 #### #T lines
@@ -78,7 +81,8 @@ All lines with raw numbers are raw ADC measurement values. The measurement value
 
 ### File Footer
 
-![T3R_FileStructureFooter](https://github.com/wtronics/uTTA_private/assets/169440509/1f4f2d4f-655f-4a46-af9b-c4edf30be552)
+![image](https://github.com/user-attachments/assets/3c58dec5-f375-47b5-9789-b21b32e433f1)
+
 
 
 #### Cooling Start Block
@@ -93,7 +97,8 @@ Postprocessing of the measurements is done in Python (but there is also a very c
 Currently there is no nice Python GUI. It's just a little script which creates a figure via matplotlib. 
 By running the file "uTTA_Postprocess_Measurement.py" you will get these plots.
 
-![DUT_Measurement_Graph](https://github.com/wtronics/uTTA_private/assets/169440509/20d022ce-bf6a-4d50-aba3-7b3a0e97c4fa)
+![image](https://github.com/user-attachments/assets/bcc2d592-240c-4dc4-836e-da91909fe5c0)
+
 
 ### What do you see in these plots?
 + Let's start at the top left. This plot shows the change of the JUT voltages over the whole measurement period. As previously described the heated JUT jumps to a significantly higher voltage during heating, due to the high heating current.
