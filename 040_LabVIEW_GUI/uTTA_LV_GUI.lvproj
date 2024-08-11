@@ -71,6 +71,8 @@
 				<Item Name="uTTA_SendQuery.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SendQuery.vi"/>
 				<Item Name="uTTA_Reset.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Reset.vi"/>
 				<Item Name="uTTA_CheckForErrors.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_CheckForErrors.vi"/>
+				<Item Name="uTTA_GV_Serial_Monitor.vi" Type="VI" URL="../uTTA/uTTA_GV_Serial_Monitor.vi"/>
+				<Item Name="uTTA_LogSerial.vi" Type="VI" URL="../uTTA/uTTA_LogSerial.vi"/>
 			</Item>
 			<Item Name="Postprocessing" Type="Folder">
 				<Item Name="SubVi" Type="Folder">
