@@ -423,7 +423,7 @@ void SetTiming(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		return;
 	}
 	UART_printf("%u;%u;%u\n", SamplingTiming.PreHeatingTime,SamplingTiming.HeatingTime, SamplingTiming.CoolingTime);
-	MeasurementMemoryPrediction();
+	//MeasurementMemoryPrediction();
 }
 
 /**
