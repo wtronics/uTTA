@@ -66,6 +66,7 @@
 				<Item Name="CTL_uTTA_PGA_Gain.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/CTL_uTTA_PGA_Gain.ctl"/>
 				<Item Name="uTTA_GetLiveMeasureStatus.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_GetLiveMeasureStatus.vi"/>
 				<Item Name="uTTA_Init.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Init.vi"/>
+				<Item Name="uTTA_FlushSerialBuffer.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_FlushSerialBuffer.vi"/>
 				<Item Name="uTTA_OpenCOM.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_OpenCOM.vi"/>
 				<Item Name="uTTA_CloseCOM.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_CloseCOM.vi"/>
 				<Item Name="uTTA_SendQuery.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SendQuery.vi"/>
