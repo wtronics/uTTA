@@ -18,8 +18,11 @@ SampDecade = 250
 SimulatedEndTime = 7200
 
 # Simulated foster RC-model
-Rth_Foster = np.array([0.4,     1.5,   3.5,  4.0, 5.5, 5.7], dtype=float)
-Cth_Foster = np.array([0.00055, 0.006, 0.05, 0.3, 1.4, 15.0], dtype=float)
+# Rth_Foster = np.array([0.4,     1.5,   3.5,  4.0, 5.5, 5.7], dtype=float)
+# Cth_Foster = np.array([0.00055, 0.006, 0.05, 0.3, 1.4, 15.0], dtype=float)
+
+Rth_Foster = np.array([0.4,   5.7], dtype=float)
+Cth_Foster = np.array([0.00055,  15.0], dtype=float)
 
 # Create Timebase for all measurements
 BlockIdx = 0
@@ -49,7 +52,7 @@ Zth_output = np.zeros(shape=(2, len(Zth)-1))
 Zth_output[0, :] = Timebase[1:]
 Zth_output[1, :] = Zth[1:]
 Zth_output = np.transpose(Zth_output)
-np.savetxt(OutputPath + '\\Simulated_Measurement.t3i', Zth_output,
+np.savetxt(OutputPath + '\\Simulated_Measurement_'+str(len(Rth_Foster))+'RC.t3i', Zth_output,
            delimiter='\t',
            fmt='%1.6e',
            newline='\n',
