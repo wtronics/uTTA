@@ -26,10 +26,10 @@ DataFileNoExt = DataFile.replace('.t3i', '')
 FilePath = os.path.dirname(FileNam)
 
 NoOfMonitors = 2
-SamplesPerDecade = 50
+SamplesPerDecade = 10
 
-Phi0 = 0.45
-rho = 0.05
+Phi0 = 0.9
+rho = 0.1
 
 start = time.time()
 
