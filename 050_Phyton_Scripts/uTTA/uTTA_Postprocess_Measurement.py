@@ -1,64 +1,42 @@
-import numpy as np
-import numpy.dtypes
-import matplotlib.pyplot as plt
-import time
-import os
+import numpy as np                  # numpy 2.1.0
+import numpy.dtypes                 # numpy 2.1.0
+import matplotlib.pyplot as plt     # matplotlib 3.9.2
+import time                         # part of python 3.12.5
+import os                           # part of python 3.12.5
 import uTTA_data_import
+import uTTA_data_processing
+import uTTA_data_export
 
-
-# CalFilePath = '.\\TEST.uTTA_CAL'
 CalFilePath = '.\\20240604_Calibration.uTTA_CAL'
-StartFilePath = os.path.realpath(__file__)
 
 NoOfDUTs = 3
 MaxDeltaT_StartEnd = 1.0
 
-PGA_Calibration, ADC_Calibration = uTTA_t3r_read.read_calfile(CalFilePath)
-FileNam = uTTA_t3r_read.select_file("Select the measurement file",
-                                    (('uTTA Measurement Files', '*.t3r'), ('Text-Files', '*.txt'), ('All files', '*.*')))
+PGA_Calibration, ADC_Calibration = uTTA_data_import.read_calfile(CalFilePath)
+FileNam = uTTA_data_import.select_file("Select the measurement file",
+                                       (('uTTA Measurement Files', '*.t3r'),
+                                        ('uTTA Measurement Data', '*.umd'),
+                                        ('Text-Files', '*.txt'),
+                                        ('All files', '*.*')))
 
-DataFile = os.path.basename(FileNam).split('/')[-1]
-DataFileNoExt = DataFile.replace('.t3r', '')
-FilePath = os.path.dirname(FileNam)
+DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam, '.t3r')
 
 start = time.time()
 
-TimeBaseTotal, ADC, Temp, SampDecade, CoolingStartBlock, CH_Names, DUT_TSP_Sensitivity = uTTA_t3r_read.read_measurement_file(FileNam,
-                                                                                                                             PGA_Calibration,
-                                                                                                                             ADC_Calibration,
-                                                                                                                             0)
-
-# Cut Timebase and measurement to cooling section
-TimeBase_Cooling = (TimeBaseTotal[(CoolingStartBlock * SampDecade):-1] - TimeBaseTotal[(CoolingStartBlock * SampDecade) - 1])
-ADC_Cooling = ADC[:, (CoolingStartBlock * SampDecade):-1]
-
-# Get Min and Max Values of the Full Cooling Curve
-DUT_Imin = min(ADC_Cooling[3, :])
-DUT_Imax = max(ADC_Cooling[3, :])
-print("Min Diode Current:  {min:.2f}A; Max Diode current: {max:.2f}A".format(min=DUT_Imin, max=DUT_Imax))
-CoolingStartIndex = (np.where(np.isclose(ADC_Cooling[3, :], DUT_Imin)))[0][0]
-print("Index of closest value: " + str(CoolingStartIndex))
-
-# Cut the measurement data down to the starting point of the cooling phase
-ADC_Cooling = ADC_Cooling[:, CoolingStartIndex:-1]
-TimeBase_Cooling = TimeBase_Cooling[CoolingStartIndex:-1] - TimeBase_Cooling[CoolingStartIndex-1]
-# print("ADC Cooling: " + str(ADC_Cooling.shape))
-# print("Timebase Cooling: " + str(TimeBase_Cooling.shape))
+TimeBaseTotal, ADC, Temp, SampDecade, CoolingStartBlock, CH_Names, DUT_TSP_Sensitivity = uTTA_data_import.read_measurement_file(FileNam,
+                                                                                                                                PGA_Calibration,
+                                                                                                                                ADC_Calibration,
+                                                                                                                                0)
 
 # Calculate the average ambient temperature as starting point
 StartTempTC = np.mean(Temp[3, 0:10])
 print("Averaged start temperature form TC-Channel 3: {Tstart:.3f}°C".format(Tstart=StartTempTC))
 
-# Calculate the average heating current, voltage and power through the diode
-I_Heat = np.mean(ADC[3, ((CoolingStartBlock-2) * SampDecade):((CoolingStartBlock-1) * SampDecade) - 1])
-UDio_Heated = np.mean(ADC[0, ((CoolingStartBlock - 2) * SampDecade):((CoolingStartBlock - 1) * SampDecade) - 1])
-PDio_Heat = I_Heat * UDio_Heated
-print("HEATING VALUES: Range: {tstart:.2f}s to {tend:.2f}s, Current: {curr:.2f}A, Voltage: {volts:.2f}V, Power: {pow:.2f}W".format(
-    tstart=TimeBaseTotal[(CoolingStartBlock-2) * SampDecade],
-    tend=TimeBaseTotal[((CoolingStartBlock-1) * SampDecade) - 1],
-    curr=I_Heat,
-    volts=UDio_Heated,
-    pow=PDio_Heat))
+# Cut Timebase and measurement to cooling section
+TimeBase_Cooling, ADC_Cooling = uTTA_data_processing.calculate_cooling_curve(TimeBaseTotal, ADC, CoolingStartBlock, SampDecade)
+
+# # Calculate the average heating current, voltage and power through the diode
+PDio_Heat = uTTA_data_processing.calculate_diode_heating(TimeBaseTotal, ADC, CoolingStartBlock, SampDecade)
 
 UDio_Cold_Start = np.zeros((NoOfDUTs,), numpy.float32)
 UDio_Cold_End = np.zeros((NoOfDUTs,), numpy.float32)
@@ -94,17 +72,8 @@ for Ch in range(0, NoOfDUTs):
                                                            dT_DUT=((UDio_Cold_End[Ch] - UDio_Cold_Start[Ch]) / DUT_TSP_Sensitivity[Ch, 1]),
                                                            T_heated=T_Monitor_Heated[Ch]))
 
-DioVoltageMaxLines = len(TimeBase_Cooling)
-Diode_Output = np.zeros(shape=(2, DioVoltageMaxLines))
-Diode_Output[0, ] = TimeBase_Cooling[0:DioVoltageMaxLines]
-Diode_Output[1, ] = ADC_Cooling[0, 0:DioVoltageMaxLines]
-Diode_Output = np.transpose(Diode_Output)
 
-np.savetxt(FilePath + "\\" + DataFileNoExt + '_DiodeVoltages.txt', Diode_Output,
-           delimiter='\t',
-           fmt='%1.4e',
-           newline='\n',
-           header="Time\t" + str(CH_Names[0]))
+uTTA_data_export.write_diode_voltages(TimeBase_Cooling, ADC_Cooling, CH_Names[0], FilePath + "\\" + DataFileNoExt + '_DiodeVoltages.txt')
 
 # Parameters for Interpolation
 InterpolationTStart = 0.000020
@@ -172,18 +141,9 @@ for Ch in range(0, NoOfDUTs):
             Zth_static[Ch] = np.mean(Zth[Ch, -100:-1])
             print("Static Coupling-Zth for Channels 0-{ChNo}: {ZthStat: .4f}K/W".format(ChNo=Ch, ZthStat=Zth_static[Ch]))
 
-Zth_output = np.zeros(shape=(NoOfDUTs+1, len(TDio[3, :])))
-Zth_output[0, :] = TimeBase_Cooling
-Zth_output[1, :] = Zth[0, :]
-Zth_output[2, :] = Zth[1, :]
-Zth_output[3, :] = Zth[2, :]
-Zth_output = np.transpose(Zth_output)
-np.savetxt(FilePath + "\\" + DataFileNoExt + '.t3i', Zth_output,
-           delimiter='\t',
-           fmt='%1.6e',
-           newline='\n',
-           header="Time\t" + str(CH_Names[0]) + "\t" + str(CH_Names[1]) + "\t" + str(CH_Names[2]))
-del Zth_output
+uTTA_data_export.export_t3i_file(TimeBase_Cooling, Zth,
+                                 headername=str(CH_Names[0]) + "\t" + str(CH_Names[1]) + "\t" + str(CH_Names[2]),
+                                 filename=FilePath + "\\" + DataFileNoExt + '.t3i')
 
 fig, axs = plt.subplots(nrows=4, ncols=2, layout="constrained")
 for Ch in range(0, NoOfDUTs):
@@ -221,7 +181,8 @@ axs[1, 1].legend()
 axs[1, 1].grid(which='both')
 
 IdxCrop = InterpPointsIdxStart
-IdxMagnify = len(TimeBase_Cooling)
+# IdxMagnify = len(TimeBase_Cooling)
+IdxMagnify = -1
 PlotArr = TDio
 
 for Ch in range(1, NoOfDUTs):
