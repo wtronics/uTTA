@@ -389,7 +389,13 @@ void DoMeasurement(void)
 
 		if(GetTick() > NextOutput){		// Measurement is running
 			WriteTemperaturesToFile();
-			NextOutput = GetTick()+MEASURE_DATA_UPDATE_TIME;
+
+			if((GetTick() - NextOutput) < MEASURE_DATA_UPDATE_TIME){
+				NextOutput += MEASURE_DATA_UPDATE_TIME;
+			}
+			else{	// catch up with the timer
+				NextOutput = GetTick() + MEASURE_DATA_UPDATE_TIME;
+			}
 			Meas_RunTime = GetTick()-Meas_StartTime;
 			PrintLastADC=true;
 		}
