@@ -1,31 +1,15 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from numpy import genfromtxt
-from tkinter import filedialog as fd
-import os
-
-FilePath = os.path.realpath(__file__)
-
-
-def select_file():
-    filetypes = (('T3I Measurement Files', '*.t3i'), ('All files', '*.*'))
-
-    filename = fd.askopenfilename(
-        title='Open a T3R-File',
-        initialdir=FilePath,
-        filetypes=filetypes
-    )
-    return filename
-
+import numpy as np                      # numpy 2.1.0
+from numpy import genfromtxt            # numpy 2.1.0
+import matplotlib.pyplot as plt         # matplotlib 3.9.2
+import uTTA_data_import
 
 LogLogPlot = 0
 NumCurves = int(input("Please enter the number of Curves you want to compare: "))
 
 fig, axs = plt.subplots(nrows=3, ncols=1, layout="constrained")
 for CurveIdx in range(0, int(NumCurves)):
-    FileNam = select_file()
-    DataFile = os.path.basename(FileNam).split('/')[-1]
-    DataFileNoExt = DataFile.replace('.t3i', '')
+    FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
+    DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam, '.t3i')
 
     Zth_Import = genfromtxt(FileNam, delimiter='\t', dtype=float, names=True)
     Cols = Zth_Import.dtype.names
