@@ -73,6 +73,7 @@
 				<Item Name="uTTA_Reset.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Reset.vi"/>
 				<Item Name="uTTA_CheckForErrors.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_CheckForErrors.vi"/>
 				<Item Name="uTTA_GV_Serial_Monitor.vi" Type="VI" URL="../uTTA/uTTA_GV_Serial_Monitor.vi"/>
+				<Item Name="uTTA_GenerateErrorClusters.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_GenerateErrorClusters.vi"/>
 				<Item Name="uTTA_LogSerial.vi" Type="VI" URL="../uTTA/uTTA_LogSerial.vi"/>
 			</Item>
 			<Item Name="Postprocessing" Type="Folder">
@@ -107,7 +108,6 @@
 			</Item>
 		</Item>
 		<Item Name="uTTA_Main.vi" Type="VI" URL="../uTTA/uTTA_Main.vi"/>
-		<Item Name="uTTA_GenerateErrorClusters.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_GenerateErrorClusters.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="user.lib" Type="Folder">
 				<Item Name="String to 1D Array__ogtk.vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/string/string.llb/String to 1D Array__ogtk.vi"/>
