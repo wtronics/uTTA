@@ -1,7 +1,7 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import time
-from tkinter.filedialog import askdirectory
+import numpy as np                              # numpy 2.1.0
+import matplotlib.pyplot as plt                 # matplotlib 3.9.2
+import time                                     # part of python 3.12.5
+from tkinter.filedialog import askdirectory     # part of python 3.12.5
 
 OutputPath = '{}'.format(askdirectory(title="Select a folder for the file to be exported", mustexist=True, initialdir=r'os.path.realpath(__file__)'))
 start = time.time()
