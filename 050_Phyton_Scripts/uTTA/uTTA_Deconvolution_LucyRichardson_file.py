@@ -1,25 +1,19 @@
-import numpy as np
-# import scipy.signal
-import matplotlib.pyplot as plt
-import time
-import scipy.signal as scip
-from skimage import color, data, restoration
-import os
-from numpy import genfromtxt
-from tkinter import filedialog as fd
+import numpy as np                              # numpy 2.1.0
+from numpy import genfromtxt                    # numpy 2.1.0
+import matplotlib.pyplot as plt                 # matplotlib 3.9.2
+from skimage import color, data, restoration    # scikit-image 0.24.0
+import os                                       # part of python 3.12.5
+import time                                     # part of python 3.12.5
 import uTTA_data_import
-
-
-FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
-
-DataFile = os.path.basename(FileNam).split('/')[-1]
-DataFileNoExt = DataFile.replace('.t3i', '')
-FilePath = os.path.dirname(FileNam)
 
 NoOfMonitors = 2
 SamplesPerDecade = 20
 # deconv_zShift = 1.144472988
 deconv_zShift = 1.138+0.017091077755321222
+
+FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
+
+DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam, '.t3i')
 
 start = time.time()
 
