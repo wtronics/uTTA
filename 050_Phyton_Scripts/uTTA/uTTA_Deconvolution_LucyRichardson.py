@@ -1,10 +1,8 @@
-import numpy as np
-# import scipy.signal
-import matplotlib.pyplot as plt
-import time
-import scipy.signal as scip
-from skimage import color, data, restoration
-import os
+import numpy as np                              # numpy 2.1.0
+import matplotlib.pyplot as plt                 # matplotlib 3.9.2
+import scipy.signal as scip                     # scipy 1.14.1
+from skimage import restoration                 # scikit-image 0.24.0
+import time                                     # part of python 3.12.5
 
 tStart = 1e-6
 tEnd = 10e4
@@ -28,7 +26,10 @@ Cth_Foster = np.array([0.0002, 0.000055, 0.00025,  0.006, 0.001, 0.002, 0.01, 0.
 
 z = np.linspace(np.log(tStart), np.log(tEnd), int((np.log(tEnd)-np.log(tStart))*StepsPerDecade+1))
 SampPerPair = np.floor(len(z)/NoRC_Pairs)
-print("Total samples for this experiment {NSamp}, with a z-Base timestep of {Tstep}, Samples per RC-Pair {SampRC}".format(NSamp=len(z), Tstep=z[2]-z[1], SampRC=SampPerPair))
+print("Total samples for this experiment {NSamp}, with a z-Base timestep of {Tstep}, Samples per RC-Pair {SampRC}".format(
+    NSamp=len(z),
+    Tstep=z[2]-z[1],
+    SampRC=SampPerPair))
 
 t = np.exp(z)
 Zth = np.zeros(shape=t.shape)
@@ -68,6 +69,7 @@ for Step in IterationSteps:
     peaks = np.sort(peaks)
     delta_tau = 0
     sum_deltaTau = 0
+    Idx = 0
     for Idx, fpeak in enumerate(peaks):
         delta_tau = np.log(taus[Idx])-z[int(fpeak)]-deconv_zShift
         sum_deltaTau += delta_tau
@@ -95,7 +97,9 @@ for Step in IterationSteps:
         if Rth_FostRecovered[SampIdx] < 1e-9:
             Cth_FostRecovered[SampIdx] = 0
         else:
-            Cth_FostRecovered[SampIdx] = np.exp((np.sum(z[int(SampIdx*SampPerPair):int((SampIdx*SampPerPair)+SampPerPair)])/SampPerPair)/Rth_FostRecovered[SampIdx])
+            Cth_FostRecovered[SampIdx] = np.exp((np.sum(z[int(SampIdx*SampPerPair):
+                                                          int((SampIdx*SampPerPair)+SampPerPair)])/SampPerPair)/Rth_FostRecovered[SampIdx]
+                                                )
         print("Index {Idx}: Rth:{Rth}K/W Cth {Cth}Ws/K".format(Idx=SampIdx, Rth=Rth_FostRecovered[SampIdx], Cth=Cth_FostRecovered[SampIdx]))
 
     CSF_Rth = np.cumsum(Rth_FostRecovered)
