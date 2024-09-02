@@ -1,8 +1,8 @@
-import numpy as np
-import numpy.dtypes
-from tkinter import filedialog as fd
-import configparser
-import os
+import numpy as np                      # numpy 2.1.0
+import numpy.dtypes                     # numpy 2.1.0
+from tkinter import filedialog as fd    # part of python 3.12.5
+import configparser                     # part of python 3.12.5
+import os                               # part of python 3.12.5
 
 MCU_Clock = 72000000
 TimerPrescaler = 9
@@ -187,3 +187,10 @@ def select_file(heading, file_filter):
         filetypes=file_filter
     )
     return filename
+
+
+def split_file_path(file_path, file_extension):
+    data_file = os.path.basename(file_path).split('/')[-1]
+    data_file_no_ext = data_file.replace(file_extension, '')
+    file_path = os.path.dirname(file_path)
+    return data_file, data_file_no_ext, file_path
