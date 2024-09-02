@@ -1,29 +1,13 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import time
-from numpy import genfromtxt
-from tkinter import filedialog as fd
-import os
-
-StartFilePath = os.path.realpath(__file__)
+import numpy as np                  # numpy 2.1.0
+from numpy import genfromtxt        # numpy 2.1.0
+import matplotlib.pyplot as plt     # matplotlib 3.9.2
+import time                         # part of python 3.12.5
+import os                           # part of python 3.12.5
+import uTTA_data_import
 
 
-def select_file():
-    filetypes = (('T3I Measurement Files', '*.t3i'), ('All files', '*.*'))
-
-    filename = fd.askopenfilename(
-        title='Open a T3R-File',
-        initialdir=StartFilePath,
-        filetypes=filetypes
-    )
-    return filename
-
-
-FileNam = select_file()
-
-DataFile = os.path.basename(FileNam).split('/')[-1]
-DataFileNoExt = DataFile.replace('.t3i', '')
-FilePath = os.path.dirname(FileNam)
+FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
+DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam, '.t3i')
 
 NoOfMonitors = 2
 SamplesPerDecade = 10
