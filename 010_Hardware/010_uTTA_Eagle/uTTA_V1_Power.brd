@@ -5348,9 +5348,6 @@ einem neuen Namen ab.</description>
 <signal name="5V">
 <contactref element="U201" pad="L_5V"/>
 </signal>
-<signal name="E5V">
-<contactref element="U201" pad="L_E5V"/>
-</signal>
 <signal name="AVDD">
 <contactref element="U201" pad="R_AVDD"/>
 </signal>
@@ -5434,6 +5431,7 @@ einem neuen Namen ab.</description>
 <wire x1="14.12625" y1="7.46125" x2="14.12625" y2="9.205" width="0.6096" layer="16"/>
 <wire x1="14.12625" y1="9.205" x2="14.12875" y2="9.2075" width="0.6096" layer="16"/>
 <via x="14.12875" y="9.2075" extent="1-16" drill="0.3"/>
+<contactref element="U201" pad="L_E5V"/>
 </signal>
 <signal name="-5V">
 <contactref element="IC102" pad="1"/>
@@ -5767,9 +5765,6 @@ einem neuen Namen ab.</description>
 <wire x1="49.68875" y1="10.63625" x2="49.68875" y2="11.5775" width="0.6096" layer="1"/>
 <wire x1="49.68875" y1="11.5775" x2="49.7" y2="11.58875" width="0.6096" layer="1"/>
 </signal>
-<signal name="N$27">
-<contactref element="U201" pad="L_VDD"/>
-</signal>
 <signal name="N$6">
 <wire x1="4.15625" y1="53.53625" x2="1.3025" y2="53.53625" width="0.254" layer="1"/>
 <wire x1="4.15625" y1="53.53625" x2="4.15625" y2="51.215" width="0.254" layer="1"/>
@@ -5841,6 +5836,9 @@ einem neuen Namen ab.</description>
 <wire x1="29.21" y1="3.96875" x2="29.43225" y2="3.7465" width="0.3048" layer="1"/>
 <wire x1="29.43225" y1="3.7465" x2="41.88975" y2="3.7465" width="0.3048" layer="1"/>
 <wire x1="41.88975" y1="3.7465" x2="43.18" y2="2.45625" width="0.3048" layer="1"/>
+</signal>
+<signal name="VDD">
+<contactref element="U201" pad="L_VDD"/>
 </signal>
 </signals>
 </board>
