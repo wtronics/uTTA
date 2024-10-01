@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -4070,9 +4070,9 @@ distributor RS 193-9117</description>
 <wire x1="-6.35" y1="4.3815" x2="-2.54" y2="4.3815" width="1.016" layer="16"/>
 </package>
 <package name="BU_SMA_3P">
-<smd name="@GND3" x="-2" y="3.68" dx="4" dy="2.3" layer="1"/>
-<smd name="@GND2" x="-2" y="-3.68" dx="4" dy="2.3" layer="1"/>
-<smd name="C1" x="-2" y="0" dx="4" dy="2.2" layer="1"/>
+<smd name="@GND3" x="-2" y="3.68" dx="4" dy="2.3" layer="1" cream="no"/>
+<smd name="@GND2" x="-2" y="-3.68" dx="4" dy="2.3" layer="1" cream="no"/>
+<smd name="C1" x="-2" y="0" dx="4" dy="2.2" layer="1" cream="no"/>
 <smd name="C2" x="-4" y="0" dx="2.4" dy="2.4" layer="1"/>
 <wire x1="-2.54" y1="3.68" x2="-2.54" y2="3.81" width="1.016" layer="1"/>
 <wire x1="-2.54" y1="3.81" x2="-3.305" y2="3.045" width="1.016" layer="1"/>
@@ -4132,7 +4132,7 @@ distributor RS 193-9117</description>
 <wire x1="3.17" y1="2.69" x2="3.805" y2="-2.69" width="0.1" layer="51"/>
 <wire x1="7.615" y1="2.69" x2="8.25" y2="-2.69" width="0.1" layer="51"/>
 <wire x1="8.885" y1="2.69" x2="9.52" y2="-2.69" width="0.1" layer="51"/>
-<smd name="@GND4" x="-1.6" y="0" dx="3.2" dy="2.3" layer="16"/>
+<smd name="@GND4" x="-1.6" y="0" dx="3.2" dy="2.3" layer="16" cream="no"/>
 <wire x1="-3.4925" y1="3.045" x2="-2.7275" y2="3.045" width="0.6096" layer="16"/>
 <wire x1="-2.7275" y1="3.045" x2="-1.5875" y2="1.905" width="0.6096" layer="16"/>
 <wire x1="-1.5875" y1="1.905" x2="-1.6" y2="1.7" width="0.6096" layer="16"/>
@@ -6628,7 +6628,7 @@ NS Package M08A</description>
 <library name="A_Testpoint">
 <packages>
 <package name="C90">
-<smd name="P$1" x="0" y="0" dx="0.9" dy="0.9" layer="1" roundness="100"/>
+<smd name="P$1" x="0" y="0" dx="0.9" dy="0.9" layer="1" roundness="100" cream="no"/>
 <text x="0" y="0.6" size="1.27" layer="25" font="vector" ratio="10" align="bottom-center">&gt;NAME</text>
 <text x="0" y="0" size="0.4064" layer="37" font="vector" ratio="10" align="center">&gt;NAME</text>
 </package>
