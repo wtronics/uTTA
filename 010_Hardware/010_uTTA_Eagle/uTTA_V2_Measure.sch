@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -6637,6 +6637,15 @@ NS Package M08A</description>
 <pad name="P$1" x="0" y="0" drill="0.3" diameter="0.9"/>
 <text x="0" y="0" size="0.4064" layer="37" font="vector" ratio="10" align="center">&gt;NAME</text>
 </package>
+<package name="P1-13">
+<description>&lt;b&gt;TEST PAD&lt;/b&gt;</description>
+<circle x="0" y="0" radius="0.762" width="0.1524" layer="51"/>
+<pad name="1" x="0" y="0" drill="1.2" diameter="2.1" shape="octagon"/>
+<text x="0" y="1.905" size="1.27" layer="25" font="vector" ratio="10" align="center">&gt;NAME</text>
+<text x="0" y="0" size="0.0254" layer="27">&gt;VALUE</text>
+<rectangle x1="-0.3302" y1="-0.3302" x2="0.3302" y2="0.3302" layer="51"/>
+<text x="0.254" y="0" size="0.6096" layer="37" font="vector" ratio="10" align="center">&gt;NAME</text>
+</package>
 </packages>
 <symbols>
 <symbol name="TPS">
@@ -6654,7 +6663,7 @@ NS Package M08A</description>
 <gate name="G$1" symbol="TPS" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="C90">
+<device name="C90" package="C90">
 <connects>
 <connect gate="G$1" pin="TP" pad="P$1"/>
 </connects>
@@ -6665,6 +6674,14 @@ NS Package M08A</description>
 <device name="C90H30" package="C90H30">
 <connects>
 <connect gate="G$1" pin="TP" pad="P$1"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="O210H120" package="P1-13">
+<connects>
+<connect gate="G$1" pin="TP" pad="1"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -7379,10 +7396,9 @@ Source: http://ww1.microchip.com/downloads/en/DeviceDoc/21314g.pdf</description>
 <wire x1="0.254" y1="0.127" x2="0.254" y2="-0.127" width="1.27" layer="51" curve="-180" cap="flat"/>
 <smd name="1" x="-0.762" y="0" dx="1.1684" dy="1.6002" layer="1"/>
 <smd name="2" x="0.762" y="0" dx="1.1684" dy="1.6002" layer="1"/>
-<text x="0" y="1.778" size="1.27" layer="25" ratio="10" align="center">&gt;NAME</text>
+<text x="-1.651" y="1.143" size="1.27" layer="25" ratio="10">&gt;NAME</text>
 <text x="0.4001" y="0" size="0.02" layer="27">&gt;VALUE</text>
 <rectangle x1="-0.0762" y1="-0.9144" x2="0.0762" y2="0.9144" layer="29"/>
-<text x="0" y="0" size="0.8128" layer="37" font="vector" align="center">&gt;NAME</text>
 </package>
 <package name="SJW">
 <description>&lt;b&gt;Solder jumper&lt;/b&gt;</description>
@@ -10915,7 +10931,7 @@ Source: www.kingbright.com</description>
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="HW1.00"/>
+<attribute name="VERSION" value="HW2.00"/>
 </attributes>
 <variantdefs>
 <variantdef name="Manual_Adjust"/>
@@ -11023,7 +11039,7 @@ Source: www.kingbright.com</description>
 <part name="R321.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
-<part name="R326.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="2k">
+<part name="R326.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="4k99">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
 <part name="L101.1" library="A_Ferrite" deviceset="FB" device="MMZ2012S" value="FBMMZ2012S">
@@ -11063,23 +11079,22 @@ Source: www.kingbright.com</description>
 <part name="AGND6" library="supply" deviceset="AGND_" device=""/>
 <part name="V10" library="A_Supply" deviceset="-5V" device=""/>
 <part name="AGND1" library="supply" deviceset="AGND_" device=""/>
-<part name="TP153" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP154" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP152.1" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP153" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP154" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP152.1" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="TP151.1" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="IC302" library="A_Linear_Technology" deviceset="LT1004?*" device="CLP" technology="-2.5"/>
 <part name="V9" library="A_Supply" deviceset="-5V" device=""/>
 <part name="AGND2" library="supply" deviceset="AGND_" device=""/>
-<part name="TP105.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP107.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP103.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP104.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP101.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP102.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP323.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP322.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP321.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP304" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP105.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP107.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP103.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP104.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP101.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP102.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP322.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP321.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP304" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="D351.1" library="A_Dioden" deviceset="SD101" device="AWS" value="SD101"/>
 <part name="R159" library="A_Resistor" deviceset="R-EU_" device="R0603" value="4k7">
 <attribute name="PACKAGE" value="R0603"/>
@@ -11115,14 +11130,14 @@ Source: www.kingbright.com</description>
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
 <part name="JP101.2" library="Connectors jumper" deviceset="JP1E" device=""/>
-<part name="TP152.2" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP152.2" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="TP151.2" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
-<part name="TP105.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP107.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP103.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP104.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP101.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP102.2" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP105.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP107.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP103.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP104.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP101.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP102.2" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="AGND19" library="supply" deviceset="AGND_" device=""/>
 <part name="TP153.2" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="R152.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
@@ -11174,12 +11189,12 @@ Source: www.kingbright.com</description>
 <part name="AGND32" library="supply" deviceset="AGND_" device=""/>
 <part name="TP152.3" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="TP151.3" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
-<part name="TP105.3" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP107.3" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP103.3" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP104.3" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP101.3" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP102.3" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP105.3" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP107.3" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP103.3" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP104.3" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP101.3" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP102.3" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="AGND33" library="supply" deviceset="AGND_" device=""/>
 <part name="TP153.3" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="R152.3" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
@@ -11207,12 +11222,12 @@ Source: www.kingbright.com</description>
 <part name="JP101.4" library="Connectors jumper" deviceset="JP1E" device=""/>
 <part name="TP152.4" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="TP151.4" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
-<part name="TP105.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP107.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP103.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP104.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP101.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP102.4" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP105.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP107.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP103.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP104.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP101.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP102.4" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="AGND37" library="supply" deviceset="AGND_" device=""/>
 <part name="TP153.4" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="R152.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
@@ -11430,7 +11445,7 @@ Source: www.kingbright.com</description>
 <part name="R321.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
-<part name="R326.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="2k">
+<part name="R326.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="4k99">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
 <part name="C321.2" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="100n/50V"/>
@@ -11440,9 +11455,8 @@ Source: www.kingbright.com</description>
 <variant name="Controller Adjust" populate="no"/>
 </part>
 <part name="AGND59" library="supply" deviceset="AGND_" device=""/>
-<part name="TP323.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP322.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP321.2" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP322.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP321.2" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="R322.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k">
 <attribute name="PACKAGE" value="R0603"/>
 <variant name="Manual_Adjust" populate="no"/>
@@ -11466,7 +11480,7 @@ Source: www.kingbright.com</description>
 <part name="AGND62" library="supply" deviceset="AGND_" device=""/>
 <part name="AGND63" library="supply" deviceset="AGND_" device=""/>
 <part name="AGND64" library="supply" deviceset="AGND_" device=""/>
-<part name="IC351.1" library="A_Linear_IC" deviceset="OPA2156" device="ID"/>
+<part name="IC351.1" library="A_Linear_IC" deviceset="OPA2156" device="ID" value="AD8672ARZ"/>
 <part name="AGND65" library="supply" deviceset="AGND_" device=""/>
 <part name="C304" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1u/25V">
 <attribute name="PACKAGE" value="C0603"/>
@@ -11543,14 +11557,14 @@ Source: www.kingbright.com</description>
 <part name="C352.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1u/25V">
 <attribute name="PACKAGE" value="C0603"/>
 </part>
-<part name="TP301" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP301" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="TP303" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
-<part name="TP306" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP351.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP352.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP353.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP355.1" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP9354.1" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP306" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP351.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP352.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP353.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP355.1" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP9354.1" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="R355.2" library="A_Resistor" deviceset="R-EU_" device="R0805" value="22R">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
@@ -11567,12 +11581,12 @@ Source: www.kingbright.com</description>
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
 <part name="AGND11" library="supply" deviceset="AGND_" device=""/>
-<part name="IC351.2" library="A_Linear_IC" deviceset="OPA2156" device="ID"/>
-<part name="TP351.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP352.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP353.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP355.2" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP354.2" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="IC351.2" library="A_Linear_IC" deviceset="OPA2156" device="ID" value="AD8672ARZ"/>
+<part name="TP351.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP352.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP353.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP355.2" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP354.2" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="R355.3" library="A_Resistor" deviceset="R-EU_" device="R0805" value="22R">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
@@ -11589,12 +11603,12 @@ Source: www.kingbright.com</description>
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
 <part name="AGND56" library="supply" deviceset="AGND_" device=""/>
-<part name="IC351.3" library="A_Linear_IC" deviceset="OPA2156" device="ID"/>
-<part name="TP351.3" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP352.3" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP353.3" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP355.3" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP354.3" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="IC351.3" library="A_Linear_IC" deviceset="OPA2156" device="ID" value="AD8672ARZ"/>
+<part name="TP351.3" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP352.3" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP353.3" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP355.3" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP354.3" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="R355.4" library="A_Resistor" deviceset="R-EU_" device="R0805" value="22R">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
@@ -11611,13 +11625,13 @@ Source: www.kingbright.com</description>
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
 <part name="AGND57" library="supply" deviceset="AGND_" device=""/>
-<part name="IC351.4" library="A_Linear_IC" deviceset="OPA2156" device="ID"/>
-<part name="TP351.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP352.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP353.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP355.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP354.4" library="A_Testpoint" deviceset="TP" device=""/>
-<part name="TP302" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="IC351.4" library="A_Linear_IC" deviceset="OPA2156" device="ID" value="AD8672ARZ"/>
+<part name="TP351.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP352.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP353.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP355.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP354.4" library="A_Testpoint" deviceset="TP" device="C90"/>
+<part name="TP302" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="V14" library="supply" deviceset="+15V" device=""/>
 <part name="V18" library="supply" deviceset="-15V" device="" value="-5V"/>
 <part name="V20" library="supply" deviceset="+15V" device=""/>
@@ -11666,7 +11680,7 @@ Source: www.kingbright.com</description>
 <part name="TP22" library="A_Testpoint" deviceset="TP" device="C90H30"/>
 <part name="TP23" library="A_Testpoint" deviceset="TP" device="C90H30"/>
 <part name="TP24" library="A_Testpoint" deviceset="TP" device="C90H30"/>
-<part name="TP1" library="A_Testpoint" deviceset="TP" device=""/>
+<part name="TP1" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="R306" library="A_Resistor" deviceset="R-EU_" device="R0603" value="DNP">
 <attribute name="PACKAGE" value="R0603"/>
 </part>
@@ -11720,6 +11734,8 @@ Source: www.kingbright.com</description>
 <attribute name="PACKAGE" value="R0603"/>
 </part>
 <part name="AGND75" library="supply" deviceset="AGND_" device=""/>
+<part name="TP323.1" library="A_Testpoint" deviceset="TP" device="O210H120"/>
+<part name="TP323.2" library="A_Testpoint" deviceset="TP" device="O210H120"/>
 </parts>
 <sheets>
 <sheet>
@@ -12567,6 +12583,36 @@ Button</text>
 Step Width = 173.395nA</text>
 <text x="220.345" y="157.48" size="0.8128" layer="98">Vos= +/-200µV</text>
 <text x="196.85" y="139.065" size="0.8128" layer="98">Vos= +/-200µV</text>
+<text x="127.635" y="67.945" size="0.8128" layer="98">V_OFF0 = ~-1.24V...2.5V
+Step Width = ~57.07µV</text>
+<text x="133.35" y="52.07" size="1.6764" layer="98">Testpoint for 
+Offset Voltage 
+Calibration</text>
+<wire x1="128.27" y1="60.96" x2="133.35" y2="57.15" width="0.1524" layer="98"/>
+<text x="133.35" y="19.05" size="1.6764" layer="98">Testpoint for 
+Offset Voltage 
+Calibration</text>
+<wire x1="128.27" y1="27.94" x2="133.35" y2="24.13" width="0.1524" layer="98"/>
+<wire x1="128.27" y1="109.22" x2="149.86" y2="109.22" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="149.86" y1="109.22" x2="149.86" y2="92.71" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="149.86" y1="92.71" x2="128.27" y2="92.71" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="128.27" y1="92.71" x2="128.27" y2="109.22" width="0.1524" layer="98" style="shortdash"/>
+<text x="137.16" y="110.49" size="1.4224" layer="98">Variant without DAC</text>
+<wire x1="46.99" y1="59.69" x2="71.12" y2="59.69" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="71.12" y1="59.69" x2="71.12" y2="40.64" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="71.12" y1="40.64" x2="46.99" y2="40.64" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="46.99" y1="40.64" x2="46.99" y2="59.69" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="46.99" y1="26.67" x2="71.12" y2="26.67" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="71.12" y1="26.67" x2="71.12" y2="7.62" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="71.12" y1="7.62" x2="46.99" y2="7.62" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="46.99" y1="7.62" x2="46.99" y2="26.67" width="0.1524" layer="98" style="shortdash"/>
+<text x="49.53" y="60.96" size="1.4224" layer="98" align="center-left">Variant without DAC</text>
+<text x="49.53" y="27.94" size="1.4224" layer="98" align="center-left">Variant without DAC</text>
+<wire x1="171.45" y1="60.96" x2="238.76" y2="60.96" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="238.76" y1="60.96" x2="238.76" y2="25.4" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="238.76" y1="25.4" x2="171.45" y2="25.4" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="171.45" y1="25.4" x2="171.45" y2="60.96" width="0.1524" layer="98" style="shortdash"/>
+<text x="170.18" y="25.4" size="1.4224" layer="98" rot="R90" align="center-left">CH4 not supported by Software</text>
 </plain>
 <instances>
 <instance part="D351.2" gate="G$1" x="234.95" y="124.46"/>
@@ -12625,7 +12671,6 @@ Step Width = 173.395nA</text>
 <attribute name="VALUE" x="92.075" y="110.49" size="1.27" layer="96"/>
 <attribute name="PACKAGE" x="92.075" y="109.22" size="0.8128" layer="96"/>
 </instance>
-<instance part="TP323.1" gate="G$1" x="127" y="59.69" rot="R90"/>
 <instance part="TP322.1" gate="G$1" x="97.79" y="62.23"/>
 <instance part="TP321.1" gate="G$1" x="97.79" y="67.31"/>
 <instance part="TP304" gate="G$1" x="130.81" y="119.38"/>
@@ -12651,7 +12696,6 @@ Step Width = 173.395nA</text>
 <instance part="AGND58" gate="G$1" x="88.9" y="8.89"/>
 <instance part="R324.2" gate="1" x="66.04" y="16.51" rot="MR180"/>
 <instance part="AGND59" gate="G$1" x="66.04" y="8.89"/>
-<instance part="TP323.2" gate="G$1" x="127" y="26.67" rot="R90"/>
 <instance part="TP322.2" gate="G$1" x="97.79" y="29.21"/>
 <instance part="TP321.2" gate="G$1" x="97.79" y="34.29"/>
 <instance part="R322.2" gate="G$1" x="78.74" y="24.13"/>
@@ -12807,6 +12851,8 @@ Step Width = 173.395nA</text>
 <instance part="R4" gate="G$1" x="118.11" y="111.76" rot="MR0"/>
 <instance part="R5" gate="G$1" x="106.68" y="105.41" rot="MR270"/>
 <instance part="AGND75" gate="G$1" x="106.68" y="97.79"/>
+<instance part="TP323.1" gate="G$1" x="127" y="60.96" rot="R90"/>
+<instance part="TP323.2" gate="G$1" x="127" y="27.94" rot="R90"/>
 </instances>
 <busses>
 </busses>
@@ -12950,22 +12996,24 @@ Step Width = 173.395nA</text>
 <net name="VREF_2V5_BUFF" class="1">
 <segment>
 <pinref part="TP304" gate="G$1" pin="TP"/>
-<wire x1="130.81" y1="119.38" x2="123.19" y2="119.38" width="0.1524" layer="91"/>
+<wire x1="130.81" y1="119.38" x2="125.73" y2="119.38" width="0.1524" layer="91"/>
 <junction x="130.81" y="119.38"/>
+<wire x1="125.73" y1="119.38" x2="123.19" y2="119.38" width="0.1524" layer="91"/>
 <wire x1="130.81" y1="119.38" x2="135.89" y2="119.38" width="0.1524" layer="91"/>
-<wire x1="135.89" y1="119.38" x2="135.89" y2="111.76" width="0.1524" layer="91"/>
-<label x="135.89" y="111.76" size="1.27" layer="95" xref="yes"/>
+<label x="135.89" y="119.38" size="1.27" layer="95" xref="yes"/>
 <pinref part="IC303" gate="C" pin="OUT"/>
-<junction x="135.89" y="111.76"/>
+<junction x="135.89" y="119.38"/>
 <pinref part="IC301" gate="G$1" pin="VREF"/>
-<wire x1="81.28" y1="96.52" x2="128.27" y2="96.52" width="0.1524" layer="91"/>
+<wire x1="81.28" y1="96.52" x2="125.73" y2="96.52" width="0.1524" layer="91"/>
 <pinref part="R304" gate="1" pin="A"/>
-<wire x1="135.89" y1="107.95" x2="135.89" y2="111.76" width="0.1524" layer="91"/>
-<wire x1="128.27" y1="111.76" x2="128.27" y2="96.52" width="0.1524" layer="91"/>
-<wire x1="135.89" y1="111.76" x2="128.27" y2="111.76" width="0.1524" layer="91"/>
+<wire x1="135.89" y1="107.95" x2="135.89" y2="119.38" width="0.1524" layer="91"/>
+<wire x1="125.73" y1="111.76" x2="125.73" y2="96.52" width="0.1524" layer="91"/>
+<wire x1="135.89" y1="119.38" x2="125.73" y2="119.38" width="0.1524" layer="91"/>
+<wire x1="125.73" y1="119.38" x2="125.73" y2="111.76" width="0.1524" layer="91"/>
 <pinref part="R4" gate="G$1" pin="1"/>
-<wire x1="123.19" y1="111.76" x2="128.27" y2="111.76" width="0.1524" layer="91"/>
-<junction x="128.27" y="111.76"/>
+<wire x1="123.19" y1="111.76" x2="125.73" y2="111.76" width="0.1524" layer="91"/>
+<junction x="125.73" y="111.76"/>
+<junction x="125.73" y="119.38"/>
 </segment>
 <segment>
 <pinref part="R321.1" gate="G$1" pin="2"/>
@@ -13225,19 +13273,19 @@ Step Width = 173.395nA</text>
 <junction x="83.82" y="49.53"/>
 </segment>
 </net>
-<net name="V_OFF1" class="1">
+<net name="V_OFF0" class="1">
 <segment>
 <wire x1="120.65" y1="64.77" x2="127" y2="64.77" width="0.1524" layer="91"/>
 <pinref part="R326.1" gate="G$1" pin="1"/>
 <wire x1="121.92" y1="55.88" x2="127" y2="55.88" width="0.1524" layer="91"/>
-<wire x1="127" y1="55.88" x2="127" y2="59.69" width="0.1524" layer="91"/>
 <junction x="127" y="64.77"/>
-<pinref part="TP323.1" gate="G$1" pin="TP"/>
-<wire x1="127" y1="59.69" x2="127" y2="64.77" width="0.1524" layer="91"/>
-<junction x="127" y="59.69"/>
+<wire x1="127" y1="55.88" x2="127" y2="60.96" width="0.1524" layer="91"/>
+<wire x1="127" y1="60.96" x2="127" y2="64.77" width="0.1524" layer="91"/>
 <wire x1="127" y1="64.77" x2="132.08" y2="64.77" width="0.1524" layer="91"/>
 <label x="132.08" y="64.77" size="1.27" layer="95" xref="yes"/>
 <pinref part="IC303" gate="B" pin="OUT"/>
+<pinref part="TP323.1" gate="G$1" pin="TP"/>
+<junction x="127" y="60.96"/>
 </segment>
 </net>
 <net name="VOFFS_RR1" class="1">
@@ -13346,19 +13394,19 @@ Step Width = 173.395nA</text>
 <wire x1="71.12" y1="16.51" x2="73.66" y2="16.51" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="V_OFF2_4" class="1">
+<net name="V_OFF1_3" class="1">
 <segment>
 <wire x1="120.65" y1="31.75" x2="127" y2="31.75" width="0.1524" layer="91"/>
 <pinref part="R326.2" gate="G$1" pin="1"/>
 <wire x1="121.92" y1="22.86" x2="127" y2="22.86" width="0.1524" layer="91"/>
-<wire x1="127" y1="22.86" x2="127" y2="26.67" width="0.1524" layer="91"/>
 <junction x="127" y="31.75"/>
-<pinref part="TP323.2" gate="G$1" pin="TP"/>
-<wire x1="127" y1="26.67" x2="127" y2="31.75" width="0.1524" layer="91"/>
-<junction x="127" y="26.67"/>
+<wire x1="127" y1="22.86" x2="127" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="127" y1="27.94" x2="127" y2="31.75" width="0.1524" layer="91"/>
 <wire x1="127" y1="31.75" x2="132.08" y2="31.75" width="0.1524" layer="91"/>
 <label x="132.08" y="31.75" size="1.27" layer="95" xref="yes"/>
 <pinref part="IC303" gate="A" pin="OUT"/>
+<pinref part="TP323.2" gate="G$1" pin="TP"/>
+<junction x="127" y="27.94"/>
 </segment>
 </net>
 <net name="V_OFFS_2_4" class="1">
@@ -14175,7 +14223,7 @@ fc = 482.3kHz</text>
 <junction x="196.85" y="34.29"/>
 </segment>
 </net>
-<net name="V_OFF1" class="1">
+<net name="V_OFF0" class="1">
 <segment>
 <pinref part="R103.1" gate="G$1" pin="1"/>
 <wire x1="130.81" y1="92.71" x2="128.27" y2="92.71" width="0.1524" layer="91"/>
@@ -14600,7 +14648,7 @@ fc = 482.3kHz</text>
 <wire x1="111.76" y1="44.45" x2="148.59" y2="44.45" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="V_OFF2_4" class="1">
+<net name="V_OFF1_3" class="1">
 <segment>
 <pinref part="R103.2" gate="G$1" pin="1"/>
 <wire x1="128.27" y1="36.83" x2="130.81" y2="36.83" width="0.1524" layer="91"/>
@@ -14726,6 +14774,13 @@ fc = 60.2kHz</text>
 fc = 482.3kHz</text>
 <text x="100.33" y="86.995" size="1.27" layer="98" ratio="14">tau = 330ns
 fc = 482.3kHz</text>
+<wire x1="7.62" y1="63.5" x2="237.49" y2="63.5" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="237.49" y1="63.5" x2="237.49" y2="25.4" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="237.49" y1="25.4" x2="167.64" y2="25.4" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="167.64" y1="25.4" x2="167.64" y2="17.78" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="167.64" y1="17.78" x2="7.62" y2="17.78" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="7.62" y1="17.78" x2="7.62" y2="63.5" width="0.1524" layer="98" style="shortdash"/>
+<text x="7.62" y="64.77" size="1.4224" layer="98">CH4 not supported by Software</text>
 </plain>
 <instances>
 <instance part="IC101.4" gate="A" x="167.64" y="46.99" rot="MR0"/>
@@ -14983,7 +15038,7 @@ fc = 482.3kHz</text>
 <pinref part="C152.3" gate="G$1" pin="1"/>
 </segment>
 </net>
-<net name="V_OFF2_4" class="1">
+<net name="V_OFF1_3" class="1">
 <segment>
 <pinref part="R103.4" gate="G$1" pin="1"/>
 <wire x1="128.27" y1="39.37" x2="130.81" y2="39.37" width="0.1524" layer="91"/>
