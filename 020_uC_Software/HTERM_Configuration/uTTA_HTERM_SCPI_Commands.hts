@@ -33,40 +33,16 @@
       <sequence value="a[MEM:DIR /] h[0A]"/>
       <description></description>
     </SequenceItem>
-    <SequenceItem name="Memory Read Directory Details">
-      <sequence value="a[MEM:DIR \\,ALL] h[0A]"/>
-      <description></description>
-    </SequenceItem>
     <SequenceItem name="Memory Delete File">
       <sequence value="a[MEM:DEL]"/>
       <description></description>
     </SequenceItem>
-    <SequenceItem name="Set max. Multiplier">
-      <sequence value="a[MEAS:SAMP:MAXMULT ]"/>
-      <description></description>
-    </SequenceItem>
-    <SequenceItem name="Get max. Multiplier">
-      <sequence value="a[MEAS:SAMP:MAXMULT?] h[0A]"/>
-      <description></description>
-    </SequenceItem>
-    <SequenceItem name="Set max. SampleRate">
-      <sequence value="a[MEAS:SAMP:FAST ]"/>
-      <description></description>
-    </SequenceItem>
-    <SequenceItem name="Get max. SampleRate">
-      <sequence value="a[MEAS:SAMP:FAST?] h[0A]"/>
-      <description></description>
-    </SequenceItem>
-    <SequenceItem name="Get Sampling Settings">
-      <sequence value="a[MEAS:SAMP?] h[0A]"/>
+    <SequenceItem name="Memory Enter Upload Mode">
+      <sequence value="a[MEM:UPL ]"/>
       <description></description>
     </SequenceItem>
     <SequenceItem name="Set Preheating Time">
       <sequence value="a[MEAS:TIM:PRE ]"/>
-      <description></description>
-    </SequenceItem>
-    <SequenceItem name="Get Preheating Time">
-      <sequence value="a[MEAS:TIM:PRE?] h[0A]"/>
       <description></description>
     </SequenceItem>
     <SequenceItem name="Set Heating Time">
@@ -75,10 +51,6 @@
     </SequenceItem>
     <SequenceItem name="Set Heating Time 60s">
       <sequence value="a[MEAS:TIM:HEAT 60000] h[0A]"/>
-      <description></description>
-    </SequenceItem>
-    <SequenceItem name="Get Heating Time">
-      <sequence value="a[MEAS:TIM:HEAT?] h[0A]"/>
       <description></description>
     </SequenceItem>
     <SequenceItem name="Set Cooling Time">
@@ -91,10 +63,6 @@
     </SequenceItem>
     <SequenceItem name="Get Cooling Time">
       <sequence value="a[MEAS:TIM:COOL?] h[0A]"/>
-      <description></description>
-    </SequenceItem>
-    <SequenceItem name="Get Timing">
-      <sequence value="a[MEAS:TIM?] h[0A]"/>
       <description></description>
     </SequenceItem>
     <SequenceItem name="Stop Measurement">
@@ -163,6 +131,38 @@
     </SequenceItem>
     <SequenceItem name="Get System Date/Time">
       <sequence value="a[SYST:CLOCK?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set max. Multiplier">
+      <sequence value="a[MEAS:SAMP:MAXMULT ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Set max. SampleRate">
+      <sequence value="a[MEAS:SAMP:FAST ]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get max. Multiplier">
+      <sequence value="a[MEAS:SAMP:MAXMULT?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get max. SampleRate">
+      <sequence value="a[MEAS:SAMP:FAST?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Sampling Settings">
+      <sequence value="a[MEAS:SAMP?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Preheating Time">
+      <sequence value="a[MEAS:TIM:PRE?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Heating Time">
+      <sequence value="a[MEAS:TIM:HEAT?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Timing">
+      <sequence value="a[MEAS:TIM?] h[0A]"/>
       <description></description>
     </SequenceItem>
   </ItemList>
