@@ -45,7 +45,7 @@ void Init_MAX6675(void){
 	for(i=0;i<MAX6675_DEVICES;i++){
 		LL_GPIO_SetOutputPin(MAX6675_CS_GPIO[i].gpio, MAX6675_CS_GPIO[i].pin);
 	}
-	LL_GPIO_ResetOutputPin(TEMP_SPI_SCK_GPIO_Port, TEMP_SPI_SCK_Pin);
+	LL_GPIO_ResetOutputPin(AUX_SPI_SCK_GPIO_Port, AUX_SPI_SCK_Pin);
 
 }
 
@@ -68,13 +68,13 @@ int16_t Read_MAX6675(uint8_t DevNo){
 	LL_GPIO_ResetOutputPin(MAX6675_CS_GPIO[DevNo].gpio, MAX6675_CS_GPIO[DevNo].pin);
 
 	for(Clk = 0; Clk <= 15; Clk++){	//Create some Clock fro 16pulses
-		LL_GPIO_SetOutputPin(TEMP_SPI_SCK_GPIO_Port, TEMP_SPI_SCK_Pin);
+		LL_GPIO_SetOutputPin(AUX_SPI_SCK_GPIO_Port, AUX_SPI_SCK_Pin);
 
-		if(LL_GPIO_IsInputPinSet(TEMP_SPI_MISO_GPIO_Port, TEMP_SPI_MISO_Pin)){
+		if(LL_GPIO_IsInputPinSet(AUX_SPI_MISO_GPIO_Port, AUX_SPI_MISO_Pin)){
 			result |=1;
 		}
 		result = result <<1;
-		LL_GPIO_ResetOutputPin(TEMP_SPI_SCK_GPIO_Port, TEMP_SPI_SCK_Pin);
+		LL_GPIO_ResetOutputPin(AUX_SPI_SCK_GPIO_Port, AUX_SPI_SCK_Pin);
 	}
 
 	if(result & 0x4){
