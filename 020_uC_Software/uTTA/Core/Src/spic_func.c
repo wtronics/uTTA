@@ -29,7 +29,7 @@ void MX_SPI3_Init(void)
   PC11   ------> SPI3_MISO
   PC12   ------> SPI3_MOSI
   */
-  GPIO_InitStruct.Pin = SD_SPI_SCK_Pin|SD_SPI_MISO_Pin|SD_SPI_MOSI_Pin;
+  GPIO_InitStruct.Pin = FLASH_SPI_SCK_Pin|FLASH_SPI_MISO_Pin|FLASH_SPI_MOSI_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
