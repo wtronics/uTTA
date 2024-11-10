@@ -26,11 +26,12 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "config_parameters.h"
+#include "uart_func.h"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "uart_func.h"
+
 
 // RTC time structure
 typedef struct {
@@ -41,7 +42,7 @@ typedef struct {
 } RTC_TimeTypeDef;
 
 // RTC date structure
-typedef struct {
+typedef struct RTC_Date{
 	uint8_t RTC_WeekDay; // RTC date week day (one of RTC_DOW_XXX definitions)
 	uint8_t RTC_Month;   // RTC date month (in BCD format, one of RTC_MONTH_XXX definitions)
 	uint8_t RTC_Date;    // RTC date, the value range is [1..31]
