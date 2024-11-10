@@ -18,11 +18,9 @@
 #ifndef W25QXX_H_
 #define W25QXX_H_
 
-#include "uart_func.h"
-#include "spi_func.h"
+#include "config_parameters.h"
 
 //#define DEBUGxxx
-
 
 #ifdef DEBUGxxx
 #define W25_DBG(...) UART_printf(__VA_ARGS__);\
