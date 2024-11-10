@@ -9,18 +9,14 @@
 #define INC_ERRORCODES_H_
 
 
-
-//#include "stm32f3xx_hal.h"
-//#include "main.h"
-#include "uart_func.h"
-#include "rtc.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct Err_t{
-	RTC_TimeTypeDef ErrTime;
+#include "rtc.h"
+
+typedef struct uTTA_Err_t{
+	//RTC_TimeTypeDef ErrTime;
 	int8_t ErrCode;
 	int8_t SubType;
 } Err_t;
@@ -29,7 +25,7 @@ typedef struct Err_t{
 
 
 // Unknown Command
-#define ERRC_COMMAND_ERROR		1
+#define ERRC_COMMAND_ERROR			1
 
 #define ERST_WRONG_PARAM			1
 #define ERST_TOO_FEW_PARAM			2
@@ -76,8 +72,6 @@ void ErrorResponse(int8_t ErrorCode, int8_t Subtype);		// Prints an error code o
 void ErrorsOutput(void);
 void AddError(int8_t ErrorCode, int8_t Subtype);
 void EvalLFSError(int32_t LFS_ReturnValue);
-
-
 
 
 #ifdef __cplusplus
