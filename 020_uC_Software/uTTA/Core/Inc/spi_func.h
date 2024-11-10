@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#include "main.h"
+#include "config_parameters.h"
 
 void MX_SPI3_Init(void);
 uint8_t SPI_TxRx_8b(SPI_TypeDef *hspi, uint8_t tx_byte);
