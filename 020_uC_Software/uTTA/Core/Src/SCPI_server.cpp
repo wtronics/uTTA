@@ -7,15 +7,12 @@
 
 
 #include <SCPI_server.h>
-
+#include "dev_cal.h"
+#include "ad56x4.h"
 
 SCPI_Parser my_instrument;
 
-float FsampFast = (float)ADC_MAX_SAMPLERATE;
-float FsampSlow = (float)ADC_MAX_SAMPLERATE/ pow(2.0f,(float)ADC_MAX_MULTIPLIER);
 
-PGA PGA_Gains;
-volatile Timing SamplingTiming;
 
 
 /**************************************************************************/
@@ -26,22 +23,19 @@ volatile Timing SamplingTiming;
 */
 void Init_SCPI_server(void){
 
+	my_instrument.comm_mode = CommMode_SCPI;
 	my_instrument.RegisterCommand("*IDN?", &Identify);
 	my_instrument.RegisterCommand("*RST", &SystemReset);
 	my_instrument.RegisterCommand("*ESR?", &SystemErrorStatus);
 	my_instrument.RegisterCommand("*STB?", &SystemStatus);
 	my_instrument.SetCommandTreeBase("MEMory:");
-		my_instrument.RegisterCommand(":READfile", &Read_Memory_File);
-		my_instrument.RegisterCommand(":WRITEtest", &Write_Memory_Testfile);
-		my_instrument.RegisterCommand(":DIRectory", &Read_Memory_Directory);
-		my_instrument.RegisterCommand(":DELete", &Delete_Memory_File);
+		my_instrument.RegisterCommand(":READfile", &Read_FileFromFlash);
+		my_instrument.RegisterCommand(":WRITEtest", &Write_TestfileToFlash);
+		my_instrument.RegisterCommand(":DIRectory", &Read_Directory);
+		my_instrument.RegisterCommand(":DELete", &Delete_FileFromFlash);
+		my_instrument.RegisterCommand(":UPLoad", &Set_FileUploadMode);
 
 	my_instrument.SetCommandTreeBase("MEASure:");
-		my_instrument.RegisterCommand(":SAMPle:MAXMULTiplier", &SetSampling);
-		my_instrument.RegisterCommand(":SAMPle:MAXMULTiplier?", &GetSampling);
-		my_instrument.RegisterCommand(":SAMPle:FAST", &SetSampling);
-		my_instrument.RegisterCommand(":SAMPle:FAST?", &GetSampling);
-		my_instrument.RegisterCommand(":SAMPle?", &GetSampling);
 		my_instrument.RegisterCommand(":TIMe:PREheating", &SetTiming);
 		my_instrument.RegisterCommand(":TIMe:PREheating?", &GetTiming);
 		my_instrument.RegisterCommand(":TIMe:HEATing", &SetTiming);
@@ -53,11 +47,14 @@ void Init_SCPI_server(void){
 		my_instrument.RegisterCommand(":STOP", &SetMeasure);
 		my_instrument.RegisterCommand(":DUT", &SetDUT);
 		my_instrument.RegisterCommand(":CHDESCription", &SetChannelDescription);
+		my_instrument.RegisterCommand(":SET", &Set_AnalogValues);
 	my_instrument.SetCommandTreeBase("SYSTem:");
 		my_instrument.RegisterCommand(":MODE", &SetMode);
 		my_instrument.RegisterCommand(":RATE", &SetCalSampleRate);
 		my_instrument.RegisterCommand(":GAIN", &SetGain);
 		my_instrument.RegisterCommand(":GAIN?", &GetGain);
+		my_instrument.RegisterCommand(":CAL", &SetCalValue);
+		my_instrument.RegisterCommand(":SAVE", &SaveCalValues);
 		my_instrument.RegisterCommand(":PSUenable", &SetPSUEnable);
 		my_instrument.RegisterCommand(":PSUenable?", &GetPSUEnable);
 		my_instrument.RegisterCommand(":POWERstage", &SetPWSTGEnable);
@@ -68,8 +65,6 @@ void Init_SCPI_server(void){
 		my_instrument.RegisterCommand(":CLOCK?",&GetSystemTime);
 		my_instrument.RegisterCommand(":CLOCK", &SetSystemTime);
 
-		FsampFast = (float)PRESC_SAMPLECLOCK_INITIAL / (float)SamplingTiming.FastSampleTime;
-		FsampSlow = FsampFast / pow(2.0f,(float)SamplingTiming.MaxTimeMultiplier);
 }
 
 
@@ -114,9 +109,10 @@ void SystemStatus(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
   * @param None
   * @retval None
   */
-void Read_Memory_File(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+void Read_FileFromFlash(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	char *first_parameter;
-	char SD_readbuff[50];
+	const int BuffSize = 65;
+	char Flash_readbuff[BuffSize];
 	uint32_t LnCounter = 0;
 	int LFS_ret = 0;
 	uint32_t StartTime;
@@ -143,10 +139,14 @@ void Read_Memory_File(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	StartTime = GetTick();
 
 	do{
-		LFS_ret = lfs_file_read(&littlefs, &file, &SD_readbuff, sizeof(SD_readbuff));
+		LFS_ret = lfs_file_read(&littlefs, &file, &Flash_readbuff, BuffSize-1);
 
-		if(LFS_ret > 0)
-			UART_printf("%s",SD_readbuff);
+		if(LFS_ret > 0){
+			//UART_printf("Read %d characters\r\n",LFS_ret);
+			Flash_readbuff[LFS_ret] = 0;
+			UART_printf("%s",Flash_readbuff);
+		}
+
 
 		LnCounter++;
 	}while(LFS_ret > 0);
@@ -171,7 +171,7 @@ void Read_Memory_File(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
   * @param None
   * @retval None
   */
-void Write_Memory_Testfile(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+void Write_TestfileToFlash(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	int LFS_ret = 0;
     uint32_t StartTime = 0;
@@ -192,7 +192,7 @@ void Write_Memory_Testfile(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
 	StartTime = GetTick();
 	/* Writing text */
 	for(uint16_t LpIdx= 0; LpIdx <25000; LpIdx++){
-		LFS_ret = LFS_WRITE_STRING(littlefs, file, "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789{!}\n");
+		LFS_ret = LFS_WRITE_STRING(&littlefs, &file, "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789{!}\n");
 	}
 	EndTime = GetTick();
 	UART_printf("Ended Write Test\nWrite took %i ms\n", EndTime-StartTime);
@@ -212,7 +212,7 @@ void Write_Memory_Testfile(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
   * @param None
   * @retval None
   */
-void Read_Memory_Directory(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+void Read_Directory(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 
     int res = 0;
@@ -251,7 +251,7 @@ void Read_Memory_Directory(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
   * @param None
   * @retval None
   */
-void Delete_Memory_File(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+void Delete_FileFromFlash(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
     int res = 0;
 
@@ -275,102 +275,63 @@ void Delete_Memory_File(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart
 }
 
 
+void Set_FileUploadMode(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
-/**
-  * @brief Sets the sampling settings for the next measurement.
-  * This can ONLY be done while the system is in IDLE mode (no measurement running)
-  * Syntax: MEASure:SAMPle:MAXMULTiplier N		N = Maximum SampleTime multiplier, Value between 1 and 17
-  * Syntax: MEASure:SAMPle:FAST N					N = Fastest sampling rate, Value between 100.000 and 2.000.000
-  * @param None
-  * @retval None
-  */
-void SetSampling(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+    int LFS_ret = 0;
+    int FnameLen = 0;
 
-	char *first_parameter;
-	char *last_header;
-	uint32_t Rcv_Param =0;
-
-	if (parameters.Size() < 1) {
+    if (parameters.Size() != 1) {
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_TOO_FEW_PARAM);
 		return;
-	}
+    }
 
 	if(FlagMeasurementState){	// check if system is Idle
 		ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING + FlagMeasurementState);
 		return;
 	}
-
-	last_header = commands.Last();
-	parameters.toUpperCase(last_header);
-	first_parameter = parameters.First();
-
-	Rcv_Param = (uint32_t)atol(first_parameter);
-
-	if((strcmp(last_header,"MAXMULT")==0)||(strcmp(last_header,"MAXMULTiplier")==0)){
-		if(Rcv_Param <= ADC_MAX_MULTIPLIER){
-			if(Rcv_Param >= ADC_MIN_DIVIDER){
-				SamplingTiming.MaxTimeMultiplier =  Rcv_Param;
-			}
-			else{
-				SamplingTiming.MaxTimeMultiplier = ADC_MIN_DIVIDER;
-			}
-		}
-		else{
-			SamplingTiming.MaxTimeMultiplier = ADC_MAX_MULTIPLIER;
-		}
-	}
-	else if((strcmp(last_header,"FAST")==0)){
-		if((Rcv_Param <= ADC_MAX_SAMPLERATE) && (Rcv_Param >= ADC_MIN_SAMPLERATE)){
-			FsampFast = Rcv_Param;
-		}
-	}
-	else{
-		ErrorResponse(ERRC_COMMAND_ERROR, ERST_UNKNOWN_COMMAND);
+	FnameLen = strlen(parameters[0]);
+	if((FnameLen < 3)||(FnameLen > 14)){
+		ErrorResponse(ERRC_COMMAND_ERROR, ERST_PARAM_TOO_LONG);
 		return;
 	}
 
-	SamplingTiming.FastSampleTime =  PRESC_SAMPLECLOCK_INITIAL/FsampFast;
-	FsampFast = (float)PRESC_SAMPLECLOCK_INITIAL / (float)SamplingTiming.FastSampleTime;
-	FsampSlow = FsampFast / pow(2.0f,(float)SamplingTiming.MaxTimeMultiplier);
+	UART_printf("Entering File upload Mode for File: %s\n",parameters[0]);
 
-	GetSamplingSettings();
+	LFS_ret = lfs_file_open(&littlefs, &file, parameters[0], LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC);
+	if( LFS_ret > 0){
+		ErrorResponse(ERRC_SYSTEM_ERROR, ERST_FILE_NOT_FOUND);
+		return;
+	}
+	my_instrument.comm_mode=CommMode_Text;
 }
 
 
-/**
-  * @brief Returns the sampling settings for the next measurement.
-  * Syntax: MEASure:SAMPle:MAXMULTiplier?		Returns: N : N = Maximum SampleTime multiplier, Value between 1 and 17
-  * Syntax: MEASure:SAMPle:FAST?				Returns: N : N = Fastest sampling rate, Value between 100.000 and 2.000.000
-  * Syntax: MEASure:SAMPle? 					Returns: N;O;P : N = Maximum SampleTime multiplier, Value between 1 and 17, O = Fastest sampling rate, Value between 100.000 and 2.000.000, P = Slowest sample rate
-  * @param None
-  * @retval None
-  */
-void GetSampling(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
-	char *last_header;
-	FsampFast = (float)PRESC_SAMPLECLOCK_INITIAL / (float)SamplingTiming.FastSampleTime;
-	FsampSlow = FsampFast / pow(2.0f,(float)SamplingTiming.MaxTimeMultiplier);
-	last_header = commands.Last();
-	parameters.toUpperCase(last_header);
+void FileUpload_SerialToFile(char* message){
+	const char* eof_chars = "<EOF>";
+	int LFS_ret = 0;
+	char FileWriteBuff[65];
 
-	if((strcmp(last_header,"MAXMULT?")==0)||(strcmp(last_header,"MAXMULTiplier?")==0)){
-		UART_printf("%u\n", SamplingTiming.MaxTimeMultiplier);
-	}
-	else if((strcmp(last_header,"FAST?")==0)){
-		UART_printf("%7.3f\n", FsampFast);
+	strcpy(FileWriteBuff , message);
+
+	char *TermCharIdx = strstr(FileWriteBuff, eof_chars);
+	if (TermCharIdx != NULL) {
+		//Received the end of file marker
+		LFS_ret = lfs_file_close(&littlefs, &file);
+		if( LFS_ret > 0){
+			ErrorResponse(ERRC_SYSTEM_ERROR, LFS_ret);
+			return;
+		}
+		UART_printf("Received end of file flag, closing file!\n");
+		my_instrument.comm_mode = CommMode_SCPI;
 	}else{
-		GetSamplingSettings();
+
+
+		UART_printf("Writing: %s\n", FileWriteBuff);
+		LFS_ret = LFS_WRITE_STRING(&littlefs, &file, FileWriteBuff);
+		LFS_ret = LFS_WRITE_STRING(&littlefs, &file, "\n");
 	}
-}
 
-
-/**
-  * @brief Returns the sampling settings for the next measurement.
-  * Returns: N;O;P : N = Maximum SampleTime multiplier, Value between 1 and 17, O = Fastest sampling rate, Value between 100.000 and 2.000.000, P = Slowest sample rate
-  * @param None
-  * @retval None
-  */
-void GetSamplingSettings(void){
-	UART_printf("%u;%7.3f;%7.3f\n", SamplingTiming.MaxTimeMultiplier,FsampFast,FsampSlow);
+	return;
 }
 
 /**
@@ -409,7 +370,7 @@ void SetTiming(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		}
 	}
 	else if((strcmp(last_header,"HEAT")==0)||(strcmp(last_header,"HEATING")==0)){
-		if((Rcv_Param <= MEAS_MAX_HEATING_TIME) && (Rcv_Param >= MEAS_MIN_HEATING_TIME)){
+		if(((Rcv_Param <= MEAS_MAX_HEATING_TIME) && (Rcv_Param >= MEAS_MIN_HEATING_TIME))||(Rcv_Param == 0)){
 			SamplingTiming.HeatingTime = Rcv_Param;
 		}
 	}
@@ -537,7 +498,7 @@ void SetDUT(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		return;
 	}
 
-	sprintf(FilNam,"%s.t3r",first_parameter);
+	sprintf(FilNam,"%s.umf",first_parameter);
 
 	lfs_info FilInfo;
 	FTest = lfs_stat(&littlefs,FilNam,&FilInfo);
@@ -553,7 +514,11 @@ void SetDUT(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 /**
   * @brief Sets the symbolic name for each ADC channel and the scaling factors for post processing
   * This can ONLY be done while the system is in IDLE mode (no measurement running)
-  * Syntax: MEASure:CHDESCription N,[aaaaa],O,P,Q		N=Number of the channel (1 to 3), [aaaaa] = Name of the channel in the Log-File, O = Offset for scaling in uV, P = Linear Gain in uV/K, Q = Quadratic Gain in uV/K^2
+  * Syntax: MEASure:CHDESCription N,[aaaaa],O,P,Q		N       = Number of the channel (1 to 3),
+  * 													[aaaaa] = Name of the channel in the Log-File,
+  * 													O       = Offset for scaling in uV,
+  * 													P       = Linear Gain in uV/K,
+  * 													Q       = Quadratic Gain in uV/K^2
   * @param None
   * @retval None
   */
@@ -582,25 +547,72 @@ void SetChannelDescription(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
 			strncpy(Channels[ChNo].CH_Name, parameters[1], 14);
 		}
 
-		int32_t Param = 0;
-		Param = atoi(parameters[2]);
-		if(Param > -1000000 && Param < 1000000)		// Boundary for Offset: +/-1V
+		float Param = 0.0;
+		Param = atof(parameters[2]);
+		if(Param > -1000000.0 && Param < 1000000.0)		// Boundary for Offset: +/-1V
 			Channels[ChNo].CH_Offs = Param;
 
-		Param = atoi(parameters[3]);
-		if(Param > -100000 && Param < 100000)		// Boundary for Linear Gain: +/-100mV/K
+		Param = atof(parameters[3]);
+		if(Param > -100000.0 && Param < 100000.0)		// Boundary for Linear Gain: +/-100mV/K
 			Channels[ChNo].CH_LinGain = Param;
 
-		Param = atoi(parameters[4]);
-		if(Param > -10000 && Param < 10000)			// Boundary for Quadratic Gain: +/-10mV/K
+		Param = atof(parameters[4]);
+		if(Param > -10000.0 && Param < 10000.0)			// Boundary for Quadratic Gain: +/-10mV/K
 			Channels[ChNo].CH_QuadGain = Param;
 
-		UART_printf("CH%d;%s;%d;%d;%d\n", ChNo+1, Channels[ChNo].CH_Name, Channels[ChNo].CH_Offs, Channels[ChNo].CH_LinGain, Channels[ChNo].CH_QuadGain);
+		UART_printf("CH%d;%s;%f;%f;%f\n", ChNo+1, Channels[ChNo].CH_Name, Channels[ChNo].CH_Offs, Channels[ChNo].CH_LinGain, Channels[ChNo].CH_QuadGain);
 	}
 	else{
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_PARAM_OUT_OF_RANGE);
 	}
 }
+
+
+/**
+  * @brief Sets the analog values to the analog frontend
+  * This can ONLY be done while the system is in IDLE mode (no measurement running)
+  * Syntax: MEASure:SET ch, value			ch    = Name of the Channel [ISEN, VOFFS1, VOFFS2]
+  * 										value = Floating point value of the set value, in Calibration Mode the input value is interpreted as DAC Value (Range: 0..65535)
+  * @param None
+  * @retval None
+  */
+void Set_AnalogValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+	char *first_parameter;
+
+	if (parameters.Size() != 2) {
+		ErrorResponse(ERRC_COMMAND_ERROR, ERST_TOO_FEW_PARAM);
+		return;
+	}
+
+	if(FlagMeasurementState > Meas_State_Idle && FlagMeasurementState < Cal_State_Init){	// check if system is Idle or in Cal Mode
+		ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING + FlagMeasurementState);
+		return;
+	}
+
+	first_parameter = parameters.First();
+	parameters.toUpperCase(first_parameter);
+	float SetValue = atof(parameters[1]);
+	uint8_t ChNo = 0;
+
+	if((strcmp(first_parameter,"ISEN")==0)){
+		ChNo=0;
+	}
+	else if((strcmp(first_parameter,"VOFF0")==0)){
+		ChNo=2;
+	}
+	else if((strcmp(first_parameter,"VOFF1")==0)){
+		ChNo=3;
+	}
+	else{
+		ErrorResponse(ERRC_COMMAND_ERROR, ERST_UNKNOWN_COMMAND);
+		return;
+	}
+
+	int8_t DAC_ret = AD56x4_WriteChannelCalibrated((DAC_Ch_t)ChNo, SetValue);
+	UART_printf("OK %d\n", DAC_ret);
+}
+
+
 
 /**
   * @brief Changes the measurement mode between Normal Mode and Calibration Mode
@@ -653,7 +665,7 @@ void SetPSUEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	char *first_parameter;
 	int8_t State;
-	if (parameters.Size() < 1) {
+	if (parameters.Size() != 1) {
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_TOO_FEW_PARAM);
 		return;
 	}
@@ -918,6 +930,60 @@ void SetPGAGain(uint8_t Gain){
   */
 void GetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	UART_printf("%d;%d;%d\n",PGA_Gains.Set,PGA_Gains.Cooling,PGA_Gains.Heating);
+}
+
+/**
+  * @brief Set a single calibration value to the calibration memory
+  * Syntax: SYSTem:CAL ch, offs, lingain, cubgain  	ch: 		Name of the channel the calibration value belongs to
+  * 												offs:		Calibration offset value
+  * 												lingain:	Calibration linear gain factor
+  * 												cubgain:	Calibration cubic gain factor
+  * @param None
+  * @retval None
+  */
+void SetCalValue(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+	char *first_parameter;
+	float Rcv_Param =0.0;
+
+
+	if (parameters.Size() != 4) {
+		ErrorResponse(ERRC_COMMAND_ERROR, ERST_TOO_FEW_PARAM);
+		return;
+	}
+
+	if(FlagMeasurementState){	// check if system is Idle
+		ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING + FlagMeasurementState);
+		return;
+	}
+	first_parameter = parameters.First();
+	parameters.toUpperCase(first_parameter);
+	uint8_t ParamIdx = 0;
+	for (; ParamIdx < MaxCalChannels; ParamIdx++){
+		if((strcmp(first_parameter,CalChannelNames[ParamIdx])==0)){
+			break;
+		}
+	}
+
+	if(ParamIdx >= MaxCalChannels){		// sanity checking to prevent further operations with an invalid parameter
+		ErrorResponse(ERRC_COMMAND_ERROR, ERST_UNKNOWN_COMMAND);
+		return;
+	}
+	Rcv_Param = atof(parameters[1]);
+	ChannelCalibValues[ParamIdx].Offset = Rcv_Param;
+
+	Rcv_Param = atof(parameters[2]);
+	ChannelCalibValues[ParamIdx].LinGain = Rcv_Param;
+
+	Rcv_Param = atof(parameters[3]);
+	ChannelCalibValues[ParamIdx].CubGain = Rcv_Param;
+
+	UART_printf("%s, %f, %f, %f\n",CalChannelNames[ParamIdx], ChannelCalibValues[ParamIdx].Offset, ChannelCalibValues[ParamIdx].LinGain, ChannelCalibValues[ParamIdx].CubGain);
+
+}
+
+
+void SaveCalValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+	Write_CalibrationToFlash(&littlefs, &file);
 }
 
 /**
