@@ -30,7 +30,7 @@ struct lfs_config littlefs_config = {
 W25QXX_HandleTypeDef w25qxx_handle;
 
 int w25qxx_littlefs_init(W25QXX_HandleTypeDef *w25qxx_init) {
-	UART_printf("LittleFS Init\n");
+	//UART_printf("LittleFS Init\n");
 	w25qxx_handle = *w25qxx_init;
 
 	littlefs_config.block_size = w25qxx_handle.sector_size;
