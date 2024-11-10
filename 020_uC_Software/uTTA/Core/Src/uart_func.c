@@ -6,7 +6,7 @@
  */
 
 #include "uart_func.h"
-#include "build_defs.h"
+//#include "build_defs.h"
 
 #define F_PCLK1 36000000UL			//USART2 Clock Frequency
 #define USART2_BAUDRATE 250000UL 	// USART2 Baud Rate
