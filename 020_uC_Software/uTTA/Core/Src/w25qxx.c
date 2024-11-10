@@ -18,7 +18,7 @@
  ******************************************************************************
  */
 
-#include "main.h"
+#include "config_parameters.h"
 #include "w25qxx.h"
 #include <string.h>
 
