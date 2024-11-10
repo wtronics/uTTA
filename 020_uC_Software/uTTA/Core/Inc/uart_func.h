@@ -12,7 +12,8 @@
 extern "C" {
 #endif
 
-#include "main.h"
+#include "config_parameters.h"
+#include "gpio_definition.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -22,10 +23,6 @@ void MX_USART2_UART_Init(void);
 void USART2_IRQHandler(void);
 
 ErrorStatus UART_Transmit_DMA(USART_TypeDef *huart, const uint8_t *pData, uint16_t Size);
-
-//int get_strlen(const char* s);
-//int str_equal(const char* one, const char* two);
-
 void UART_printf(const char *fmt, ...);
 
 // UART Buffer Settings
