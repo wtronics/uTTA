@@ -50,7 +50,7 @@ void ErrorsOutput(void){
 		for(;ErrIdx<EndIdx;ErrIdx++){
 			uint8_t ArrIdx = ErrIdx % ERROR_BUFFER_LENGTH;
 			UART_printf("Error %d.%03d ",(uint8_t)ArrErrorBuffer[ArrIdx].ErrCode,(uint8_t)ArrErrorBuffer[ArrIdx].SubType);
-			print_RTC_Time(&ArrErrorBuffer[ArrIdx].ErrTime);
+			//print_RTC_Time(&ArrErrorBuffer[ArrIdx].ErrTime);
 			UART_printf("\n");
 		}
 	}
@@ -60,7 +60,7 @@ void ErrorsOutput(void){
 void AddError(int8_t ErrorCode, int8_t Subtype){
 
 	uint8_t ErrIdx = ErrorTotalCount%ERROR_BUFFER_LENGTH;
-	RTC_read_time(&ArrErrorBuffer[ErrIdx].ErrTime);
+	//RTC_read_time(&ArrErrorBuffer[ErrIdx].ErrTime);
 	ArrErrorBuffer[ErrIdx].ErrCode=ErrorCode;
 	ArrErrorBuffer[ErrIdx].SubType=Subtype;
 	ErrorTotalCount++;
