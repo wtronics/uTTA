@@ -134,7 +134,6 @@ SCPI_Parameters::SCPI_Parameters(char* message) {
     this->Append(parameter);
     parameter = strtok(NULL, ",");
   }
-  //TODO add support for strings parameters (do not split parameters inside "")
 }
 
 //Do nothing function
@@ -396,11 +395,10 @@ void SCPI_Parser::Execute(char* message, USART_TypeDef *huart) {
 */
 
 char* SCPI_Parser::GetMessage(USART_TypeDef *huart, char* message, const char* term_chars) {
-  //while (interface.available()) {
+
     //Read the new char
     strcpy(msg_buffer_ , message);
     message_length_ = strlen(msg_buffer_);
-    //time_checker_ = millis();
 
     if (message_length_ >= buffer_length){
       //Call ErrorHandler due BufferOverflow
@@ -416,60 +414,45 @@ char* SCPI_Parser::GetMessage(USART_TypeDef *huart, char* message, const char* t
     if (TermCharIdx != NULL) {
       //Return the received message
 
-      strcpy(message,TermCharIdx+strlen(term_chars));//,SCPI_BUFFER_LENGTH-(TermCharIdx-message));
+      strcpy(message,TermCharIdx+strlen(term_chars));
       *(TermCharIdx) =  '\0';
       message_length_ = 0;
       return msg_buffer_;
     }
- // }
-  //No more chars aviable yet
 
-  //Return NULL if no message is incomming
+  //No more chars available yet
+  //Return NULL if no message is incoming
   if (message_length_ == 0) return NULL;
-
-  //Check for communication timeout
- /* if ((millis() - time_checker_) > timeout) {
-      //Call ErrorHandler due Timeout
-      last_error = ErrorCode::Timeout;
-      (*callers_[max_commands])(SCPI_C(), SCPI_P(), &huart);
-      message_length_ = 0;
-      return NULL;
-  }*/
 
   //No errors, be sure to return NULL
   return NULL;
 }
 
 ///Prints registered tokens and command hashes to the serial interface
-void SCPI_Parser::PrintDebugInfo(USART_TypeDef *huart) {
+void SCPI_Parser::PrintDebugInfo(USART_TypeDef *huart, uint8_t DebugLevel) {
+	if(DebugLevel>0){
+		UART_printf("*** DEBUG INFO ***\n");
+		UART_printf("TOKENS: %d\n", tokens_size_);
 
-	//HAL_Delay(50);
-  UART_printf("*** DEBUG INFO ***\n");
-  //HAL_Delay(50);
-  UART_printf("TOKENS: %d\n", tokens_size_);
-  //HAL_Delay(50);
-  for (uint8_t i = 0; i < tokens_size_; i++) {
-    UART_printf("    %s\n", tokens_[i]);
-    //HAL_Delay(10);
-  }
-  //HAL_Delay(10);
-  UART_printf("\nVALID CODES: %d\n",codes_size_);
-  //HAL_Delay(20);
-  for (uint8_t i = 0; i < codes_size_; i++) {
-    UART_printf("   %d\n", valid_codes_[i]);
-  }
+		for (uint8_t i = 0; i < tokens_size_; i++) {
+			UART_printf("    %s\n", tokens_[i]);
 
-  for(uint8_t i = 0; i < (codes_size_-1); i++){
-	  for(uint8_t j = i+1;j < codes_size_; j++){
-		  if (valid_codes_[i]== valid_codes_[j]){
-			  UART_printf("Warning! Codes %d and %d overlap, please check!\n", i, j);
-		  }
-	  }
-  }
+		}
 
+		UART_printf("\nVALID CODES: %d\n",codes_size_);
 
+		for (uint8_t i = 0; i < codes_size_; i++) {
+			UART_printf("   %d\n", valid_codes_[i]);
+		}
 
-  //HAL_Delay(20);
-  UART_printf("\n*******************\n");
+		UART_printf("\n*******************\n");
+	}
 
+	for(uint8_t i = 0; i < (codes_size_-1); i++){
+		for(uint8_t j = i+1;j < codes_size_; j++){
+			if (valid_codes_[i]== valid_codes_[j]){
+				UART_printf("Warning! Codes %d and %d overlap, please check!\n", i, j);
+			}
+		}
+	}
 }
