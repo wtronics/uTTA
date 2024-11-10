@@ -12,7 +12,8 @@
 extern "C" {
 #endif
 
-#include "main.h"
+#include "config_parameters.h"
+#include "gpio_definition.h"
 
 
 #define MAX6675_DEVICES 4		// Number of MAX6675 connected
@@ -25,7 +26,7 @@ typedef struct {
  uint16_t pin;
 } my_pin_t;
 
-const my_pin_t MAX6675_CS_GPIO[MAX6675_DEVICES] = {{ TEMP_SPI_CSN0_GPIO_Port, TEMP_SPI_CSN0_Pin },{ TEMP_SPI_CSN1_GPIO_Port, TEMP_SPI_CSN1_Pin },{ TEMP_SPI_CSN2_GPIO_Port, TEMP_SPI_CSN2_Pin },{ TEMP_SPI_CSN3_GPIO_Port, TEMP_SPI_CSN3_Pin }};
+const my_pin_t MAX6675_CS_GPIO[MAX6675_DEVICES] = {{ AUX_SPI_TC0_CSN_GPIO_Port, AUX_SPI_TC0_CSN_Pin },{ AUX_SPI_TC1_CSN_GPIO_Port, AUX_SPI_TC1_CSN_Pin },{ AUX_SPI_TC2_CSN_GPIO_Port, AUX_SPI_TC2_CSN_Pin },{ AUX_SPI_TC3_CSN_GPIO_Port, AUX_SPI_TC3_CSN_Pin }};
 
 
 #ifdef __cplusplus
