@@ -21,10 +21,11 @@
 extern "C" {
 #endif
 
-#include "uart_func.h"
-#include "ErrorCodes.h"
-#include "rtc.h"
-#include "main.h"
+#include "gpio_definition.h"
+#include "config_parameters.h"
+#include "lfs.h"
+
+
 
 //SCPI Function Prototypes
 void Init_SCPI_server(void);
@@ -40,21 +41,23 @@ void GetPWSTGEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		
 void SetGD_PowerEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		// enables the gatedriver supply of the power stage output
 void GetGD_PowerEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		// read the status of the gatedriver supply of the power stage output
 void GetPWSTGUVLO(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		// read the status of the power stage undervoltage lockout pin
-void Read_Memory_File(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		// reads a file from the SD-Card and prints it on the serial interface
-void Delete_Memory_File(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		// deletes a file from the SD-Card
-void Write_Memory_Testfile(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);	// performs a SD write speed test
-void Read_Memory_Directory(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
-void SetSampling(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		// Sets the samplerate for all States
-void GetSampling(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		//
+void Read_FileFromFlash(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		// reads a file from the SD-Card and prints it on the serial interface
+void Delete_FileFromFlash(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);		// deletes a file from the SD-Card
+void Set_FileUploadMode(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
+void Write_TestfileToFlash(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);	// performs a SD write speed test
+void Read_Directory(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);	//
 void SetTiming(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);			// All time parameters for all Measurement steps
 void GetTiming(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);			//
 void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);			// Start and Stop the measurement
 void SetMode(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetChannelDescription(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
+void Set_AnalogValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetCalSampleRate(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetDUT(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void GetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
+void SetCalValue(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
+void SaveCalValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void GetSystemTime(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetSystemTime(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 
@@ -62,35 +65,14 @@ void SetPGAGain(uint8_t Gain);
 void GetSamplingSettings(void);
 
 int lfs_ls(lfs_t *lfs, const char *path) ;
+void FileUpload_SerialToFile(char* message);
 
-
-typedef struct PGA_Gain_{
-	uint8_t Set=PGA_DEF_GAIN;
-	uint8_t Cooling;
-	uint8_t Heating;
-} PGA;
-
-typedef struct Sampling_Timing_{
-	uint32_t FastSampleTime    = ADC_DEF_SAMPLETIME;
-	float    FastSampleRate	   = 0.0f;
-	uint32_t MaxTimeMultiplier = ADC_MAX_MULTIPLIER;
-	uint32_t SetSampleTime     = ADC_MAX_SAMPLERATE << ADC_MAX_MULTIPLIER;
-	uint32_t SetMultiplier     = ADC_MAX_MULTIPLIER;
-	uint32_t PreHeatingTime    = MEAS_DEF_PREHEATING_TIME;
-	uint32_t HeatingTime       = MEAS_DEF_HEATING_TIME;
-	uint32_t CoolingTime       = MEAS_DEF_COOLING_TIME;
-	uint32_t CalSampleTime     = CAL_DEF_SAMPLE_TIME;
-} Timing;
-
-//typedef enum FileScanOptions_t{
-//	FSO_NoDetail = 0,
-//	FSO_EditTime
-//}FSO_t;
 
 extern lfs_file_t file;
 extern lfs_t littlefs;
-
 extern uint8_t ErrorTotalCount;
+extern PGA_t PGA_Gains;
+extern volatile Timing_t SamplingTiming;
 
 
 #ifdef __cplusplus
