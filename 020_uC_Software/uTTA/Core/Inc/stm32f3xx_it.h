@@ -25,6 +25,11 @@
  extern "C" {
 #endif
 
+#include "config_parameters.h"
+#include "gpio_definition.h"
+#include "uart_func.h"
+#include <main.hpp>
+
 /* Private includes ----------------------------------------------------------*/
 
  uint32_t GetTick(void);
