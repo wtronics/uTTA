@@ -7,6 +7,13 @@ Header file.
 #define VREKRER_SCPI_PARSER_H_
 
 
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include "config_parameters.h"
+#include "ErrorCodes.h"
+//#include <cstdlib>
+
 /// Max branch size of the command tree and max number of parameters.
 #ifndef SCPI_ARRAY_SYZE
   #define SCPI_ARRAY_SYZE 16
@@ -38,13 +45,6 @@ Header file.
 #endif
 
 
-#include "main.h"
-//#include "stm32f3xx_hal.h"
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-//#include <cstdlib>
-#include "uart_func.h"
 /*!
  Variable size string array class.
 
@@ -119,6 +119,13 @@ typedef void (*SCPI_caller_t)(SCPI_Commands, SCPI_Parameters, USART_TypeDef *hua
 /// Integer size used for hashes.
 typedef SCPI_HASH_TYPE scpi_hash_t;
 
+//Communication Modes to enable file transfer "around" the SCPI parser
+typedef enum CommMode{
+	CommMode_SCPI = 0,		// 0 :  Normal communication mode with SCPI Server
+	CommMode_Text,			// 1 :	Special communication mode without SCPI Server to transfer files to the devices
+}Communication_Mode_t;
+
+
 /*!
   Main class of the Vrekrer_SCPI_Parser library.
 */
@@ -154,13 +161,16 @@ class SCPI_Parser {
   //Gets a message from a Stream interface
   char* GetMessage(USART_TypeDef *huart, char* message,const char* term_chars);
   //Prints registered tokens and command hashes to the serial interface
-  void PrintDebugInfo(USART_TypeDef *huart);
+  void PrintDebugInfo(USART_TypeDef *huart, uint8_t DebugLevel);
   ///Magic number used for hashing the commands
   //scpi_hash_t hash_magic_number = 35;
   //scpi_hash_t hash_magic_number = 37;
   scpi_hash_t hash_magic_number = 31;
   ///Magic offset used for hashing the commands
   scpi_hash_t hash_magic_offset = 7;
+
+  Communication_Mode_t comm_mode = CommMode_SCPI;
+
 
  protected:
   //Length of the message buffer.
