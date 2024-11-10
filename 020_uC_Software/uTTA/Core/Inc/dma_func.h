@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#include "main.h"
+#include "config_parameters.h"
 
 void SystemClock_Config(void);
 void MX_DMA_Init(void);
