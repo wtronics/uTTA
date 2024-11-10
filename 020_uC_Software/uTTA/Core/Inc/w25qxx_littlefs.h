@@ -12,7 +12,6 @@
 extern "C" {
 #endif
 
-#include "main.h"
 #include "w25qxx.h"
 #include "lfs.h"
 
