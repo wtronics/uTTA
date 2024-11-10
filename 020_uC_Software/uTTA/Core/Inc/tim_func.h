@@ -13,7 +13,8 @@
 extern "C" {
 #endif
 
-#include "main.h"
+#include "config_parameters.h"
+#include "gpio_definition.h"
 
 typedef enum {
 	TIM_Mode_Normal=0,
