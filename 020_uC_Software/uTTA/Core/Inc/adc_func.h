@@ -12,8 +12,7 @@
 extern "C" {
 #endif
 
-#include "main.h"
-
+#include "config_parameters.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
