@@ -12,7 +12,8 @@
 extern "C" {
 #endif
 
-#include "main.h"
+#include "config_parameters.h"
+#include "gpio_definition.h"
 
 
 void MX_GPIO_Init(void);
