@@ -23,10 +23,7 @@ CH2 Name;DUMMY;0.000000;-2600.000000;0.000000
 CH3 Name;DUMMY;0.000000;-2600.000000;0.000000
 StartTime;18:54:58
 StartDate;15.11.2024
-Tsamp,fast;4
-Tsamp,low;524288
 Samples/Decade;250
-Max. Divider;17
 T_Preheat;60
 T_Heat;1800
 T_Cool;1800
