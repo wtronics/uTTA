@@ -23,10 +23,7 @@ CH2 Name;OFF;0.000000;0.000000;0.000000
 CH3 Name;OFF;0.000000;0.000000;0.000000
 StartTime;12:48:31
 StartDate;10.11.2024
-Tsamp,fast;4
-Tsamp,low;524288
 Samples/Decade;250
-Max. Divider;17
 T_Preheat;60
 T_Heat;3600
 T_Cool;3600
