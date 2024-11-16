@@ -1,7 +1,7 @@
 FileVersion;2.2
-CH1 Name;Driver;0;2600;0
-CH2 Name;Monitor1;0;2600;0
-CH3 Name;Monitor2;0;2600;0
+CH1 Name;Driver;0;-2600;0
+CH2 Name;Monitor1;0;-2600;0
+CH3 Name;Monitor2;0;-2600;0
 StartTime;17:48:41
 StartDate;02.06.2024
 Tsamp,fast;4

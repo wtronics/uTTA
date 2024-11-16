@@ -1,40 +1,40 @@
 [ADC0_CAL_PGA_0]
-Gain = 0,000395    
-Offset = 0,127502    
+Gain = 0,000395
+Offset = 0,127502
 
 [ADC0_CAL_PGA_1]
-Gain = 0,000267    
-Offset = 0,131815    
+Gain = 0,000267
+Offset = 0,131815
 
 [ADC0_CAL_PGA_2]
-Gain = 0,000156    
-Offset = 0,126924    
+Gain = 0,000156
+Offset = 0,126924
 
 [ADC0_CAL_PGA_3]
-Gain = 0,000133    
-Offset = 0,124933    
+Gain = 0,000133
+Offset = 0,124933
 
 [ADC1_CAL]
-Gain = 0,000120    
-Offset = 0,125106    
+Gain = 0,000120
+Offset = 0,125106
 
 [ADC2_CAL]
-Gain = 0,000119    
-Offset = 0,124791    
+Gain = 0,000119
+Offset = 0,124791
 
 [ADC3_CAL]
-Gain = 0,007921    
-Offset = -0,018188    
+Gain = 0,007921
+Offset = -0,018188
 
 [$CHAN_OFF]
-Offset = 0,000000    
-Lin_Gain = 0,000000    
-Quad_Gain = 0,000000    
+Offset = 0,000000
+Lin_Gain = 0,000000
+Quad_Gain = 0,000000
 
 [$CHAN_CM01]
-Offset = 0,000000    
-Lin_Gain = 0,000122    
-Quad_Gain = 0,000000    
+Offset = 0,000000
+Lin_Gain = 0,000122
+Quad_Gain = 0,000000
 
 [$CHAN_CM02]
 Offset = 0,000000

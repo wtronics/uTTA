@@ -74,8 +74,8 @@ Sadly I don't have a real world application test setup. Therefore I built a litt
 
 # Possible improvements for future designs
 - [ ] More gain steps for diode voltage measurement.
-- [ ] Software adjustable offset control (DAC).
-- [ ] Software adjustable measure current (maybe enhanced Howland current sources with DAC?).
+- [x] Software adjustable offset control (DAC).
+- [x] Software adjustable measure current (maybe enhanced Howland current sources with DAC?).
 - [ ] Removal of the Nucleo Board and replacement with a own development. (Improvements: Get rid of all these connectors, improve signal integrity, improve ADC reference voltage, maybe even dedicated USB interface not just through the ST-Link.
 
 ## Design choices

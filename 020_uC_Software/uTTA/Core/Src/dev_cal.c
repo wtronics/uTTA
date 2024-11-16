@@ -157,17 +157,17 @@ int8_t WriteFileHeaderToFile(lfs_t *lfs, lfs_file_t *file){
 	sprintf(LogWriteBfr,"StartDate;%02d.%02d.%04d\n",Date.RTC_Date, Date.RTC_Month, ((uint16_t)Date.RTC_Year)+2000);
 	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
-	sprintf(LogWriteBfr,"Tsamp,fast;%lu\n",SamplingTiming.FastSampleTime);
-	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
+	//sprintf(LogWriteBfr,"Tsamp,fast;%lu\n",SamplingTiming.FastSampleTime);
+	//EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
-	sprintf(LogWriteBfr,"Tsamp,low;%lu\n",SamplingTiming.FastSampleTime<<SamplingTiming.MaxTimeMultiplier);
-	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
+	//sprintf(LogWriteBfr,"Tsamp,low;%lu\n",SamplingTiming.FastSampleTime<<SamplingTiming.MaxTimeMultiplier);
+	//EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
 	sprintf(LogWriteBfr,"Samples/Decade;%u\n",ADC_BFR_SIZE);
 	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
-	sprintf(LogWriteBfr,"Max. Divider;%lu\n",SamplingTiming.MaxTimeMultiplier);
-	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
+	//sprintf(LogWriteBfr,"Max. Divider;%lu\n",SamplingTiming.MaxTimeMultiplier);
+	//EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
 	sprintf(LogWriteBfr,"T_Preheat;%lu\n",SamplingTiming.PreHeatingTime/1000);
 	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
