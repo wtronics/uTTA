@@ -40,7 +40,7 @@ typedef struct uTTA_Err_t{
 
 #define ERRC_SYSTEM_ERROR			3
 
-#define ERST_NO_SD_CARD				1
+#define ERST_NO_FLASH_MEMORY				1
 #define ERST_FILE_EXISTS			2
 #define ERST_FILE_NOT_FOUND			3
 #define ERST_GATEDRV_UVLO			4
