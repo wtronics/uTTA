@@ -7,13 +7,13 @@ import time                                     # part of python 3.12.5
 import uTTA_data_import
 
 NoOfMonitors = 2
-SamplesPerDecade = 20
+SamplesPerDecade = 50
 # deconv_zShift = 1.144472988
 deconv_zShift = 1.138+0.017091077755321222
 
 FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
 
-DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam, '.t3i')
+DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam)
 
 start = time.time()
 
