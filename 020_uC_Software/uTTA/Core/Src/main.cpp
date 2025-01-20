@@ -45,6 +45,7 @@ uint32_t Meas_RunTime = 0;
 uint32_t Meas_StartTime = 0;
 int16_t Temp_TypeK[MAX6675_DEVICES];
 int GlobalWriteErrorFlag = 0;
+int FlashMemoryAvailable = 0;
 
 volatile MeasurementStates_t FlagMeasurementState = Meas_State_Idle;
 
@@ -132,11 +133,17 @@ int main(void)
 	  INIT_DBG("Block size         = 0x%04x (%lu)\n", w25qxx.block_size, w25qxx.block_size);
 	  INIT_DBG("Block count        = 0x%04x (%lu)\n", w25qxx.block_count, w25qxx.block_count);
 	  INIT_DBG("Total size (in kB) = 0x%04x (%lu)\n", (w25qxx.block_count * w25qxx.block_size) / 1024, (w25qxx.block_count * w25qxx.block_size) / 1024);
+
+	  EvalLFSError(w25qxx_littlefs_init(&w25qxx));
+
+	  Read_CalibrationFromFlash(&littlefs, &file);
+
+	  FlashMemoryAvailable = 1;
   }
-
-  EvalLFSError(w25qxx_littlefs_init(&w25qxx));
-
-  Read_CalibrationFromFlash(&littlefs, &file);
+  else{
+	  ErrorResponse(ERRC_SYSTEM_ERROR, ERST_NO_FLASH_MEMORY);
+	  FlashMemoryAvailable = -1;
+  }
 
   INIT_DBG("DAC Initialisation!\n");
 
@@ -208,6 +215,12 @@ void DoMeasurement(void)
 		Log_WrittenBlocks = 0;
 		Meas_StartTime = GetTick();
 		NextOutput = GetTick();
+
+		if(FlashMemoryAvailable <= 0){
+			ErrorResponse(ERRC_FILE_SYSTEM, ERST_NO_FLASH_MEMORY);
+			FlagMeasurementState = Meas_State_Idle;
+			break;
+		}
 
 		EvalLFSError(lfs_file_open(&littlefs, &file, DUT_Name, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC));
 		if(LFS_ret<0){
@@ -332,6 +345,12 @@ void DoMeasurement(void)
 		break;
 	case Cal_State_Init:					// check for the flag to start the calibration
 
+		if(FlashMemoryAvailable <= 0){
+			ErrorResponse(ERRC_FILE_SYSTEM, ERST_NO_FLASH_MEMORY);
+			FlagMeasurementState = Meas_State_Idle;
+			break;
+		}
+
 		LL_GPIO_SetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin);		// Enable the gate driver supply
 		LL_GPIO_SetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin);					// Enable the output of the Main Power Supply
 
@@ -391,6 +410,8 @@ void DoMeasurement(void)
 	if (FlagMeasurementState){
 		if ((ADC_TotalBlocks>0) && (Log_WrittenBlocks < ADC_TotalBlocks) && (FlagMeasurementState < Meas_State_CloseLog) ){
 			LD2_GPIO_Port->BSRR = LD2_Pin;
+			LL_GPIO_SetOutputPin(DBG_IO3_GPIO_Port, DBG_IO3_Pin);
+			LL_GPIO_ResetOutputPin(DBG_IO4_GPIO_Port, DBG_IO4_Pin);
 
 			ADC_BufferReadBlock = Log_WrittenBlocks % ADC_BFR_BLOCKS;	// Calculate the virtual Block number
 			if((Log_WrittenBlocks + ADC_BFR_BLOCKS) < ADC_TotalBlocks ){
@@ -402,7 +423,10 @@ void DoMeasurement(void)
 			}
 			else{
 				ADC_TotalBlocks--;	// Some botch to fix the mysterious behaviour of 100 samples offset
+				LL_GPIO_SetOutputPin(DBG_IO4_GPIO_Port, DBG_IO4_Pin);
 			}
+
+			LL_GPIO_ResetOutputPin(DBG_IO3_GPIO_Port, DBG_IO3_Pin);
 
 			LD2_GPIO_Port->BRR = LD2_Pin;
 		}
@@ -473,6 +497,7 @@ uint8_t WriteBlockToFile(uint8_t ReadBlock, uint32_t TotalWrittenBlocks)
 
 	if(DMA_CurrentPos > Block_End || DMA_CurrentPos < Block_Start)	// check if the DMA counter is out of the way...
 	{
+		LL_GPIO_SetOutputPin(DBG_IO2_GPIO_Port, DBG_IO2_Pin);
 		// format every sample into a line and print it onto the SD card. (single utoa's are ~50% faster than one sprintf)
 		LFS_ret = LFS_WRITE_STRING(&littlefs, &file, "#B;");	// Block Number
 
@@ -511,7 +536,7 @@ uint8_t WriteBlockToFile(uint8_t ReadBlock, uint32_t TotalWrittenBlocks)
 		if(LFS_ret <0){
 			GlobalWriteErrorFlag =1;
 		}
-
+		LL_GPIO_ResetOutputPin(DBG_IO2_GPIO_Port, DBG_IO2_Pin);
 		return 1;
 	}
 	else{
