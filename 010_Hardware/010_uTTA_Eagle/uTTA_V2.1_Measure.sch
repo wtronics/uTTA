@@ -12208,6 +12208,9 @@ fc = 60.2kHz</text>
 fc = 482.3kHz</text>
 <text x="118.11" y="102.235" size="1.27" layer="98" ratio="14">tau = 330ns
 fc = 482.3kHz</text>
+<text x="30.48" y="148.59" size="1.27" layer="98">For less offset voltage:
+Replace with 
+TLV2387 or OPA2376</text>
 </plain>
 <instances>
 <instance part="IC101.2" gate="A" x="167.64" y="44.45" rot="MR0"/>
@@ -13101,6 +13104,9 @@ fc = 482.3kHz</text>
 <wire x1="167.64" y1="17.78" x2="7.62" y2="17.78" width="0.1524" layer="98" style="shortdash"/>
 <wire x1="7.62" y1="17.78" x2="7.62" y2="63.5" width="0.1524" layer="98" style="shortdash"/>
 <text x="7.62" y="64.77" size="1.4224" layer="98">CH3 not supported by Software</text>
+<text x="30.48" y="151.13" size="1.27" layer="98">For less offset voltage:
+Replace with 
+TLV2387 or OPA2376</text>
 </plain>
 <instances>
 <instance part="IC101.4" gate="A" x="167.64" y="46.99" rot="MR0"/>

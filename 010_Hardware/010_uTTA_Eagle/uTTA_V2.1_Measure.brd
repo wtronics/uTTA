@@ -8330,47 +8330,6 @@ einem neuen Namen ab.</description>
 <wire x1="50.38" y1="42.291" x2="50.38" y2="44.323" width="0.6096" layer="1"/>
 </signal>
 </signals>
-<errors>
-<approved hash="3,1,3e142c2a2bf839c6"/>
-<approved hash="3,1,df971303193d110a"/>
-<approved hash="3,1,dfea75d47565df5b"/>
-<approved hash="3,1,3c7813121b658ca6"/>
-<approved hash="3,1,abec5bf25b23ab3d"/>
-<approved hash="3,1,1a06205823571909"/>
-<approved hash="3,1,07506ef61a1e99f8"/>
-<approved hash="3,1,5a1ce042e0db5a85"/>
-<approved hash="3,1,18e01cf813181cfd"/>
-<approved hash="2,20,7a4336832a826642"/>
-<approved hash="4,1,3b0ccafbc9f11a02"/>
-<approved hash="4,1,a7e3cee28c6f5e82"/>
-<approved hash="4,1,5b04ca17d91dea02"/>
-<approved hash="4,1,7f6ccb29b0a3f082"/>
-<approved hash="4,1,6d0fc95b68513b03"/>
-<approved hash="4,1,5f24cb4540cfc082"/>
-<approved hash="4,1,a514459f93955102"/>
-<approved hash="4,1,2d2c558948029983"/>
-<approved hash="4,1,a50c45bba3b12102"/>
-<approved hash="4,1,65144acd6c472f83"/>
-<approved hash="4,1,671448fe34f47603"/>
-<approved hash="4,1,65ec4ae97c633f83"/>
-<approved hash="5,1,12f239b5d51262ae"/>
-<approved hash="5,1,a7e8891c8c3177fb"/>
-<approved hash="5,1,4a0169d50fb2b33d"/>
-<approved hash="5,1,c434d76f5782a421"/>
-<approved hash="5,1,5e1f114186d4f145"/>
-<approved hash="5,1,1723c9285172ca16"/>
-<approved hash="5,1,99d2c931161fc894"/>
-<approved hash="5,1,d7e93b132ffe2de8"/>
-<approved hash="5,1,f30f5607975277ae"/>
-<approved hash="5,1,dd7449a3a7833355"/>
-<approved hash="5,1,dd6438b645bd8c55"/>
-<approved hash="5,1,a58279a3a7937b92"/>
-<approved hash="5,1,a5827a51c4419b92"/>
-<approved hash="4,16,2be4cae5c1ef0202"/>
-<approved hash="4,16,6f0ccb5ba8d1f882"/>
-<approved hash="4,16,a52c55898b835902"/>
-<approved hash="4,16,65144aff64753783"/>
-</errors>
 </board>
 </drawing>
 <compatibility>
