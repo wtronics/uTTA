@@ -199,14 +199,20 @@ def read_measurement_file_30up(lines, flag_raw_value_mode):
                     pga[adc_idx] = pga_now
                     block_no[adc_idx] = last_block_no
                     if flag_raw_value_mode == 0:
-                        a = 0
-                        # ToDo: Add scaling code here
-                        ChPA = "PA_0{ch}".format(ch=int(pga_now))
-                        ChDiff = "DIFF{ch}".format(ch=0)
+                        ch_pa = "PA_0{ch}".format(ch=int(pga_now))
+                        ch_diff = "DIFF0"
 
-                        adc[0, adc_idx] = ((float(cells[0]) * utta_cal_values[ChPA]["Lin_Gain"]) + utta_cal_values[ChPA]["Offset"] - voffs[0]) / utta_cal_values[ChDiff]["Lin_Gain"]
-                        # for CellIdx in range(1, 4):  # copy the cells to the new array
-                        #     adc[CellIdx, adc_idx] = (float(cells[CellIdx]) * adc_calibration[1][CellIdx]) + adc_calibration[0][CellIdx]
+                        adc[0, adc_idx] = ((float(cells[0]) * utta_cal_values[ch_pa]["Lin_Gain"]) + utta_cal_values[ch_pa]["Offset"] - voffs[0]) / \
+                                           utta_cal_values[ch_diff]["Lin_Gain"]
+                        for CellIdx in range(1, 4):  # copy the cells to the new array
+                            if CellIdx == 3:    # scaling for the heating current channel
+                                ch_pa = "ADC_I"
+                                adc[CellIdx, adc_idx] = ((float(cells[CellIdx]) * utta_cal_values[ch_pa]["Lin_Gain"]) + utta_cal_values[ch_pa]["Offset"])
+                            else:   # scaling 2 the 2 monitoring channels
+                                ch_pa = "PA_{ch}0".format(ch=int(CellIdx))
+                                ch_diff = "DIFF{ch}".format(ch=CellIdx)
+                                adc[CellIdx, adc_idx] = ((float(cells[CellIdx]) * utta_cal_values[ch_pa]["Lin_Gain"]) + utta_cal_values[ch_pa]["Offset"] -
+                                                         voffs[1]) / utta_cal_values[ch_diff]["Lin_Gain"]
                     else:
                         adc[0, adc_idx] = float(cells[0])
                         for CellIdx in range(1, 4):  # copy the cells to the new array
