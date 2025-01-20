@@ -225,11 +225,9 @@ void TIM1_UP_TIM16_IRQHandler(void){
 
 void DMA1_Channel1_IRQHandler(void){
 
-	//DBG_IO3_GPIO_Port->BSRR = DBG_IO3_Pin;
 }
 
 void DMA2_Channel1_IRQHandler(void){
-	//DBG_IO4_GPIO_Port->BSRR = DBG_IO4_Pin;
 
 }
 
