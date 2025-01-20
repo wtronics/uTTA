@@ -107,7 +107,6 @@ void Setup_TIM1(TIM_Mode_t Mode){
 /**************************************************************************/
 void CalcADCSamplingSettings(uint32_t SampleTime) // SampleTime in 125ns Steps...
 {
-	LL_GPIO_SetOutputPin(DBG_IO2_GPIO_Port, DBG_IO2_Pin);
 
 	uint32_t calcResCounter = 0;
 	uint16_t newPrescaler = PRESCALER_UPSCALE_INITIAL;				//72MHz System Clock with Prescaler = 9 -> 8MHz Timer Clock
@@ -122,7 +121,7 @@ void CalcADCSamplingSettings(uint32_t SampleTime) // SampleTime in 125ns Steps..
 	LL_TIM_OC_SetCompareCH1(TIM1, (uint16_t)1);							// Set a low value, to be able to see whats going on
 	LL_TIM_SetPrescaler(TIM1, (uint16_t)(newPrescaler<<(PrescalerUpscale-1))-1);		// New prescaler
 
-	LL_GPIO_ResetOutputPin(DBG_IO2_GPIO_Port, DBG_IO2_Pin);
+
 }
 
 
