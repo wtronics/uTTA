@@ -165,7 +165,7 @@ class CalApp(customtkinter.CTk):
         # Temp = Temp[0, :]
         if len(Temp) > 0:
             for PlotIdx in range(1):
-                G_Plots[1].plot(TimeBaseTotal, Temp[PlotIdx, :], label="TC " + str(PlotIdx + 1))
+                G_Plots[1].plot(TimeBaseTotal, Temp[PlotIdx, :], label="TC " + str(PlotIdx))
 
             G_Plots[1].set_xlim(left=0)
 
@@ -178,12 +178,11 @@ class CalApp(customtkinter.CTk):
         self.canvas.draw()
 
     def read_calfile_callback(self):
-        global PGA_Calibration, ADC_Calibration, Diode_Calibration, CalData_FileName
+        global CalData_FileName
         cal_file_path = uTTA_data_import.select_file("Select the uTTA Calibration File",
-                                                     (('uTTA Calibration Files', '*.uTTA_CAL'), ('All files', '*.*')))
-        print("Reading calibration values from file: " + cal_file_path)
+                                                     (('uTTA Calibration Files', '*.ucf'), ('All files', '*.*')))
         CalData_FileName = cal_file_path
-        PGA_Calibration, ADC_Calibration, Diode_Calibration = uTTA_data_import.read_calfile(cal_file_path)
+
         self.btn_measure_file.configure(state='normal')
         return
 
@@ -220,16 +219,17 @@ class CalApp(customtkinter.CTk):
     def read_measurement_file_callback(self):
         global TimeBaseTotal, ADC, CH_Names, Temp, CoolingStartBlock, DataFile
         measfilename = uTTA_data_import.select_file("Select the measurement file",
-                                                    (('Text-Files', '*.txt'), ('uTTA Measurement Files', '*.t3r'), ('All files', '*.*')))
-        DataFile, data_file_no_ext, file_path = uTTA_data_import.split_file_path(measfilename, '.t3i')
+                                                    (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
+        if len(measfilename) > 0:    # check if string is not empty
+            DataFile, data_file_no_ext, file_path = uTTA_data_import.split_file_path(measfilename)
 
-        tb_import, adc_import, tc_import, samp_decade, CoolingStartBlock, CH_Names, dut_tsp_sensitivity = (
-            uTTA_data_import.read_measurement_file(measfilename, PGA_Calibration, ADC_Calibration, 0))
+            tb_import, adc_import, tc_import, samp_decade, CoolingStartBlock, CH_Names, dut_tsp_sensitivity = (
+                uTTA_data_import.read_measurement_file(measfilename, 0))
 
-        TimeBaseTotal, ADC, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
+            TimeBaseTotal, ADC, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
-        self.update_plots()
-        self.btn_add_steps.configure(state='normal')
+            self.update_plots()
+            self.btn_add_steps.configure(state='normal')
 
     def add_calibration_step(self):
         cal_range = G_Plots[0].get_xlim()
