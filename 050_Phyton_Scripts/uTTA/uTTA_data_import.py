@@ -88,14 +88,14 @@ def read_measurement_file_30up(lines, flag_raw_value_mode):
                         dut_tsp_sensitivity[0, 0] = float(cells[2]) / 1000000
                         dut_tsp_sensitivity[0, 1] = float(cells[3]) / 1000000
                         dut_tsp_sensitivity[0, 2] = float(cells[4]) / 1000000
-                        print("CH1 Cal:    {Offs}V  ; Linear:   {Lin}V  ; Cubic: {Cub}".format(
+                        print("CH1 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Cubic: {Cub:.3f}".format(
                               Offs=dut_tsp_sensitivity[0, 0], Lin=dut_tsp_sensitivity[0, 1], Cub=dut_tsp_sensitivity[0, 2]))
                     case 'CH2 Name':
                         ch_names[1] = str(cells[1])
                         dut_tsp_sensitivity[1, 0] = float(cells[2]) / 1000000
                         dut_tsp_sensitivity[1, 1] = float(cells[3]) / 1000000
                         dut_tsp_sensitivity[1, 2] = float(cells[4]) / 1000000
-                        print("CH2 Cal:    {Offs}V  ; Linear:   {Lin}V  ; Cubic: {Cub}".format(
+                        print("CH2 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Cubic: {Cub:.3f}".format(
                               Offs=dut_tsp_sensitivity[1, 0], Lin=dut_tsp_sensitivity[1, 1], Cub=dut_tsp_sensitivity[1, 2]))
                     case 'CH3 Name':
                         ch_names[2] = str(cells[1])
@@ -103,7 +103,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode):
                         dut_tsp_sensitivity[2, 0] = float(cells[2]) / 1000000
                         dut_tsp_sensitivity[2, 1] = float(cells[3]) / 1000000
                         dut_tsp_sensitivity[2, 2] = float(cells[4]) / 1000000
-                        print("CH3 Cal:    {Offs}V  ; Linear:   {Lin}V  ; Cubic: {Cub}".format(
+                        print("CH3 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Cubic: {Cub:.3f}".format(
                               Offs=dut_tsp_sensitivity[2, 0], Lin=dut_tsp_sensitivity[2, 1], Cub=dut_tsp_sensitivity[2, 2]))
                     case s if s.startswith('#CAL_DIFF'):    # Differential Amplifier Calibration
                         cal_val_name = str(cells[0]).replace("#CAL_", "")
@@ -291,7 +291,7 @@ def read_measurement_file_lt30(lines,  pga_calibration, adc_calibration, flag_ra
                             dut_tsp_sensitivity[0, 0] = float(cells[2]) / 1000000
                             dut_tsp_sensitivity[0, 1] = float(cells[3]) / 1000000
                             dut_tsp_sensitivity[0, 2] = float(cells[4]) / 1000000
-                            print("CH1 Cal:    {Offs}V  ; Linear:   {Lin}V  ; Cubic: {Cub}".format(
+                            print("CH1 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.3f}V  ; Cubic: {Cub:.3f}".format(
                                 Offs=dut_tsp_sensitivity[0, 0], Lin=dut_tsp_sensitivity[0, 1], Cub=dut_tsp_sensitivity[0, 2]))
                     case 'CH2 Name':
                         ch_names[1] = str(cells[1])
@@ -299,7 +299,7 @@ def read_measurement_file_lt30(lines,  pga_calibration, adc_calibration, flag_ra
                             dut_tsp_sensitivity[1, 0] = float(cells[2]) / 1000000
                             dut_tsp_sensitivity[1, 1] = float(cells[3]) / 1000000
                             dut_tsp_sensitivity[1, 2] = float(cells[4]) / 1000000
-                            print("CH2 Cal:    {Offs}V  ; Linear:   {Lin}V  ; Cubic: {Cub}".format(
+                            print("CH2 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.3f}V  ; Cubic: {Cub:.3f}".format(
                                 Offs=dut_tsp_sensitivity[1, 0], Lin=dut_tsp_sensitivity[1, 1], Cub=dut_tsp_sensitivity[1, 2]))
                     case 'CH3 Name':
                         ch_names[2] = str(cells[1])
@@ -307,7 +307,7 @@ def read_measurement_file_lt30(lines,  pga_calibration, adc_calibration, flag_ra
                             dut_tsp_sensitivity[2, 0] = float(cells[2]) / 1000000
                             dut_tsp_sensitivity[2, 1] = float(cells[3]) / 1000000
                             dut_tsp_sensitivity[2, 2] = float(cells[4]) / 1000000
-                            print("CH2 Cal:    {Offs}V  ; Linear:   {Lin}V  ; Cubic: {Cub}".format(
+                            print("CH2 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.3f}V  ; Cubic: {Cub:.3f}".format(
                                 Offs=dut_tsp_sensitivity[2, 0], Lin=dut_tsp_sensitivity[2, 1], Cub=dut_tsp_sensitivity[2, 2]))
                     case 'Tsamp,fast':
                         tsamp_fast = (1000000 * float(cells[1])) / TimerClock
