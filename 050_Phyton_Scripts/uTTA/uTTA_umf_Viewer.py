@@ -7,15 +7,12 @@ import uTTA_data_import
 import uTTA_data_processing
 import uTTA_data_export
 
-CalFilePath = '.\\20240604_Calibration.uTTA_CAL'
-
 NoOfDUTs = 3
 MaxDeltaT_StartEnd = 1.0
 
 
 FileNam = uTTA_data_import.select_file("Select the measurement file",
                                        (('uTTA Measurement File', '*.umf'),
-                                        ('uTTA Measurement Files', '*.t3r'),
                                         ('Text-Files', '*.txt'),
                                         ('All files', '*.*')))
 
@@ -23,9 +20,7 @@ DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam)
 
 start = time.time()
 
-TimeBaseTotal, ADC, Temp, SampDecade, CoolingStartBlock, CH_Names, DUT_TSP_Sensitivity = uTTA_data_import.read_measurement_file(FileNam,
-                                                                                                                                CalFilePath,
-                                                                                                                                0)
+TimeBaseTotal, ADC, Temp, SampDecade, CoolingStartBlock, CH_Names, DUT_TSP_Sensitivity = uTTA_data_import.read_measurement_file(FileNam, 0)
 
 # Calculate the average ambient temperature as starting point
 StartTempTC = np.mean(Temp[3, 0:10])
