@@ -10,6 +10,11 @@ import uTTA_data_export
 NoOfDUTs = 3
 MaxDeltaT_StartEnd = 1.0
 
+# Parameters for Interpolation
+InterpolationTStart = 0.000020
+InterpolationTEnd = 0.00025
+InterpolationAverageHW = 1   # Should be the half width of the averaged area
+
 FileNam = uTTA_data_import.select_file("Select the measurement file",
                                        (('uTTA Measurement File', '*.umf'),
                                         ('Text-Files', '*.txt'),
@@ -68,15 +73,10 @@ for Ch in range(0, NoOfDUTs):
 
 uTTA_data_export.write_diode_voltages(TimeBase_Cooling, ADC_Cooling, CH_Names[0], FilePath + "\\" + DataFileNoExt + '_DiodeVoltages.txt')
 
-# Parameters for Interpolation
-InterpolationTStart = 0.000020
-InterpolationTEnd = 0.00025
-InterpolationAverageHW = 1   # Should be the half width of the averaged area
-
+# Parameters for the interpolation depth estimation
 Cth_Si = 700.0           # Thermal capacity of silicon J*(kg*K)
 rho_Si = 2330          # Density of silicon kg/m3
 kappa_SI = 148.0         # Heat transmissivity of silicon W/(m*K)
-
 
 InterpPointsIdxStart = int((np.where(np.isclose(TimeBase_Cooling, InterpolationTStart)))[0][0])
 InterpPointsIdxEnd = int((np.where(np.isclose(TimeBase_Cooling, InterpolationTEnd, atol=0.000001)))[0][0])
