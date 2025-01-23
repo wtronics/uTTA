@@ -49,19 +49,23 @@ class CalApp(customtkinter.CTk):
         self.frm_file_btns = ctk.CTkFrame(master=self)
         self.frm_file_btns.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
         self.frm_file_btns.grid_rowconfigure(1, weight=1)
-        self.frm_file_btns.grid_columnconfigure(2, weight=1)
-
-        self.btn_cal_file = ctk.CTkButton(master=self.frm_file_btns,
-                                          text="Calibration File", fg_color="blue",
-                                          command=self.read_calfile_callback)
-        self.btn_cal_file.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        self.frm_file_btns.grid_columnconfigure(1, weight=1)
 
         self.btn_measure_file = ctk.CTkButton(master=self.frm_file_btns,
                                               text="Measurement File", fg_color="blue",
-                                              command=self.read_measurement_file_callback,
-                                              state="disabled"
+                                              command=self.read_measurement_file_callback
                                               )
-        self.btn_measure_file.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
+        self.btn_measure_file.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+
+        self.frm_help_bar = ctk.CTkFrame(master=self)
+        self.frm_help_bar.grid(row=0, column=1, columnspan=5, padx=10, pady=10, sticky="ew")
+        self.frm_help_bar.grid_rowconfigure(1, weight=1)
+        self.frm_help_bar.grid_columnconfigure(1, weight=1)
+
+        self.lbl_helpbar = ctk.CTkLabel(master=self.frm_help_bar,
+                                        fg_color="blue", width=1050, anchor="w", padx=10)
+        self.lbl_helpbar.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        self.lbl_helpbar.configure(text="Welcome to the calibration GUI v2. Click 'Measurement File' and import a calibration measurement")
 
         frm_tstep_entry = ctk.CTkFrame(master=self)
         frm_tstep_entry.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
@@ -126,11 +130,11 @@ class CalApp(customtkinter.CTk):
                                              state="disabled")
         self.btn_save_result.grid(row=5, column=0, padx=10, pady=10, sticky="ew")
 
-        self.fig = Figure(figsize=(11, 7), dpi=screen_dpi)
+        self.fig = Figure(figsize=(11, 6.5), dpi=screen_dpi)
         G_Plots = self.fig.subplots(2, 1)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=0, column=1, rowspan=19, columnspan=5, padx=10, pady=10, sticky="ew")
+        self.canvas.get_tk_widget().grid(row=1, column=1, rowspan=18, columnspan=5, padx=10, pady=10, sticky="ew")
         # Toolbar #########
         toolbar_frame = ctk.CTkFrame(master=self)
         toolbar_frame.grid(row=20, column=1, columnspan=5)
@@ -177,15 +181,6 @@ class CalApp(customtkinter.CTk):
 
         self.canvas.draw()
 
-    def read_calfile_callback(self):
-        global CalData_FileName
-        cal_file_path = uTTA_data_import.select_file("Select the uTTA Calibration File",
-                                                     (('uTTA Calibration Files', '*.ucf'), ('All files', '*.*')))
-        CalData_FileName = cal_file_path
-
-        self.btn_measure_file.configure(state='normal')
-        return
-
     def save_calibration_results(self):
         tsp_cal_value = uTTA_data_import.DevCalibration
         abort_save = False
@@ -230,6 +225,10 @@ class CalApp(customtkinter.CTk):
 
             self.update_plots()
             self.btn_add_steps.configure(state='normal')
+            self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported. Now click on the magnifying glass below the plot and select "+
+                                       "the first horizontal section in the upper plot.")
+        else:
+            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.")
 
     def add_calibration_step(self):
         cal_range = G_Plots[0].get_xlim()
@@ -296,8 +295,15 @@ class CalApp(customtkinter.CTk):
         ymin = np.min(Temp[0, xlim_min:xlim_max])
         ymax = np.max(Temp[0, xlim_min:xlim_max])
         G_Plots[1].set_ylim(bottom=ymin, top=ymax)
+
+        tsp_min = np.min(ADC[0, xlim_min:xlim_max])
+        tsp_max = np.max(ADC[0, xlim_min:xlim_max])
+
         self.ent_step_temp.delete(0, 'end')
         self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(Temp[0, xlim_min:xlim_max])))
+
+        self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state. "+
+                                   "The current peak-to-peak spread of " + CH_Names[0] + " is {tsp_mm:.3f}V".format(tsp_mm=tsp_max-tsp_min))
 
 
 # Declare and register callbacks
