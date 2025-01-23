@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox  # part of python 3.12.5
 from tksheet import (  # tksheet 7.2.16
     Sheet)
+from quantiphy import Quantity      # quantiphy 2.20
 import uTTA_data_import
 import uTTA_data_processing
 import numpy as np                  # numpy 2.1.1
@@ -182,34 +183,44 @@ class CalApp(customtkinter.CTk):
         self.canvas.draw()
 
     def save_calibration_results(self):
-        tsp_cal_value = uTTA_data_import.DevCalibration
-        abort_save = False
 
-        r_sq = np.array(self.t_result_sheet.get_column_data(3), dtype=np.float32)
-        if np.min(r_sq) < 0.98:
-            msg_box = tk.messagebox.askquestion("Low confidence results",
-                                                "The minimum of R² is only {Rsqmin:.3f}, this seems to low to provide a good calibration.\n" +
-                                                "Do you wish to continue anyway?", icon="warning",)
-            if msg_box != "yes":
-                abort_save = True
-        if not abort_save:
+        cal_file_name = uTTA_data_import.select_file("Select the measurement file",
+                                                     (('uTTA Calibration Files', '*.ucf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
+        cfile, data_file_no_ext, file_path = uTTA_data_import.split_file_path(cal_file_name)
+        if len(cal_file_name) > 0:  # check if string is not empty
+            tsp_cal_value = uTTA_data_import.DevCalibration
+
             for ChIdx in range(0, 4):  # iterate through all the 4 channels viewed
                 tsp_name = self.t_result_sheet.get_cell_data(ChIdx, 0)
                 if tsp_name != "OFF":
+                    abort_save = False
 
                     tsp_offs = self.t_result_sheet.get_cell_data(ChIdx, 2)
                     tsp_lin = self.t_result_sheet.get_cell_data(ChIdx, 1)
                     tsp_cub = 0.0
+                    r_sq = self.t_result_sheet.get_cell_data(ChIdx, 3)
+                    if r_sq < 0.98:
+                        msg_box = tk.messagebox.askquestion("Low confidence results",
+                                                            "The R² of channel '"+ tsp_name +"'only {Rsqmin:.3f}".format(Rsqmin=np.min(r_sq)) +
+                                                            ", this seems to low to provide a good calibration.\n" +
+                                                            "Do you wish to continue anyway?", icon="warning", )
+                        if msg_box != "yes":
+                            abort_save = True
+                    if not abort_save:
+                        print("Creating Cal Entry for Channel {Ch}, Name: {nam}, Offset {Offs:.4f}, Gain {Gain:.4f}".format(
+                            Ch=ChIdx, nam=tsp_name, Offs=tsp_offs, Gain=tsp_lin))
 
-                    print("Creating Cal Entry for Channel {Ch}, Name: {nam}, Offset {Offs:.4f}, Gain {Gain:.4f}".format(
-                        Ch=ChIdx, nam=tsp_name, Offs=tsp_offs, Gain=tsp_lin))
+                        tsp_cal_value.Name = tsp_name
+                        tsp_cal_value.Offset = tsp_offs
+                        tsp_cal_value.Lin_Gain = tsp_lin
+                        tsp_cal_value.Cub_Gain = tsp_cub
 
-                    tsp_cal_value.Name = tsp_name
-                    tsp_cal_value.Offset = tsp_offs
-                    tsp_cal_value.Lin_Gain = tsp_lin
-                    tsp_cal_value.Cub_Gain = tsp_cub
-
-                    uTTA_data_import.write_diodes_to_calfile(CalData_FileName, tsp_cal_value)
+                        uTTA_data_import.write_diodes_to_calfile(cal_file_name, tsp_cal_value)
+                        self.lbl_helpbar.configure(text="Successfully saved calibration of channel " + tsp_name + " to file: " + data_file_no_ext)
+                    else:
+                        self.lbl_helpbar.configure(text="Aborted saving calibration of channel " + tsp_name + "because of bad convergence")
+        else:
+            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.")
 
     def read_measurement_file_callback(self):
         global TimeBaseTotal, ADC, CH_Names, Temp, CoolingStartBlock, DataFile
@@ -280,6 +291,10 @@ class CalApp(customtkinter.CTk):
                     self.t_result_sheet.set_cell_data(r=ChIdx, c=3, value=r_sq)
 
                 self.btn_save_result.configure(state='normal')
+                self.lbl_helpbar.configure(text="Repeat the selection process with the next temperature step, "
+                                                + "or press 'Save Calibration' to complete the process.")
+            else:
+                self.lbl_helpbar.configure(text="Repeat the selection process with the next temperature step")
 
     def on_closing(self):
         # if messagebox.askokcancel("Quit", "Do you want to quit?"):
@@ -298,12 +313,14 @@ class CalApp(customtkinter.CTk):
 
         tsp_min = np.min(ADC[0, xlim_min:xlim_max])
         tsp_max = np.max(ADC[0, xlim_min:xlim_max])
+        tsp_pp = Quantity(tsp_max-tsp_min, "V")
 
         self.ent_step_temp.delete(0, 'end')
         self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(Temp[0, xlim_min:xlim_max])))
 
-        self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state. "+
-                                   "The current peak-to-peak spread of " + CH_Names[0] + " is {tsp_mm:.3f}V".format(tsp_mm=tsp_max-tsp_min))
+        self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state. " +
+                                   "Peak-to-peak spread of " + CH_Names[0] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
+                                   "\nWhen you are satisfied enter the step temperature and click on 'Add Step'")
 
 
 # Declare and register callbacks
