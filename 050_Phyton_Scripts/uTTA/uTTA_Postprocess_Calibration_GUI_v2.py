@@ -28,6 +28,7 @@ CoolingStartBlock = 0
 MaxDeltaT_StartEnd = 1.0
 DataFile = ''
 G_Plots = []
+Static_States = []
 
 
 class CalApp(customtkinter.CTk):
@@ -50,12 +51,12 @@ class CalApp(customtkinter.CTk):
         self.frm_file_btns = ctk.CTkFrame(master=self)
         self.frm_file_btns.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
         self.frm_file_btns.grid_rowconfigure(1, weight=1)
-        self.frm_file_btns.grid_columnconfigure(1, weight=1)
+        self.frm_file_btns.grid_columnconfigure(21, weight=1)
 
         self.btn_measure_file = ctk.CTkButton(master=self.frm_file_btns,
-                                              text="Measurement File", fg_color="blue",
-                                              command=self.read_measurement_file_callback
-                                              )
+                                              text="Measurement File", fg_color="lightblue",
+                                              command=self.read_measurement_file_callback,
+                                              text_color="black")
         self.btn_measure_file.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
         self.frm_help_bar = ctk.CTkFrame(master=self)
@@ -64,45 +65,53 @@ class CalApp(customtkinter.CTk):
         self.frm_help_bar.grid_columnconfigure(1, weight=1)
 
         self.lbl_helpbar = ctk.CTkLabel(master=self.frm_help_bar,
-                                        fg_color="blue", width=1050, anchor="w", padx=10)
+                                        fg_color="lightblue", width=1050, anchor="w", padx=10, text_color="black")
         self.lbl_helpbar.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
         self.lbl_helpbar.configure(text="Welcome to the calibration GUI v2. Click 'Measurement File' and import a calibration measurement")
 
-        frm_tstep_entry = ctk.CTkFrame(master=self)
-        frm_tstep_entry.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
-        frm_tstep_entry.grid_rowconfigure(index=1, weight=1)
-        frm_tstep_entry.grid_columnconfigure(index=3, weight=1)
-        self.btn_add_steps = ctk.CTkButton(master=frm_tstep_entry,
-                                           text="Add Step", fg_color="blue",
-                                           command=self.add_calibration_step,
-                                           state="disabled")
-        self.btn_add_steps.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
-        lbl_no_steps = ctk.CTkLabel(master=frm_tstep_entry,
-                                    text_color="white",
-                                    text="Step Temperature:", justify="right")
-        lbl_no_steps.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
-
-        self.ent_step_temp = ctk.CTkEntry(master=frm_tstep_entry,
-                                          fg_color="blue",
-                                          placeholder_text="°C", width=60)
-        self.ent_step_temp.grid(row=0, column=2, padx=10, pady=10, sticky="ew")
-
         frm_step_table = ctk.CTkFrame(master=self)
-        frm_step_table.grid(row=2, rowspan=12, column=0, padx=10, pady=10, sticky="ew")
+        frm_step_table.grid(row=1, rowspan=12, column=0, padx=10, pady=10, sticky="ew")
         frm_step_table.grid_rowconfigure(index=8, weight=1)
-        frm_step_table.grid_columnconfigure(index=0, weight=1)
+        frm_step_table.grid_columnconfigure(index=1, weight=1)
 
         tab_label = ctk.CTkLabel(master=frm_step_table,
                                  text_color="white",
                                  text="Calibration Temperature Steps", justify="center")
-        tab_label.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        tab_label.grid(row=0, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+        self.btn_add_steps = ctk.CTkButton(master=frm_step_table,
+                                           text="Add Step", fg_color="lightblue",
+                                           command=self.add_calibration_step,
+                                           state="disabled", text_color="black")
+        self.btn_add_steps.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+
+        self.btn_rem_steps = ctk.CTkButton(master=frm_step_table,
+                                           text="Remove Step", fg_color="lightblue",
+                                           command=self.remove_calibration_step, text_color="black")
+        self.btn_rem_steps.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+
+        self.btn_calc_steps = ctk.CTkButton(master=frm_step_table,
+                                            text="Recalculate", fg_color="lightblue",
+                                            command=self.fit_temp_steps,
+                                            state="disabled", text_color="black")
+        self.btn_calc_steps.grid(row=2, column=1, columnspan=2, padx=10, pady=10, sticky="ew")
+
+        lbl_no_steps = ctk.CTkLabel(master=frm_step_table,
+                                    text_color="white",
+                                    text="Step Temp:", justify="right")
+        lbl_no_steps.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+
+        self.ent_step_temp = ctk.CTkEntry(master=frm_step_table,
+                                          fg_color="lightblue",
+                                          placeholder_text="°C", width=60, justify="right", text_color="black")
+        self.ent_step_temp.grid(row=1, column=2, padx=10, pady=10, sticky="ew")
 
         tab_heading = ["T/[°C]", "CH0 Avg.", "CH1 Avg.", "CH2 Avg.", "Temp Avg.", "Start", "End"]
         self.t_step_sheet = Sheet(frm_step_table,
                                   startup_select=(0, 1, "rows"),
                                   page_up_down_select_row=True,
-                                  height=220)
-        self.t_step_sheet.grid(row=1, rowspan=7, column=0, padx=10, pady=10, sticky="ew")
+                                  height=200)
+        self.t_step_sheet.grid(row=3, rowspan=6, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+        self.t_step_sheet.enable_bindings(("single_select", "edit_cell"))
         self.t_step_sheet.headers(tab_heading)
         self.t_step_sheet.set_all_column_widths(65)
 
@@ -121,14 +130,15 @@ class CalApp(customtkinter.CTk):
         self.t_result_sheet.grid(row=1, rowspan=4, column=0, padx=10, pady=10, sticky="ew")
         self.t_result_sheet.insert_columns(columns=4)
         self.t_result_sheet.insert_rows(rows=3)
+        self.t_result_sheet.enable_bindings()
         self.t_result_sheet.sheet_data_dimensions(total_rows=4, total_columns=4)
         self.t_result_sheet.headers(tab_result_heading)
         self.t_result_sheet.set_all_column_widths(85)
 
         self.btn_save_result = ctk.CTkButton(master=frm_result_table,
-                                             text="Save Calibration", fg_color="blue",
+                                             text="Save Calibration", fg_color="lightblue",
                                              command=self.save_calibration_results,
-                                             state="disabled")
+                                             state="disabled", text_color="black")
         self.btn_save_result.grid(row=5, column=0, padx=10, pady=10, sticky="ew")
 
         self.fig = Figure(figsize=(11, 6.5), dpi=screen_dpi)
@@ -147,9 +157,9 @@ class CalApp(customtkinter.CTk):
 
     def update_plots(self):
 
-        global G_Plots, Temp
+        global G_Plots, Temp, Static_States
         G_Plots[0].clear()
-        # print("length ADC: " + str(len(CH_Names)))
+
         lines = []
         for PlotIdx in range(0, len(CH_Names)):
             if CH_Names[PlotIdx] != "OFF":
@@ -166,19 +176,51 @@ class CalApp(customtkinter.CTk):
             G_Plots[0].legend(loc="lower left")
 
         G_Plots[1].clear()
-        # print("Temp Len: " + str(len(Temp)))
-        # Temp = Temp[0, :]
+
         if len(Temp) > 0:
             for PlotIdx in range(1):
                 G_Plots[1].plot(TimeBaseTotal, Temp[PlotIdx, :], label="TC " + str(PlotIdx))
 
             G_Plots[1].set_xlim(left=0)
-
             G_Plots[1].legend(loc="lower left")
             G_Plots[1].grid(True)
 
         G_Plots[1].set_xlabel("Time / [s]")
         G_Plots[1].set_ylabel("Temperature / [°C]")
+        tbl = self.t_step_sheet.data
+        self.canvas.draw()
+
+        if len(tbl) >= 1:
+
+            self.btn_rem_steps.configure(state='normal')
+
+            times = np.transpose([np.array(self.t_step_sheet.get_column_data(5), dtype=np.float32), # starttime
+                                  np.array(self.t_step_sheet.get_column_data(6), dtype=np.float32), # endtime
+                                  np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)]) # temperature
+
+            ylims = G_Plots[0].axes.get_ylim()
+            print(ylims)
+            ypos = ylims[0] + (ylims[1] - ylims[0]) * 0.05
+            for stat_state in times:
+
+                G_Plots[1].fill_between(TimeBaseTotal, 0, 1,
+                                        where=np.logical_and((stat_state[0] <= TimeBaseTotal), (stat_state[1] >= TimeBaseTotal)),
+                                        color='green', alpha=0.5,
+                                        transform=G_Plots[1].get_xaxis_transform())
+                G_Plots[0].fill_between(TimeBaseTotal, 0, 1,
+                                        where=np.logical_and((stat_state[0] <= TimeBaseTotal), (stat_state[1] >= TimeBaseTotal)),
+                                        color='green', alpha=0.5,
+                                        transform=G_Plots[0].get_xaxis_transform())
+
+                G_Plots[0].text((stat_state[0]+stat_state[1])/2, ypos, "{temp:.1f}°C".format(temp=stat_state[2]), ha="center", va="center")
+
+        else:
+            self.btn_rem_steps.configure(state='disabled')
+
+        if len(tbl) >= 2:
+            self.btn_calc_steps.configure(state='normal')
+        else:
+            self.btn_calc_steps.configure(state='disabled')
 
         self.canvas.draw()
 
@@ -223,7 +265,7 @@ class CalApp(customtkinter.CTk):
             self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.")
 
     def read_measurement_file_callback(self):
-        global TimeBaseTotal, ADC, CH_Names, Temp, CoolingStartBlock, DataFile
+        global TimeBaseTotal, ADC, CH_Names, Temp, CoolingStartBlock, DataFile, Static_States
         measfilename = uTTA_data_import.select_file("Select the measurement file",
                                                     (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
         if len(measfilename) > 0:    # check if string is not empty
@@ -234,7 +276,17 @@ class CalApp(customtkinter.CTk):
 
             TimeBaseTotal, ADC, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
+            # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.5°C
+            Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.5, 300)
+
+            if Static_States:
+                for stat_state in Static_States:
+                    # for the temperature average take only the last 60 samples (1Minute) for the average
+                    t_avg = np.round(np.mean(Temp[0, (stat_state[1]-60):stat_state[1]]), 2)
+                    self.add_cal_step_entry(stat_state[1]-60, stat_state[1], t_avg)
+
             self.update_plots()
+
             self.btn_add_steps.configure(state='normal')
             self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported. Now click on the magnifying glass below the plot and select "+
                                        "the first horizontal section in the upper plot.")
@@ -243,58 +295,77 @@ class CalApp(customtkinter.CTk):
 
     def add_calibration_step(self):
         cal_range = G_Plots[0].get_xlim()
-        # print("New Calibration Range: ", cal_range)
+
         t_step = self.ent_step_temp.get()
-        t_step = t_step.replace(",", ".")
-        if t_step.isdigit():
-            # tab_line = np.array(float(self.ent_step_temp.get()), int(cal_range[0]), int(cal_range[1]) )
-            tbl = self.t_step_sheet.data
+
+        if len(t_step) > 2:
+            t_step = float(t_step.replace(",", "."))
 
             xstart = int(cal_range[0])
             xend = int(cal_range[1])
 
-            self.t_step_sheet.insert_row(idx=0)
-            self.t_step_sheet["A1"].data = float(t_step)
-            self.t_step_sheet["B1"].data = np.mean(ADC[0, xstart:xend])
-            self.t_step_sheet["C1"].data = np.mean(ADC[1, xstart:xend])
-            self.t_step_sheet["D1"].data = np.mean(ADC[2, xstart:xend])
-            self.t_step_sheet["E1"].data = np.mean(Temp[0, xstart:xend])
-            self.t_step_sheet["F1"].data = xstart
-            self.t_step_sheet["G1"].data = xend
+            self.add_cal_step_entry(xstart, xend, t_step)
 
             self.ent_step_temp.delete(0, 'end')
             self.update_plots()
 
-            if len(tbl) >= 2:    # above two selected points the interpolation calculation ca begin
-
-                for ChIdx in range(0, 4):   # iterate through all the 4 channels viewed
-
-                    x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
-                    print("X-Data: " + str(x_data))
-                    y_data = np.array(self.t_step_sheet.get_column_data(ChIdx+1), dtype=np.float32)
-                    slope, offs = np.polyfit(x_data, y_data, 1)
-                    if abs(slope) > 0.00001:
-                        y_fit = offs + slope * x_data
-                        corr_mat = np.corrcoef(y_data, y_fit)
-                        corr = corr_mat[0, 1]
-                        r_sq = corr**2
-                    else:
-                        r_sq = 1.0
-                    print("Fitting Channel {Ch} with linear interpolation: Slope: {Slope:.4f}, Offset: {Offs:.4f} R²: {Rsq:.4f}".format(
-                         Ch=ChIdx, Slope=slope, Offs=offs, Rsq=r_sq))
-                    if ChIdx < 3:
-                        self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=CH_Names[ChIdx])
-                    else:
-                        self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value="TC0")
-                    self.t_result_sheet.set_cell_data(r=ChIdx, c=1, value=slope)
-                    self.t_result_sheet.set_cell_data(r=ChIdx, c=2, value=offs)
-                    self.t_result_sheet.set_cell_data(r=ChIdx, c=3, value=r_sq)
-
-                self.btn_save_result.configure(state='normal')
+            tbl = self.t_step_sheet.data
+            if len(tbl) >= 2:  # above two selected points the interpolation calculation ca begin
                 self.lbl_helpbar.configure(text="Repeat the selection process with the next temperature step, "
                                                 + "or press 'Save Calibration' to complete the process.")
             else:
                 self.lbl_helpbar.configure(text="Repeat the selection process with the next temperature step")
+
+    def add_cal_step_entry(self, starttime, endtime, temp_step):
+        self.t_step_sheet.insert_row(idx=0)
+        self.t_step_sheet["A1"].data = float(temp_step)
+        self.t_step_sheet["B1"].data = np.mean(ADC[0, starttime:endtime])
+        self.t_step_sheet["C1"].data = np.mean(ADC[1, starttime:endtime])
+        self.t_step_sheet["D1"].data = np.mean(ADC[2, starttime:endtime])
+        self.t_step_sheet["E1"].data = np.mean(Temp[0, starttime:endtime])
+        self.t_step_sheet["F1"].data = starttime
+        self.t_step_sheet["G1"].data = endtime
+
+    def remove_calibration_step(self):
+
+        tbl = self.t_step_sheet
+        for box in tbl.get_all_selection_boxes():
+            row_number = tbl.datarn(box.from_r)
+
+        tbl.delete_row(row_number)
+        self.update_plots()
+
+    def fit_temp_steps(self):
+
+        self.update_plots()
+        tbl = self.t_step_sheet.data
+        if len(tbl) >= 2:  # above two selected points the interpolation calculation ca begin
+
+            for ChIdx in range(0, 4):  # iterate through all the 4 channels viewed
+
+                x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
+
+                y_data = np.array(self.t_step_sheet.get_column_data(ChIdx + 1), dtype=np.float32)
+                slope, offs = np.polyfit(x_data, y_data, 1)
+                if abs(slope) > 0.00001:
+                    y_fit = offs + slope * x_data
+                    corr_mat = np.corrcoef(y_data, y_fit)
+                    corr = corr_mat[0, 1]
+                    r_sq = corr ** 2
+                else:
+                    r_sq = 1.0
+                #print("Fitting Channel {Ch} with linear interpolation: Slope: {Slope:.4f}, Offset: {Offs:.4f} R²: {Rsq:.4f}".format(
+                #     Ch=ChIdx, Slope=slope, Offs=offs, Rsq=r_sq))
+                if ChIdx < 3:
+                    self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=CH_Names[ChIdx])
+                else:
+                    self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value="TC0")
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=1, value=slope)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=2, value=offs)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=3, value=r_sq)
+
+            self.btn_save_result.configure(state='normal')
+
 
     def on_closing(self):
         # if messagebox.askokcancel("Quit", "Do you want to quit?"):
