@@ -551,3 +551,6 @@
 *.s#4
 020_uC_Software/uTTA/.settings/language.settings.xml
 040_LabVIEW_GUI/uTTA_LV_GUI.aliases
+050_Phyton_Scripts/uTTA/.idea/workspace.xml
+050_Phyton_Scripts/uTTA/__pycache__/uTTA_data_import.cpython-313.pyc
+050_Phyton_Scripts/uTTA/__pycache__/uTTA_data_processing.cpython-313.pyc
