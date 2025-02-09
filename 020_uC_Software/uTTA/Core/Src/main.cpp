@@ -136,7 +136,7 @@ int main(void)
 
 	  EvalLFSError(w25qxx_littlefs_init(&w25qxx));
 
-	  Read_CalibrationFromFlash(&littlefs, &file);
+	  Read_CalibrationFromFlash(&littlefs, &file, 0);
 
 	  FlashMemoryAvailable = 1;
   }
@@ -144,6 +144,7 @@ int main(void)
 	  ErrorResponse(ERRC_SYSTEM_ERROR, ERST_NO_FLASH_MEMORY);
 	  FlashMemoryAvailable = -1;
   }
+
 
   INIT_DBG("DAC Initialisation!\n");
 
@@ -216,8 +217,13 @@ void DoMeasurement(void)
 		Meas_StartTime = GetTick();
 		NextOutput = GetTick();
 
-		if(FlashMemoryAvailable <= 0){
+		if(FlashMemoryAvailable <= 0){	// no flash memory is attached to save measurement data therefore the measurement is aborted
 			ErrorResponse(ERRC_FILE_SYSTEM, ERST_NO_FLASH_MEMORY);
+			FlagMeasurementState = Meas_State_Idle;
+			break;
+		}
+		if(CalAvailable < 1){		// No valid calibration file was found therefore the measurement is aborted
+			ErrorResponse(ERRC_SYSTEM_ERROR, ERST_NO_CALIBRATION);
 			FlagMeasurementState = Meas_State_Idle;
 			break;
 		}
