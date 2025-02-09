@@ -25,7 +25,7 @@ void AD56x4_Init(CH_Cal CalValues[]){
 
 	for(uint8_t idx=0;idx<4;idx++){
 		DACCalVal[idx] = CalValues[idx];
-		UART_printf("CAL %d, %f, %f, %f\n",idx, DACCalVal[idx].Offset, DACCalVal[idx].LinGain, DACCalVal[idx].CubGain);
+		//UART_printf("CAL %d, %f, %f, %f\n",idx, DACCalVal[idx].Offset, DACCalVal[idx].LinGain, DACCalVal[idx].CubGain);
 	}
 
 	LL_GPIO_SetOutputPin(AD56x4_CSN_PORT, AD56x4_CSN_PIN);
