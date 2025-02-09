@@ -57,6 +57,7 @@ void SetDUT(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void GetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetCalValue(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
+void GetCalValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SaveCalValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void GetSystemTime(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetSystemTime(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
