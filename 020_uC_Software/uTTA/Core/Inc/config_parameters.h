@@ -32,9 +32,9 @@
 
 #include "math.h"
 
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
+
+#define UTTA_OWNER "WK"
+#define UTTA_SERIAL_NO "001"
 
 // Handle Definition for Flash-SPI and UART
 #define SD_SPI_HANDLE 		SPI3
@@ -108,8 +108,8 @@
 #define VOFFS0_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 #define VOFFS1_3_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 
-#define UTTA_SW_VERSION "2.1"
-#define T3R_FILEVERSION "3.0"
+#define UTTA_SW_VERSION "2.2"
+#define T3R_FILEVERSION "3.1"
 
 
 #define MODE_NORMAL      0
@@ -170,12 +170,6 @@ extern char DUT_Name[MAX_DUT_NAME_LENGTH];
 extern volatile MeasurementStates_t FlagMeasurementState;
 
 #define LFS_WRITE_STRING(LittleFS,File,str)  lfs_file_write(LittleFS, File, str, strlen(str))
-
-
-//#ifdef __cplusplus
-//}
-//#endif
-
 
 
 #endif /* INC_CONFIG_PARAMETERS_H_ */
