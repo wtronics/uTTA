@@ -53,7 +53,7 @@ extern const char *CalChannelNames[];
 
 
 void Write_CalibrationToFlash(lfs_t *lfs, lfs_file_t *file);
-void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file);
+void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file, uint8_t details);
 int Write_CalibrationToFile(lfs_t *lfs, lfs_file_t *file);
 
 int8_t WriteFileHeaderToFile(lfs_t *lfs, lfs_file_t *file);
