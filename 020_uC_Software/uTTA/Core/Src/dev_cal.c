@@ -53,10 +53,11 @@ void Write_CalibrationToFlash(lfs_t *lfs, lfs_file_t *file){
   * @brief Read the whole calibration data array from the flash memory into the uC memory
     @param  lfs_t *	      lfs			Pointer to the littlefs file system struct
     @param  lfs_file_t *  file			Pointer to the littlefs file struct
+    @param  uint8_t		  SerialOut		Flag to switch on the detailed output to the serial port
     @returns none
 */
 /**************************************************************************/
-void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file){
+void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file, uint8_t details){
 
 	int LFS_ret = 0;
 	UART_printf("CALIBRATION_FILE:\n");
@@ -69,6 +70,9 @@ void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file){
 		CalAvailable = -1;
 		return;
 	}
+	else{
+		UART_printf("OK\n");
+	}
 
 	// read the file from the memory in one step
 	LFS_ret = lfs_file_read(lfs, file, &ChannelCalibValues, sizeof(ChannelCalibValues));
@@ -80,10 +84,13 @@ void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file){
 		return;
 	}
 	CalAvailable = 1;
-
-	for(uint8_t ValIdx = 0; ValIdx < MaxCalChannels; ValIdx++){
+	if(details){
+		for(uint8_t ValIdx = 0; ValIdx < MaxCalChannels; ValIdx++){
 		UART_printf("%s,%f,%f,%f\n",CalChannelNames[ValIdx], ChannelCalibValues[ValIdx].Offset, ChannelCalibValues[ValIdx].LinGain, ChannelCalibValues[ValIdx].CubGain);
+		}
+		UART_printf("#EOF\n");
 	}
+
 }
 
 /**
@@ -138,6 +145,8 @@ int8_t WriteFileHeaderToFile(lfs_t *lfs, lfs_file_t *file){
 	RTC_read_date(&Date);
 	RTC_read_time(&Time);
 	sprintf(LogWriteBfr,"FileVersion;" T3R_FILEVERSION "\n");
+	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
+	sprintf(LogWriteBfr,UTTA_OWNER ", SN" UTTA_SERIAL_NO "\n");
 	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
 	Write_CalibrationToFile(lfs, file);
