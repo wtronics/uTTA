@@ -60,19 +60,15 @@ def calculate_diode_heating(timebase, adc, cooling_start_block, samp_decade):
 
 def find_static_states(data, threshold=0.01, min_length=5):
     """
-    Findet Bereiche in einem NumPy-Array, in denen die Werte innerhalb eines
-    Schwellenwerts bleiben und eine Mindestlänge haben.
+    Detects static areas within a numpy-array where values stay within a certain threshold and have a minimum length.
 
     Args:
-        data (numpy.ndarray): Das Eingabe-Array.
-        threshold (float): Der maximale Unterschied zwischen den Werten innerhalb
-            eines Bereichs.
-        min_length (int): Die minimale Anzahl von Datenpunkten, die ein Bereich
-            haben muss, um berücksichtigt zu werden.
+        data (numpy.ndarray): Input data array
+        threshold (float): Maximum absolute difference between values of the range.
+        min_length (int): Minimum amount of consecutive values which must be within the threshold.
 
     Returns:
-        list: Eine Liste von Tupeln, die die Start- und Endpunkte der gefundenen
-        Bereiche darstellen.
+        list: a list of tuples which represent the start and end points of each area.
     """
 
     ranges = []
@@ -86,7 +82,7 @@ def find_static_states(data, threshold=0.01, min_length=5):
                 ranges.append((start, i - 1))
             start = i
 
-    # Überprüfen, ob der letzte Bereich lang genug ist
+    # checking if the last range is long enough
     if len(data) - start >= min_length:
         ranges.append((start, len(data) - 1))
 
