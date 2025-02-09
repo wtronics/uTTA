@@ -54,6 +54,7 @@ void Init_SCPI_server(void){
 		my_instrument.RegisterCommand(":GAIN", &SetGain);
 		my_instrument.RegisterCommand(":GAIN?", &GetGain);
 		my_instrument.RegisterCommand(":CAL", &SetCalValue);
+		my_instrument.RegisterCommand(":CAL?", &GetCalValues);
 		my_instrument.RegisterCommand(":SAVE", &SaveCalValues);
 		my_instrument.RegisterCommand(":PSUenable", &SetPSUEnable);
 		my_instrument.RegisterCommand(":PSUenable?", &GetPSUEnable);
@@ -75,7 +76,7 @@ void Init_SCPI_server(void){
   * @retval None
   */
 void Identify(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart) {
-	UART_printf("WK, uTTA, SN001, " UTTA_SW_VERSION ", %s, %s\n",__DATE__,__TIME__);
+	UART_printf(UTTA_OWNER ", uTTA, SN" UTTA_SERIAL_NO ", " UTTA_SW_VERSION ", %s, %s\n",__DATE__,__TIME__);
 }
 
 /**
@@ -979,6 +980,16 @@ void SetCalValue(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	UART_printf("%s, %f, %f, %f\n",CalChannelNames[ParamIdx], ChannelCalibValues[ParamIdx].Offset, ChannelCalibValues[ParamIdx].LinGain, ChannelCalibValues[ParamIdx].CubGain);
 
+}
+
+/**
+  * @brief Returns the whole calibration Information of the device
+  * Syntax: SYSTem:CAL?
+  * @param None
+  * @retval None
+  */
+void GetCalValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+	Read_CalibrationFromFlash(&littlefs, &file, 1);
 }
 
 
