@@ -3,7 +3,7 @@ from matplotlib.figure import Figure
 import tkinter as tk
 from tkinter import messagebox  # part of python 3.12.5
 from tksheet import (  # tksheet 7.2.16
-    Sheet)
+    Sheet, float_formatter)
 from quantiphy import Quantity      # quantiphy 2.20
 import uTTA_data_import
 import uTTA_data_processing
@@ -110,6 +110,9 @@ class CalApp(customtkinter.CTk):
                                   startup_select=(0, 1, "rows"),
                                   page_up_down_select_row=True,
                                   height=200)
+        self.t_step_sheet.format("A", formatter_options=float_formatter(), decimals=3)
+        self.t_step_sheet.format("B:E", formatter_options=float_formatter(), decimals=4)
+
         self.t_step_sheet.grid(row=3, rowspan=6, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
         self.t_step_sheet.enable_bindings(("single_select", "edit_cell"))
         self.t_step_sheet.headers(tab_heading)
@@ -125,7 +128,7 @@ class CalApp(customtkinter.CTk):
                                     text="Linearization Results", justify="center")
         result_label.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
-        tab_result_heading = ["Channel", "Gain", "Offset", "R²"]
+        tab_result_heading = ["Channel", "Offset", "Lin.", "Quad.", "R²"]
         self.t_result_sheet = Sheet(frm_result_table, show_y_scrollbar=False, height=150)
         self.t_result_sheet.grid(row=1, rowspan=4, column=0, padx=10, pady=10, sticky="ew")
         self.t_result_sheet.insert_columns(columns=4)
@@ -161,10 +164,14 @@ class CalApp(customtkinter.CTk):
         G_Plots[0].clear()
 
         lines = []
+        ymin = 10
+        ymax = 0
         for PlotIdx in range(0, len(CH_Names)):
             if CH_Names[PlotIdx] != "OFF":
                 line, = G_Plots[0].plot(TimeBaseTotal, ADC[PlotIdx, :], label=CH_Names[PlotIdx])
                 lines.append(line)
+                ymin = np.min([ymin, np.min(ADC[PlotIdx, :])])
+                ymax = np.max([ymax, np.max(ADC[PlotIdx, :])])
 
         G_Plots[0].set_xlabel("Time / [s]")
         G_Plots[0].set_ylabel("Diode Voltage / [V]")
@@ -174,15 +181,23 @@ class CalApp(customtkinter.CTk):
 
         if len(ADC) > 0:
             G_Plots[0].legend(loc="lower left")
+            G_Plots[0].set_ylim([ymin - (ymax - ymin)*0.05 , ymax + (ymax - ymin)*0.05])
 
         G_Plots[1].clear()
+
+        ymin = 100
+        ymax = -100
 
         if len(Temp) > 0:
             for PlotIdx in range(1):
                 G_Plots[1].plot(TimeBaseTotal, Temp[PlotIdx, :], label="TC " + str(PlotIdx))
 
+                ymin = np.min([ymin, np.min(Temp[PlotIdx, :])])
+                ymax = np.max([ymax, np.max(Temp[PlotIdx, :])])
+
             G_Plots[1].set_xlim(left=0)
             G_Plots[1].legend(loc="lower left")
+            G_Plots[1].set_ylim([ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05])
             G_Plots[1].grid(True)
 
         G_Plots[1].set_xlabel("Time / [s]")
@@ -191,7 +206,6 @@ class CalApp(customtkinter.CTk):
         self.canvas.draw()
 
         if len(tbl) >= 1:
-
             self.btn_rem_steps.configure(state='normal')
 
             times = np.transpose([np.array(self.t_step_sheet.get_column_data(5), dtype=np.float32), # starttime
@@ -199,7 +213,6 @@ class CalApp(customtkinter.CTk):
                                   np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)]) # temperature
 
             ylims = G_Plots[0].axes.get_ylim()
-            print(ylims)
             ypos = ylims[0] + (ylims[1] - ylims[0]) * 0.05
             for stat_state in times:
 
@@ -237,10 +250,10 @@ class CalApp(customtkinter.CTk):
                 if tsp_name != "OFF":
                     abort_save = False
 
-                    tsp_offs = self.t_result_sheet.get_cell_data(ChIdx, 2)
-                    tsp_lin = self.t_result_sheet.get_cell_data(ChIdx, 1)
-                    tsp_cub = 0.0
-                    r_sq = self.t_result_sheet.get_cell_data(ChIdx, 3)
+                    tsp_offs = self.t_result_sheet.get_cell_data(ChIdx, 1)
+                    tsp_lin = self.t_result_sheet.get_cell_data(ChIdx, 2)
+                    tsp_quad = self.t_result_sheet.get_cell_data(ChIdx, 3)
+                    r_sq = self.t_result_sheet.get_cell_data(ChIdx, 4)
                     if r_sq < 0.98:
                         msg_box = tk.messagebox.askquestion("Low confidence results",
                                                             "The R² of channel '"+ tsp_name +"'only {Rsqmin:.3f}".format(Rsqmin=np.min(r_sq)) +
@@ -255,7 +268,7 @@ class CalApp(customtkinter.CTk):
                         tsp_cal_value.Name = tsp_name
                         tsp_cal_value.Offset = tsp_offs
                         tsp_cal_value.Lin_Gain = tsp_lin
-                        tsp_cal_value.Cub_Gain = tsp_cub
+                        tsp_cal_value.Quad_Gain = tsp_quad
 
                         uTTA_data_import.write_diodes_to_calfile(cal_file_name, tsp_cal_value)
                         self.lbl_helpbar.configure(text="Successfully saved calibration of channel " + tsp_name + " to file: " + data_file_no_ext)
@@ -282,7 +295,7 @@ class CalApp(customtkinter.CTk):
             if Static_States:
                 for stat_state in Static_States:
                     # for the temperature average take only the last 60 samples (1Minute) for the average
-                    t_avg = np.round(np.mean(Temp[0, (stat_state[1]-60):stat_state[1]]), 2)
+                    t_avg = np.mean(Temp[0, (stat_state[1]-60):stat_state[1]])
                     self.add_cal_step_entry(stat_state[1]-60, stat_state[1], t_avg)
 
             self.update_plots()
@@ -346,23 +359,29 @@ class CalApp(customtkinter.CTk):
                 x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
 
                 y_data = np.array(self.t_step_sheet.get_column_data(ChIdx + 1), dtype=np.float32)
-                slope, offs = np.polyfit(x_data, y_data, 1)
+                fitting_degrees = 2
+
+                p_fit = np.polyfit(x_data, y_data, fitting_degrees)
+
+                [quad, slope, offs] = p_fit
+
                 if abs(slope) > 0.00001:
-                    y_fit = offs + slope * x_data
+                    y_fit = offs + slope * x_data + quad * x_data * x_data
                     corr_mat = np.corrcoef(y_data, y_fit)
                     corr = corr_mat[0, 1]
                     r_sq = corr ** 2
                 else:
                     r_sq = 1.0
-                #print("Fitting Channel {Ch} with linear interpolation: Slope: {Slope:.4f}, Offset: {Offs:.4f} R²: {Rsq:.4f}".format(
-                #     Ch=ChIdx, Slope=slope, Offs=offs, Rsq=r_sq))
+                print("Fitting Channel {Ch} with quadratic interpolation: Offset: {Offs:.4f} ,Linear: {Lin:.4f}, Quad: {Quad:.7f}, R²: {Rsq:.4f}".format(
+                     Ch=ChIdx, Lin=slope, Offs=offs, Quad=quad, Rsq=r_sq))
                 if ChIdx < 3:
                     self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=CH_Names[ChIdx])
                 else:
                     self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value="TC0")
-                self.t_result_sheet.set_cell_data(r=ChIdx, c=1, value=slope)
-                self.t_result_sheet.set_cell_data(r=ChIdx, c=2, value=offs)
-                self.t_result_sheet.set_cell_data(r=ChIdx, c=3, value=r_sq)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=1, value=offs)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=2, value=slope)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=3, value=quad)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=4, value=r_sq)
 
             self.btn_save_result.configure(state='normal')
 
