@@ -19,7 +19,7 @@ class DevCalibration:
     Name:   str
     Offset: float
     Lin_Gain: float
-    Cub_Gain: float
+    Quad_Gain: float
 
 
 def read_measurement_file(filename, flag_raw_value_mode):
@@ -68,7 +68,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode):
     for line in lines:
         line = line.replace("\r", "").replace("\n", "")
         cells = line.split(";")
-        # print(type(cells))
+
         if isinstance(cells, list):
             if not cells[0].isnumeric():
                 match cells[0]:
@@ -180,8 +180,6 @@ def read_measurement_file_30up(lines, flag_raw_value_mode):
                     case 'Total Blocks':
                         total_blocks = int(cells[1])
                         print("BLOCKS:   Cool start block:  {CSB}    ; Total:        {TotBlocks}".format(CSB=cooling_start_block, TotBlocks=total_blocks))
-                        # case 'Finished':
-                        # print("Finishing time: " + str(cells[1]))
                     case 'ADC1':
                         cells[0] = ""
                     # dummy case to remove skipped line statement
@@ -215,8 +213,8 @@ def read_measurement_file_30up(lines, flag_raw_value_mode):
     del lines
     del line
     del cells
-    print(utta_cal_values)
-    print("Channel Names: " + str(ch_names))
+
+    # print("Channel Names: " + str(ch_names))
 
     temp = temp[:, 0:temp_idx + 1]
     adc = adc[:, 0:adc_idx]
@@ -238,48 +236,6 @@ def read_measurement_file_30up(lines, flag_raw_value_mode):
     return timebase_total, adc, temp, samp_decade, cooling_start_block, ch_names, dut_tsp_sensitivity
 
 
-# def read_calfile(filename):
-#
-#     print("Reading calibration values from file: " + filename)
-#     config = configparser.ConfigParser()
-#     config.read_file(open(filename))
-#
-#     pga_calibration = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0]], dtype=float)
-#     adc_calibration = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0]], dtype=float)
-#
-#     for ChIdx in range(0, 4):
-#         if ChIdx == 0:
-#             for PGA_Idx in range(0, 4):
-#                 pga_calibration[1][PGA_Idx] = float(config["ADC0_CAL_PGA_" + str(PGA_Idx)]["Gain"].replace(",", "."))
-#                 pga_calibration[0][PGA_Idx] = float(config["ADC0_CAL_PGA_" + str(PGA_Idx)]["Offset"].replace(",", "."))
-#                 print("Calibration Values for Ch{ChNo}.PGA{PGANo}: Gain: {Slope:.6f} V/Digit, Offset: {Offs:.6f} V".format(
-#                     ChNo=ChIdx,
-#                     PGANo=PGA_Idx,
-#                     Slope=pga_calibration[1][PGA_Idx],
-#                     Offs=pga_calibration[0][PGA_Idx]))
-#         else:
-#             adc_calibration[1][ChIdx] = float(config["ADC" + str(ChIdx) + "_CAL"]["Gain"].replace(",", "."))
-#             adc_calibration[0][ChIdx] = float(config["ADC" + str(ChIdx) + "_CAL"]["Offset"].replace(",", "."))
-#             print("Calibration Values for Ch{ChNo}:      Gain: {Slope:.6f} V/Digit, Offset: {Offs:.6f} V".format(ChNo=ChIdx,
-#                                                                                                                  Slope=adc_calibration[1][ChIdx],
-#                                                                                                                  Offs=adc_calibration[0][ChIdx]))
-#     diode_cal_values = []
-#
-#     # look for Diode channel calibration values
-#     for sect in config.sections():
-#
-#         if str(sect).startswith("$CHAN_"):
-#             print(sect)
-#             diode_val = DevCalibration
-#             diode_val.Name = str(sect).replace("$CHAN_", "")
-#             diode_val.Offset = float(config[str(sect)]["Offset"].replace(",", "."))
-#             diode_val.Lin_Gain = float(config[str(sect)]["Lin_Gain"].replace(",", "."))
-#             diode_val.Cub_Gain = float(config[str(sect)]["Quad_Gain"].replace(",", "."))
-#             print(diode_val)
-#             diode_cal_values.append(diode_val)
-#
-#     return pga_calibration, adc_calibration, diode_cal_values
-
 def read_calfile(filename):
 
     print("Reading calibration values from file: " + filename)
@@ -294,31 +250,28 @@ def read_calfile(filename):
     for sect in config.sections():
         match sect:
             case s if s.startswith('$CHAN_'):
-                print(sect)
                 diode_val = DevCalibration
                 diode_val.Name = str(sect).replace("$CHAN_", "")
                 diode_val.Offset = float(config[str(sect)]["Offset"].replace('"', ""))
                 diode_val.Lin_Gain = float(config[str(sect)]["LinGain"].replace('"', ""))
-                diode_val.Cub_Gain = float(config[str(sect)]["CubGain"].replace('"', ""))
-                print(diode_val)
+                diode_val.Quad_Gain = float(config[str(sect)]["CubGain"].replace('"', ""))
+
                 dut_tsp_sensitivity.append(diode_val)
             case s if s.startswith('$TC_'):
-                print(sect)
                 tc_cal = DevCalibration
                 tc_cal.Name = str(sect).replace("$TC_", "")
                 tc_cal.Offset = float(config[str(sect)]["Offset"].replace('"', ""))
                 tc_cal.Lin_Gain = float(config[str(sect)]["LinGain"].replace('"', ""))
-                tc_cal.Cub_Gain = float(config[str(sect)]["CubGain"].replace('"', ""))
-                print(tc_cal)
+                tc_cal.Quad_Gain = float(config[str(sect)]["CubGain"].replace('"', ""))
+
                 tc_cal_values.append(tc_cal)
             case _:
-                print(sect)
                 utta_cal = DevCalibration
                 utta_cal.Name = str(sect)
                 utta_cal.Offset = float(config[str(sect)]["Offset"].replace('"', ""))
                 utta_cal.Lin_Gain = float(config[str(sect)]["LinGain"].replace('"', ""))
-                utta_cal.Cub_Gain = float(config[str(sect)]["CubGain"].replace('"', ""))
-                print(utta_cal)
+                utta_cal.Quad_Gain = float(config[str(sect)]["CubGain"].replace('"', ""))
+
                 utta_cal_values.append(utta_cal)
 
     return utta_cal_values, dut_tsp_sensitivity, tc_cal_values
@@ -337,11 +290,9 @@ def write_diodes_to_calfile(filename, cal_value):
         case _:
             cfg_section_name = "$CHAN_" + tsp_name
 
-    print("Writing Channel " + tsp_name)
-
     tsp_offs = '"{:.3e}"'.format(cal_value.Offset)
     tsp_lin = '"{:.3e}"'.format(cal_value.Lin_Gain)
-    tsp_cub = '"{:.3e}"'.format(cal_value.Cub_Gain)
+    tsp_cub = '"{:.3e}"'.format(cal_value.Quad_Gain)
     print("Creating Cal Entry for Channel Name: {nam}, Offset {Offs}, Gain {Gain}".format(nam=tsp_name, Offs=tsp_offs, Gain=tsp_lin))
 
     if config.has_section(cfg_section_name):
@@ -367,7 +318,6 @@ def write_diodes_to_calfile(filename, cal_value):
 
 
 def select_file(heading, file_filter):
-    # filetypes = (('Text Files', '*.txt'), ('T3R Measurement Files', '*.t3r'), ('All files', '*.*'))
 
     filename = fd.askopenfilename(
         title=heading,
