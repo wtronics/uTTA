@@ -290,7 +290,7 @@ class CalApp(customtkinter.CTk):
             TimeBaseTotal, ADC, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
             # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.5°C
-            Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.5, 300)
+            Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.65, 300)
 
             if Static_States:
                 for stat_state in Static_States:
