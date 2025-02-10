@@ -38,12 +38,13 @@ def read_measurement_file(filename, flag_raw_value_mode):
             # print("Number of Lines: " + str(num_lines))
 
             timebase_total, adc, temp, samp_decade, cooling_start_block, ch_names, dut_tsp_sensitivity = read_measurement_file_30up(lines,
-                                                                                                                                    flag_raw_value_mode)
+                                                                                                                                    flag_raw_value_mode,
+                                                                                                                                    t3r_file_vers)
             return timebase_total, adc, temp, samp_decade, cooling_start_block, ch_names, dut_tsp_sensitivity
     return 0, 0, 0, 0, 0, 0, 0
 
 
-def read_measurement_file_30up(lines, flag_raw_value_mode):
+def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
     num_lines = len(lines)
     adc = np.zeros((4, num_lines), numpy.float32)
     dut_tsp_sensitivity = np.zeros((3, 4), numpy.float32)
@@ -168,11 +169,17 @@ def read_measurement_file_30up(lines, flag_raw_value_mode):
                         pga_now = int(cells[1])
                     case '#T':
                         for CellIdx in range(1, 5):  # copy the cells to the new array
-                            temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 10.0
+                            if umf_fileversion > 3.1:
+                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 4.0
+                            else:
+                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 8.0
                         temp_idx += 1
                     case '#TEMP':
                         for CellIdx in range(1, 5):  # copy the cells to the new array
-                            temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 10.0
+                            if umf_fileversion > 3.1:
+                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 4.0
+                            else:
+                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 8.0
                         temp_idx += 1
                     case 'Cooling Start Block':
                         cooling_start_block = int(cells[1]) + 1
