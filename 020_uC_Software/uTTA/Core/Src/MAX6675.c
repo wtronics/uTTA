@@ -54,7 +54,7 @@ void Init_MAX6675(void){
 /*!
     @brief  Reads the temperature of the selected MAX6675
     @param  uint8_t DevNo		// number of the device to read
-    @returns int16_t converted temperature in dezi°C. returns -1 if an error occured
+    @returns int16_t converted temperature in 0.25°C steps. returns -1 if an error occured
 */
 /**************************************************************************/
 int16_t Read_MAX6675(uint8_t DevNo){
@@ -67,13 +67,14 @@ int16_t Read_MAX6675(uint8_t DevNo){
 	}
 	LL_GPIO_ResetOutputPin(MAX6675_CS_GPIO[DevNo].gpio, MAX6675_CS_GPIO[DevNo].pin);
 
-	for(Clk = 0; Clk <= 15; Clk++){	//Create some Clock fro 16pulses
+	for(Clk = 0; Clk <= 15; Clk++){	//Create some Clock for 16pulses
+		result = result <<1;
 		LL_GPIO_SetOutputPin(AUX_SPI_SCK_GPIO_Port, AUX_SPI_SCK_Pin);
 
 		if(LL_GPIO_IsInputPinSet(AUX_SPI_MISO_GPIO_Port, AUX_SPI_MISO_Pin)){
 			result |=1;
 		}
-		result = result <<1;
+
 		LL_GPIO_ResetOutputPin(AUX_SPI_SCK_GPIO_Port, AUX_SPI_SCK_Pin);
 	}
 
@@ -82,6 +83,7 @@ int16_t Read_MAX6675(uint8_t DevNo){
 	}
 
 	LL_GPIO_SetOutputPin(MAX6675_CS_GPIO[DevNo].gpio, MAX6675_CS_GPIO[DevNo].pin);
+	result >>= 3;
 
-	return (int16_t)(result>>3);
+	return (int16_t)(result);
 }
