@@ -109,7 +109,7 @@
 #define VOFFS1_3_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 
 #define UTTA_SW_VERSION "2.2"
-#define T3R_FILEVERSION "3.2"
+#define UMF_FILEVERSION "3.2"
 
 
 #define MODE_NORMAL      0
