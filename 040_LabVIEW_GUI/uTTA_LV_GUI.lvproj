@@ -125,6 +125,7 @@
 						<Item Name="uTTA_TestFileUpload.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/FLASH_Memory/uTTA_TestFileUpload.vi"/>
 						<Item Name="uTTA_UploadFile.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/FLASH_Memory/uTTA_UploadFile.vi"/>
 						<Item Name="uTTA_WriteCalibrationFile.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/FLASH_Memory/uTTA_WriteCalibrationFile.vi"/>
+						<Item Name="uTTA_GetDeviceCalibration.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/FLASH_Memory/uTTA_GetDeviceCalibration.vi"/>
 					</Item>
 					<Item Name="Serial_Port" Type="Folder">
 						<Item Name="uTTA_FlushSerialBuffer.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/Serial_Port/uTTA_FlushSerialBuffer.vi"/>
@@ -143,7 +144,6 @@
 			</Item>
 		</Item>
 		<Item Name="uTTA_Main.vi" Type="VI" URL="../uTTA/uTTA_Main.vi"/>
-		<Item Name="uTTA_GetDeviceCalibration.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/FLASH_Memory/uTTA_GetDeviceCalibration.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
