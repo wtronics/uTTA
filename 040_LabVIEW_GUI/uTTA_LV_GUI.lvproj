@@ -134,6 +134,8 @@
 						<Item Name="uTTA_CheckForErrors.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/Serial_Port/uTTA_CheckForErrors.vi"/>
 						<Item Name="uTTA_GV_Serial_Monitor.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/Serial_Port/uTTA_GV_Serial_Monitor.vi"/>
 						<Item Name="uTTA_LogSerial.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/Serial_Port/uTTA_LogSerial.vi"/>
+						<Item Name="uTTA_Receive.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/Serial_Port/uTTA_Receive.vi"/>
+						<Item Name="uTTA_QualifiyResponse.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/Serial_Port/uTTA_QualifiyResponse.vi"/>
 					</Item>
 					<Item Name="uTTA_Init.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/uTTA_Init.vi"/>
 					<Item Name="uTTA_OpenCOM.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/uTTA_OpenCOM.vi"/>
@@ -144,6 +146,7 @@
 			</Item>
 		</Item>
 		<Item Name="uTTA_Main.vi" Type="VI" URL="../uTTA/uTTA_Main.vi"/>
+		<Item Name="uTTA_Main_Temperature_Control.vi" Type="VI" URL="../uTTA/uTTA_Main_Temperature_Control.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
@@ -189,8 +192,6 @@
 				<Item Name="8.6CompatibleGlobalVar.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/config.llb/8.6CompatibleGlobalVar.vi"/>
 				<Item Name="NI_LVConfig.lvlib" Type="Library" URL="/&lt;vilib&gt;/Utility/config.llb/NI_LVConfig.lvlib"/>
 				<Item Name="Space Constant.vi" Type="VI" URL="/&lt;vilib&gt;/dlg_ctls.llb/Space Constant.vi"/>
-				<Item Name="1D String Array to Delimited String.vi" Type="VI" URL="/&lt;vilib&gt;/AdvancedString/1D String Array to Delimited String.vi"/>
-				<Item Name="Delimited String to 1D String Array.vi" Type="VI" URL="/&lt;vilib&gt;/AdvancedString/Delimited String to 1D String Array.vi"/>
 				<Item Name="ex_CorrectErrorChain.vi" Type="VI" URL="/&lt;vilib&gt;/express/express shared/ex_CorrectErrorChain.vi"/>
 				<Item Name="subFile Dialog.vi" Type="VI" URL="/&lt;vilib&gt;/express/express input/FileDialogBlock.llb/subFile Dialog.vi"/>
 				<Item Name="cfis_Replace Percent Code.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/file.llb/cfis_Replace Percent Code.vi"/>
@@ -224,6 +225,9 @@
 			</Item>
 			<Item Name="user.lib" Type="Folder">
 				<Item Name="String to 1D Array__ogtk.vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/string/string.llb/String to 1D Array__ogtk.vi"/>
+				<Item Name="Boolean Trigger__ogtk.vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/boolean/boolean.llb/Boolean Trigger__ogtk.vi"/>
+				<Item Name="End of Line Constant (bug fix).vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/string/string.llb/End of Line Constant (bug fix).vi"/>
+				<Item Name="1D Array to String__ogtk.vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/string/string.llb/1D Array to String__ogtk.vi"/>
 			</Item>
 			<Item Name="lvanlys.dll" Type="Document" URL="/&lt;resource&gt;/lvanlys.dll"/>
 			<Item Name="AR488_Write.vi" Type="VI" URL="../Drivers/AR488/AR488_Write.vi"/>
