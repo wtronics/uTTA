@@ -108,7 +108,7 @@
 #define VOFFS0_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 #define VOFFS1_3_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 
-#define UTTA_SW_VERSION "2.2"
+#define UTTA_SW_VERSION "2.3"
 #define UMF_FILEVERSION "3.2"
 
 
