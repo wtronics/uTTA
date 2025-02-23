@@ -101,7 +101,7 @@ void SystemStatus(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	uint16_t SystStatus=0;
 
 	SystStatus = ((uint16_t)FlagMeasurementState) | (((uint16_t)ErrorTotalCount)<<8);
-	UART_printf("%04x\n",SystStatus);
+	UART_printf("SYST:STAT %04x\n",SystStatus);
 }
 /**
   * @brief Read a file from the FLASH memory.
@@ -384,7 +384,7 @@ void SetTiming(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_UNKNOWN_COMMAND);
 		return;
 	}
-	UART_printf("%u;%u;%u\n", SamplingTiming.PreHeatingTime,SamplingTiming.HeatingTime, SamplingTiming.CoolingTime);
+	UART_printf("MEAS:TIM %u;%u;%u\n", SamplingTiming.PreHeatingTime,SamplingTiming.HeatingTime, SamplingTiming.CoolingTime);
 	//MeasurementMemoryPrediction();
 }
 
@@ -409,13 +409,13 @@ void GetTiming(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	parameters.toUpperCase(last_header);
 
 	if((strcmp(last_header,"PRE?")==0)||(strcmp(last_header,"PREHEATING?")==0)){
-		UART_printf("%u\n", SamplingTiming.PreHeatingTime);
+		UART_printf("MEAS:TIM %u\n", SamplingTiming.PreHeatingTime);
 	}
 	else if((strcmp(last_header,"HEAT?")==0)||(strcmp(last_header,"HEATING?")==0)){
-		UART_printf("%u\n", SamplingTiming.HeatingTime);
+		UART_printf("MEAS:TIM %u\n", SamplingTiming.HeatingTime);
 	}
 	else if((strcmp(last_header,"COOL?")==0)||(strcmp(last_header,"COOLING?")==0)){
-		UART_printf("%u\n", SamplingTiming.CoolingTime);
+		UART_printf("MEAS:TIM %u\n", SamplingTiming.CoolingTime);
 	}
 	else{
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_UNKNOWN_COMMAND);
@@ -458,7 +458,7 @@ void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 			else{
 				FlagMeasurementState = Cal_State_DeInit;
 			}
-			UART_printf("OK\n");
+			//UART_printf("OK\n");
 		}
 		else{
 			ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING+FlagMeasurementState);
@@ -561,7 +561,7 @@ void SetChannelDescription(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
 		if(Param > -10000.0 && Param < 10000.0)			// Boundary for Quadratic Gain: +/-10mV/K
 			Channels[ChNo].CH_QuadGain = Param;
 
-		UART_printf("CH%d;%s;%f;%f;%f\n", ChNo+1, Channels[ChNo].CH_Name, Channels[ChNo].CH_Offs, Channels[ChNo].CH_LinGain, Channels[ChNo].CH_QuadGain);
+		UART_printf("#CH %d;%s;%f;%f;%f\n", ChNo+1, Channels[ChNo].CH_Name, Channels[ChNo].CH_Offs, Channels[ChNo].CH_LinGain, Channels[ChNo].CH_QuadGain);
 	}
 	else{
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_PARAM_OUT_OF_RANGE);
@@ -681,7 +681,7 @@ void SetPSUEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	if (State >=0) {
 		(State & 0x01) ? LL_GPIO_SetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin) : LL_GPIO_ResetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin);
-		UART_printf("%d\n", State);
+		UART_printf("#PSU %d\n", State);
 	} else {
 		ErrorResponse(ERRC_COMMAND_ERROR,ERST_PARAM_OUT_OF_RANGE);
 	}
@@ -698,7 +698,7 @@ void SetPSUEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 void GetPSUEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
-	UART_printf("%d\n",LL_GPIO_ReadInputPort(PSU_EN_DO_GPIO_Port) & PSU_EN_DO_Pin);
+	UART_printf("#PSU %d\n",LL_GPIO_ReadInputPort(PSU_EN_DO_GPIO_Port) & PSU_EN_DO_Pin);
 }
 
 
@@ -729,9 +729,9 @@ void SetPWSTGEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	if (State >=0) {
 		(State & 0x01) ? LL_GPIO_SetOutputPin(PWSTG_EN_DO_GPIO_Port, PWSTG_EN_DO_Pin) : LL_GPIO_ResetOutputPin(PWSTG_EN_DO_GPIO_Port, PWSTG_EN_DO_Pin);
-		UART_printf("%d\n", State);
+		UART_printf("#PWSTG %d\n", State);
 		//HAL_GPIO_WritePin(PWSTG_EN_DO_GPIO_Port, PWSTG_EN_DO_Pin, (GPIO_PinState)State);
-		UART_printf("%d\n", State);
+		//UART_printf("%d\n", State);
 	} else {
 		ErrorResponse(ERRC_COMMAND_ERROR,ERST_PARAM_OUT_OF_RANGE);
 	}
@@ -746,7 +746,7 @@ void SetPWSTGEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
   */
 void GetPWSTGEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
-	UART_printf("%d\n",LL_GPIO_ReadInputPort(PWSTG_EN_DO_GPIO_Port) & PWSTG_EN_DO_Pin);
+	UART_printf("#PWSTG %d\n",LL_GPIO_ReadInputPort(PWSTG_EN_DO_GPIO_Port) & PWSTG_EN_DO_Pin);
 }
 
 /**
@@ -776,9 +776,9 @@ void SetGD_PowerEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart)
 
 	if (State >=0) {
 		(State & 0x01) ? LL_GPIO_SetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin) : LL_GPIO_ResetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin);
-		UART_printf("%d\n", State);
+		UART_printf("#GD %d\n", State);
 		//HAL_GPIO_WritePin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin, (GPIO_PinState)State);
-		UART_printf("%d\n", State);
+		//UART_printf("%d\n", State);
 	} else {
 		ErrorResponse(ERRC_COMMAND_ERROR,ERST_PARAM_OUT_OF_RANGE);
 	}
@@ -791,7 +791,7 @@ void SetGD_PowerEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart)
   * @retval None
   */
 void GetGD_PowerEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
-	UART_printf("%d\n",LL_GPIO_ReadInputPort(PWSTG_PWR_EN_DO_GPIO_Port) & PWSTG_PWR_EN_DO_Pin);
+	UART_printf("#GD %d\n",LL_GPIO_ReadInputPort(PWSTG_PWR_EN_DO_GPIO_Port) & PWSTG_PWR_EN_DO_Pin);
 }
 
 
@@ -803,7 +803,7 @@ void GetGD_PowerEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart)
   */
 void GetPWSTGUVLO(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
-	UART_printf("%d\n",LL_GPIO_ReadInputPort(PWSTG_UVLO_DI_GPIO_Port) & PWSTG_UVLO_DI_Pin);
+	UART_printf("#UVLO %d\n",LL_GPIO_ReadInputPort(PWSTG_UVLO_DI_GPIO_Port) & PWSTG_UVLO_DI_Pin);
 }
 
 
@@ -834,7 +834,7 @@ void SetCalSampleRate(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	if((Rcv_Param <= CAL_MAX_SAMPLE_TIME) && (Rcv_Param >= CAL_MIN_SAMPLE_TIME)){
 		SamplingTiming.CalSampleTime = Rcv_Param;
-		UART_printf("%d\n",SamplingTiming.CalSampleTime);
+		UART_printf("#CSR %d\n",SamplingTiming.CalSampleTime);
 	}
 	else{
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_PARAM_OUT_OF_RANGE);
@@ -906,7 +906,7 @@ void SetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 			return;
 		}
 	}
-	UART_printf("%d;%d;%d\n",PGA_Gains.Set,PGA_Gains.Cooling,PGA_Gains.Heating);
+	UART_printf("#PGA %d;%d;%d\n",PGA_Gains.Set,PGA_Gains.Cooling,PGA_Gains.Heating);
 }
 
 
@@ -930,7 +930,7 @@ void SetPGAGain(uint8_t Gain){
   * @retval None
   */
 void GetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
-	UART_printf("%d;%d;%d\n",PGA_Gains.Set,PGA_Gains.Cooling,PGA_Gains.Heating);
+	UART_printf("#PGA %d;%d;%d\n",PGA_Gains.Set,PGA_Gains.Cooling,PGA_Gains.Heating);
 }
 
 /**
@@ -978,7 +978,7 @@ void SetCalValue(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	Rcv_Param = atof(parameters[3]);
 	ChannelCalibValues[ParamIdx].CubGain = Rcv_Param;
 
-	UART_printf("%s, %f, %f, %f\n",CalChannelNames[ParamIdx], ChannelCalibValues[ParamIdx].Offset, ChannelCalibValues[ParamIdx].LinGain, ChannelCalibValues[ParamIdx].CubGain);
+	UART_printf("#CAL %s, %f, %f, %f\n",CalChannelNames[ParamIdx], ChannelCalibValues[ParamIdx].Offset, ChannelCalibValues[ParamIdx].LinGain, ChannelCalibValues[ParamIdx].CubGain);
 
 }
 
@@ -1004,6 +1004,7 @@ void SaveCalValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
   * @retval None
   */
 void GetSystemTime(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+	UART_printf("#TIME ");
 	print_RTC_DateTime(0,0);
 	UART_printf("\n");
 }
