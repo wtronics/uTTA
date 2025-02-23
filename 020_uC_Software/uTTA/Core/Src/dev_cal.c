@@ -34,8 +34,6 @@ void Write_CalibrationToFlash(lfs_t *lfs, lfs_file_t *file){
 		return;
 	}
 
-	UART_printf("Writing calibration\n");
-
 	// Write the data to the file
 	LFS_ret = lfs_file_write(lfs, file, &ChannelCalibValues, sizeof(ChannelCalibValues));
 
@@ -46,6 +44,7 @@ void Write_CalibrationToFlash(lfs_t *lfs, lfs_file_t *file){
 		ErrorResponse(ERRC_FILE_SYSTEM, (uint8_t)LFS_ret);
 		return;
 	}
+	UART_printf("Calibration written\n");
 }
 
 
@@ -71,7 +70,7 @@ void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file, uint8_t details){
 		return;
 	}
 	else{
-		UART_printf("OK\n");
+		//UART_printf("OK\n");
 	}
 
 	// read the file from the memory in one step
