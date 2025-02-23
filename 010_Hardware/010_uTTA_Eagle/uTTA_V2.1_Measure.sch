@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -4857,7 +4857,7 @@ NS Package M08A</description>
 <pad name="3" x="1.27" y="-1.27" drill="0.9144" shape="octagon"/>
 <pad name="4" x="1.27" y="1.27" drill="0.9144" shape="octagon"/>
 <text x="-1.778" y="-4.191" size="1.27" layer="21" ratio="10">1</text>
-<text x="0.762" y="-4.191" size="1.27" layer="21" ratio="10">2</text>
+<text x="0.762" y="-4.191" size="1.27" layer="21" ratio="10">3</text>
 <text x="-2.54" y="3.048" size="1.27" layer="25" ratio="10">&gt;NAME</text>
 <text x="4.445" y="-2.54" size="1.27" layer="27" ratio="10" rot="R90">&gt;VALUE</text>
 <rectangle x1="-1.5748" y1="0.9652" x2="-0.9652" y2="1.5748" layer="51"/>
@@ -4865,6 +4865,8 @@ NS Package M08A</description>
 <rectangle x1="0.9652" y1="-1.5748" x2="1.5748" y2="-0.9652" layer="51"/>
 <rectangle x1="-1.5748" y1="-1.5748" x2="-0.9652" y2="-0.9652" layer="51"/>
 <text x="0" y="0" size="0.6096" layer="37" font="vector" ratio="10" align="center">&gt;NAME</text>
+<text x="-1.778" y="2.667" size="1.27" layer="21" ratio="10">2</text>
+<text x="0.762" y="2.667" size="1.27" layer="21" ratio="10">4</text>
 </package>
 </packages>
 <symbols>
