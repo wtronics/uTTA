@@ -342,10 +342,9 @@ void DoMeasurement(void)
 		ADC_CoolingStartBlock =0;
 		Log_WrittenBlocks = 0;
 		RTC_read_time(&Time);
-		UART_printf("Measurement completed! ");
-		UART_printf("%02u:%02u:%02u\n",Time.RTC_Hours,Time.RTC_Minutes,Time.RTC_Seconds);
-
-		ErrorsOutput();
+		UART_printf("Measurement completed!\n");
+		//UART_printf("%02u:%02u:%02u\n",Time.RTC_Hours,Time.RTC_Minutes,Time.RTC_Seconds);
+		//ErrorsOutput();
 
 		FlagMeasurementState = Meas_State_Idle;
 		break;
@@ -400,15 +399,13 @@ void DoMeasurement(void)
 		Log_WrittenBlocks = 0;
 
 		RTC_read_time(&Time);
-		UART_printf("Measurement completed! ");
-		UART_printf("%02u:%02u:%02u\n",Time.RTC_Hours,Time.RTC_Minutes,Time.RTC_Seconds);
-
-		ErrorsOutput();
+		UART_printf("Measurement completed! \n");
+		//UART_printf("%02u:%02u:%02u\n",Time.RTC_Hours,Time.RTC_Minutes,Time.RTC_Seconds);
+		//ErrorsOutput();
 
 		FlagMeasurementState = Meas_State_Idle;
 		break;
 	default:
-
 		break;
 	}
 
@@ -461,7 +458,7 @@ void DoMeasurement(void)
 			ADC_BFR_idx = ADC_BFR_BLOCKS*ADC_BFR_SIZE-1;
 
 		adc_val.ADC_Reg = ADC_Buffer12[(uint16_t)ADC_BFR_idx];
-		UART_printf("%d;%d;%d;%d;",FlagMeasurementState,ADC_PGA_Setting[(ADC_TotalBlocks)% ADC_BFR_BLOCKS],adc_val.ADC_Val[0],adc_val.ADC_Val[1]);
+		UART_printf("#M;%d;%d;%d;%d;",FlagMeasurementState,ADC_PGA_Setting[(ADC_TotalBlocks)% ADC_BFR_BLOCKS],adc_val.ADC_Val[0],adc_val.ADC_Val[1]);
 
 		adc_val.ADC_Reg = ADC_Buffer34[(uint16_t)ADC_BFR_idx];
 		UART_printf("%d;%d",adc_val.ADC_Val[0],adc_val.ADC_Val[1]);
