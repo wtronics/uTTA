@@ -54,6 +54,7 @@ void ErrorsOutput(void){
 			UART_printf("\n");
 		}
 	}
+	UART_printf("#ERR\n",ErrorTotalCount);
 }
 
 
