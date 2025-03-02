@@ -1071,23 +1071,30 @@ void SetSystemTime(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 uint8_t MeasurementMemoryPrediction(void){
 
-	uint32_t MemBytes = 270+80; //Initially there should be around 270 bytes for the file header and 80 bytes for the footer
+	uint32_t MemBytes = 1050+80; //Initially there should be around 270 bytes for the file header and 80 bytes for the footer
 
 	uint32_t MeasureTime = 0;
-	MeasureTime = SamplingTiming.PreHeatingTime + SamplingTiming.HeatingTime + SamplingTiming.CoolingTime;
+	MeasureTime = SamplingTiming.PreHeatingTime + SamplingTiming.HeatingTime + SamplingTiming.CoolingTime;	// all values in ms
 
 	uint32_t TotalTempSamples = 0;
 	TotalTempSamples = MeasureTime / MEASURE_TEMP_UPDATE_TIME;	// Calculate the approximate number of temperature samples
 
 	UART_printf("Samples %d\n",TotalTempSamples);
-	MemBytes += (TotalTempSamples * 21);		// Add the number of bytes for temperature measurement. Each line holds 21bytes
+	MemBytes += (TotalTempSamples * 21);		// Add the number of bytes for temperature measurement. Each line holds up to 21bytes
 	UART_printf("Temperature Measure Bytes %d\n",MemBytes);
 
 
 	uint32_t SampleTimeSlow = (SamplingTiming.FastSampleTime <<SamplingTiming.MaxTimeMultiplier)/8000;
-	MemBytes += 20 * MeasureTime/SampleTimeSlow;	// Assuming the lowest sample rate this is the number of bytes over the whole measurement duration
+	uint32_t BytesPerBlock = 0;
+	BytesPerBlock = 22 * ADC_BFR_SIZE  +14;		// assuming 22 bytes per line + 14bytes for the block header
+
+	uint32_t TotalBlocks = 0;
+
+	TotalBlocks = MeasureTime/(SampleTimeSlow * ADC_BFR_SIZE);	// Calculate the total estimated number of blocks
+
+	MemBytes += BytesPerBlock * TotalBlocks;	// Assuming the lowest sample rate this is the number of bytes over the whole measurement duration
 	UART_printf("Sampling Bytes %d\n",MemBytes);
-	MemBytes += 20 * SamplingTiming.MaxTimeMultiplier;
+	MemBytes += BytesPerBlock * ADC_MAX_MULTIPLIER;				// Add the additional blocks which are required for the log-sampling
 	UART_printf("Fast Sampling Bytes %d\n",MemBytes);
 
 
