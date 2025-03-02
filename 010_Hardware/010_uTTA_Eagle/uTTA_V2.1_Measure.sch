@@ -9403,7 +9403,7 @@ Source: www.kingbright.com</description>
 <part name="R101.1" library="A_Resistor" deviceset="R-EU_" device="R0805" value="49k9">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
-<part name="R103.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10R"/>
+<part name="R103.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="0R"/>
 <part name="R321.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
@@ -9475,7 +9475,7 @@ Source: www.kingbright.com</description>
 <part name="R101.2" library="A_Resistor" deviceset="R-EU_" device="R0805" value="49k9">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
-<part name="R103.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10R"/>
+<part name="R103.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="0R"/>
 <part name="L101.2" library="A_Ferrite" deviceset="FB" device="MMZ2012S" value="FBMMZ2012S">
 <attribute name="PACKAGE" value="2012"/>
 </part>
@@ -9526,7 +9526,7 @@ Source: www.kingbright.com</description>
 <part name="R101.3" library="A_Resistor" deviceset="R-EU_" device="R0805" value="49k9">
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
-<part name="R103.3" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10R"/>
+<part name="R103.3" library="A_Resistor" deviceset="R-EU_" device="R0603" value="0R"/>
 <part name="L101.3" library="A_Ferrite" deviceset="FB" device="MMZ2012S" value="FBMMZ2012S">
 <attribute name="PACKAGE" value="2012"/>
 </part>
@@ -9564,7 +9564,7 @@ Source: www.kingbright.com</description>
 <variant name="Manual_Adjust" populate="no"/>
 <variant name="Controller Adjust" populate="no"/>
 </part>
-<part name="R103.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10R">
+<part name="R103.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="0R">
 <variant name="Manual_Adjust" populate="no"/>
 </part>
 <part name="L101.4" library="A_Ferrite" deviceset="FB" device="MMZ2012S" value="FBMMZ2012S">
