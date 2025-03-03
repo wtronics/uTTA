@@ -91,9 +91,9 @@
 #define MEAS_MIN_COOLING_TIME      	60000UL		// 60 seconds
 #define MEAS_MAX_COOLING_TIME      	21600000UL	// 6 hours
 
-#define CAL_DEF_SAMPLE_TIME			250UL
-#define CAL_MAX_SAMPLE_TIME			2500UL
-#define CAL_MIN_SAMPLE_TIME			25UL
+#define TEST_DEF_SAMPLE_TIME		250UL
+#define TEST_MAX_SAMPLE_TIME		2500UL
+#define TEST_MIN_SAMPLE_TIME		25UL
 
 #define PGA_DEF_GAIN				1
 #define PGA_MIN_GAIN				0
@@ -104,6 +104,7 @@
 #define VOFFS0_DEF_VALUE_V	    -0.2f
 #define VOFFS1_3_DEF_VALUE_V	-0.3f
 
+// DAC Default values when in non-calibrated state
 #define ISEN_DEF_VALUE_RAW        32768.0f	// roughly 5.6mA
 #define VOFFS0_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 #define VOFFS1_3_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
@@ -113,7 +114,8 @@
 
 
 #define MODE_NORMAL      0
-#define MODE_CALIBRATION 1
+#define MODE_TESTMODE    1
+#define MODE_TEMPCONTROL 2
 
 typedef struct PGA_Gain_{
 	uint8_t Set;
@@ -130,7 +132,7 @@ typedef struct Sampling_Timing_{
 	uint32_t PreHeatingTime;
 	uint32_t HeatingTime;
 	uint32_t CoolingTime;
-	uint32_t CalSampleTime;
+	uint32_t TestSampleTime;
 } Timing_t;
 
 
@@ -146,12 +148,12 @@ typedef enum {
 	Meas_State_Cooling,
 	Meas_State_Deinit,
 	Meas_State_CloseLog,
-	Cal_State_Init,
-	Cal_State_GDPowerOn,
-	Cal_State_GPPowerCheck,
-	Cal_State_Cal,
-	Cal_State_DeInit,
-	Cal_State_Exit
+	Test_State_Init,
+	Test_State_GDPowerOn,
+	Test_State_GPPowerCheck,
+	Test_State_Cal,
+	Test_State_DeInit,
+	Test_State_Exit
 }MeasurementStates_t;
 
 typedef struct ChannelParams{

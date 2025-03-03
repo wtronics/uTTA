@@ -38,7 +38,7 @@ volatile uint8_t ADC_PGA_Setting[ADC_BFR_BLOCKS];
 volatile int32_t ADC_TotalBlocks = 0;
 volatile int32_t ADC_CoolingStartBlock = 0;
 PGA_t PGA_Gains = {PGA_DEF_GAIN, PGA_DEF_GAIN, PGA_DEF_GAIN};
-volatile Timing_t SamplingTiming = {ADC_DEF_SAMPLETIME, 0.0f, ADC_MAX_MULTIPLIER, ADC_MAX_SAMPLERATE << ADC_MAX_MULTIPLIER, ADC_MAX_MULTIPLIER, MEAS_DEF_PREHEATING_TIME, MEAS_DEF_HEATING_TIME, MEAS_DEF_COOLING_TIME, CAL_DEF_SAMPLE_TIME};
+volatile Timing_t SamplingTiming = {ADC_DEF_SAMPLETIME, 0.0f, ADC_MAX_MULTIPLIER, ADC_MAX_SAMPLERATE << ADC_MAX_MULTIPLIER, ADC_MAX_MULTIPLIER, MEAS_DEF_PREHEATING_TIME, MEAS_DEF_HEATING_TIME, MEAS_DEF_COOLING_TIME, TEST_DEF_SAMPLE_TIME};
 
 
 uint32_t Meas_RunTime = 0;
@@ -110,7 +110,6 @@ int main(void)
   if(StartupDate.RTC_Year == 0){
 	  RTC_write_date_fmt(BUILD_YEAR ,BUILD_MONTH, BUILD_DAY, 1);
 	  RTC_write_time_fmt(BUILD_HOUR, BUILD_MIN, BUILD_SEC);
-	  INIT_DBG("Reinitialized RTC\n");
   }
 
   Enable_ADC_Clock();
@@ -118,6 +117,7 @@ int main(void)
   LL_GPIO_ResetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin);
   LL_GPIO_ResetOutputPin(PWSTG_EN_DO_GPIO_Port, PWSTG_EN_DO_Pin);
 
+  // needs some tweaking to get the hashes free from overlaps and collisions
   my_instrument.hash_magic_number = 53; //Default value = 37
   my_instrument.hash_magic_offset = 3;  //Default value = 7
   Init_SCPI_server();
@@ -125,6 +125,7 @@ int main(void)
   my_instrument.PrintDebugInfo(USART2, 0);
 
   INIT_DBG("Init SD Card!\n");
+  uint32_t TotalMem=0;
 
   if (w25qxx_init(&w25qxx, SPI3, FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_Pin) == W25QXX_Ok) {
 	  INIT_DBG("W25QXX successfully initialized\n");
@@ -136,6 +137,10 @@ int main(void)
 
 	  EvalLFSError(w25qxx_littlefs_init(&w25qxx));
 
+	  lfs_mem_size(&littlefs, "/", &TotalMem);
+	  DBG_LVL1("Total size used memory = %lu bytes\n", TotalMem);
+
+
 	  Read_CalibrationFromFlash(&littlefs, &file, 0);
 
 	  FlashMemoryAvailable = 1;
@@ -145,14 +150,9 @@ int main(void)
 	  FlashMemoryAvailable = -1;
   }
 
-
-  INIT_DBG("DAC Initialisation!\n");
-
   AD56x4_Init(&ChannelCalibValues[DAC_Ch_ISEN]);
   AD56x4_SetDefaultOutput();
 
-
-  INIT_DBG("Init completed!\n");
   UART_printf("RTC Time: ");
   print_RTC_DateTime(0,0);
   UART_printf("\n");
@@ -234,6 +234,7 @@ void DoMeasurement(void)
 			FlagMeasurementState = Meas_State_Idle;
 			break;
 		}
+		CheckMemoryFileFit();
 
 		WriteFileHeaderToFile(&littlefs, &file);
 
@@ -343,12 +344,10 @@ void DoMeasurement(void)
 		Log_WrittenBlocks = 0;
 		RTC_read_time(&Time);
 		UART_printf("Measurement completed!\n");
-		//UART_printf("%02u:%02u:%02u\n",Time.RTC_Hours,Time.RTC_Minutes,Time.RTC_Seconds);
-		//ErrorsOutput();
 
 		FlagMeasurementState = Meas_State_Idle;
 		break;
-	case Cal_State_Init:					// check for the flag to start the calibration
+	case Test_State_Init:					// check for the flag to start the calibration
 
 		if(FlashMemoryAvailable <= 0){
 			ErrorResponse(ERRC_FILE_SYSTEM, ERST_NO_FLASH_MEMORY);
@@ -370,38 +369,36 @@ void DoMeasurement(void)
 		ENABLE_TIMER;						// Enable the timer for ADC sample rate generation
 
 		MeasurementStartTime = GetTick();	// Calculate the time when the next Measurement step shall be started
-		MeasurementNextStepTime = MeasurementStartTime + SamplingTiming.CalSampleTime;
+		MeasurementNextStepTime = MeasurementStartTime + SamplingTiming.TestSampleTime;
 
-		FlagMeasurementState = Cal_State_Cal;	// Set the step for the StateMachine to the next step
+		FlagMeasurementState = Test_State_Cal;	// Set the step for the StateMachine to the next step
 
 		break;
-	case Cal_State_Cal:
+	case Test_State_Cal:
 		if(GetTick()< MeasurementNextStepTime) break;
 
-		MeasurementNextStepTime += SamplingTiming.CalSampleTime;
+		MeasurementNextStepTime += SamplingTiming.TestSampleTime;
 
 		PrintLastADC=true;
 
 		break;
-	case Cal_State_DeInit:
+	case Test_State_DeInit:
 
 		DISABLE_TIMER;									// Disable the timer, to stop the ADC
 		LL_GPIO_ResetOutputPin(PWSTG_EN_DO_GPIO_Port, PWSTG_EN_DO_Pin);		// Disable the powerstage to shut down the heating current
 		LL_GPIO_ResetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin);			// Disable the power supply to minimize parasitic effects through the hot powerstage
 		LL_GPIO_ResetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin); // Disable the gate driver power supply
 
-		FlagMeasurementState = Cal_State_Exit;	 // Set the step for the StateMachine to the next step
+		FlagMeasurementState = Test_State_Exit;	 // Set the step for the StateMachine to the next step
 
 		break;
-	case Cal_State_Exit:
+	case Test_State_Exit:
 
 		ADC_CoolingStartBlock =0;
 		Log_WrittenBlocks = 0;
 
 		RTC_read_time(&Time);
 		UART_printf("Measurement completed! \n");
-		//UART_printf("%02u:%02u:%02u\n",Time.RTC_Hours,Time.RTC_Minutes,Time.RTC_Seconds);
-		//ErrorsOutput();
 
 		FlagMeasurementState = Meas_State_Idle;
 		break;
@@ -435,10 +432,9 @@ void DoMeasurement(void)
 		}
 
 		if(GetTick() > NextOutput){		// Measurement is running
-			if(OperatingMode != MODE_CALIBRATION){
+			if(OperatingMode != MODE_TESTMODE){
 				WriteTemperaturesToFile();
 			}
-
 
 			if((GetTick() - NextOutput) < MEASURE_DATA_UPDATE_TIME){
 				NextOutput += MEASURE_DATA_UPDATE_TIME;
@@ -598,8 +594,6 @@ void SampleClockHandler(void)
 		LL_GPIO_ResetOutputPin(PWSTG_EN_DO_GPIO_Port, PWSTG_EN_DO_Pin);		// Disable the powerstage to shut down the heating current
 		LL_GPIO_ResetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin);			// Disable the power supply to minimize parasitic effects through the hot powerstage
 
-		//PWSTG_PWR_EN_DO_GPIO_Port->BRR = PWSTG_PWR_EN_DO_Pin;		// Disable the power supply of the whole gate driver to save energy
-
 		if(SamplingTiming.SetMultiplier < SamplingTiming.MaxTimeMultiplier){		// Calculate the new timer settings and load them if the timer still needs to slow down
 		SamplingTiming.SetMultiplier++;
 		SamplingTiming.SetSampleTime = (SamplingTiming.SetSampleTime <<1);
@@ -616,7 +610,48 @@ void SampleClockHandler(void)
 }
 
 
+uint32_t MeasurementMemoryPrediction(void){
 
+	uint32_t MemBytes = 1050+80; //Initially there should be around 270 bytes for the file header and 80 bytes for the footer
+
+	uint32_t MeasureTime = SamplingTiming.PreHeatingTime + SamplingTiming.HeatingTime + SamplingTiming.CoolingTime;	// all values in ms
+
+	uint32_t TotalTempSamples = MeasureTime / MEASURE_TEMP_UPDATE_TIME;	// Calculate the approximate number of temperature samples
+	DBG_LVL1("Temp Samples %d\n",TotalTempSamples);
+
+	uint32_t TempMeasBytes = (TotalTempSamples * 21);		// Add the number of bytes for temperature measurement. Each line holds up to 21bytes
+	MemBytes += TempMeasBytes;
+	DBG_LVL1("Temperature Measure Bytes %d\n",TempMeasBytes);
+
+	uint32_t SampleTimeSlow = (SamplingTiming.FastSampleTime <<SamplingTiming.MaxTimeMultiplier)/8000;
+	DBG_LVL1("Total slow samples %d\n",SampleTimeSlow);
+
+	uint32_t BytesPerBlock = (21 * ADC_BFR_SIZE)  +14;		// assuming 22 bytes per line + 14bytes for the block header
+	DBG_LVL1("Bytes per Block  %d\n",BytesPerBlock);
+
+	uint32_t TotalBlocks = MeasureTime/(SampleTimeSlow * ADC_BFR_SIZE);	// Calculate the total estimated number of blocks
+	DBG_LVL1("Total Blocks %d\n",TotalBlocks);
+
+	MemBytes += BytesPerBlock * TotalBlocks;	// Assuming the lowest sample rate this is the number of bytes over the whole measurement duration
+	DBG_LVL1("Bytes in Blocks %d\n",BytesPerBlock * TotalBlocks);
+
+	return MemBytes;
+}
+
+uint8_t CheckMemoryFileFit(void){
+	uint32_t UsedMem=0;
+	lfs_mem_size(&littlefs, "/", &UsedMem);
+
+	uint32_t FreeMem = (w25qxx.block_count * w25qxx.block_size) - UsedMem;
+	DBG_LVL1("Remaining Free Memory %lu\n",FreeMem);
+
+	uint32_t NeededMem = MeasurementMemoryPrediction();
+
+	if(FreeMem > NeededMem){
+		return 1;
+	}
+	return 0;
+}
 
 
 /**************************************************************************/

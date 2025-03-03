@@ -38,9 +38,6 @@ void AD56x4_Init(CH_Cal CalValues[]){
 	AD56x4_write(AD56X4_CMD_WRITE_INPUT_REG | AD56X4_CH_C, 0);
 	AD56x4_write(AD56X4_CMD_WRITE_INPUT_REG | AD56X4_CH_D, 0);
 	AD56x4_write(AD56X4_CMD_WRITE_INPUT_REG_UPDATE_ALL, 0);
-
-
-
 }
 
 
@@ -72,7 +69,6 @@ void AD56x4_write_byte(uint8_t cmd){
 
 		LL_GPIO_ResetOutputPin(AD56x4_SCK_PORT, AD56x4_SCK_PIN);
 	}
-
 }
 
 void AD56x4_write_channel_direct(uint8_t ch, uint16_t value){

@@ -64,15 +64,25 @@ uint8_t WriteBlockToFile(uint8_t ReadBlock, uint32_t TotalWrittenBlocks);
 uint8_t WriteTemperaturesToFile(void);
 void SampleClockHandler(void);
 
+uint32_t MeasurementMemoryPrediction(void);
+uint8_t CheckMemoryFileFit(void);
+
 
 /* Private defines -----------------------------------------------------------*/
 
-//#define DEBUG_INIT
+#define DEBUG_INIT
+#define DEBUG_LVL1
 
 #ifdef DEBUG_INIT
 #define INIT_DBG(...) UART_printf(__VA_ARGS__)
 #else
 #define INIT_DBG(...)
+#endif
+
+#ifdef DEBUG_LVL1
+#define DBG_LVL1(...) UART_printf(__VA_ARGS__)
+#else
+#define DBG_LVL1(...)
 #endif
 
 union ADC_conv{

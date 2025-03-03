@@ -134,7 +134,6 @@ void UART_printf(const char *fmt, ...){
 	Tx2Busy = 1;
 
 	UART_Transmit_DMA(USART2, (uint8_t*)TxMessage, TXSize);
-
 }
 
 

@@ -107,10 +107,8 @@ void RTC_read_date(RTC_DateTypeDef *date)
     @returns none
 */
 /**************************************************************************/
-void RTC_write_date_fmt(uint16_t year, uint8_t month, uint8_t day, uint8_t weekday)
-{
+void RTC_write_date_fmt(uint16_t year, uint8_t month, uint8_t day, uint8_t weekday){
 	RTC_write_date((year/10)%10, year%10, month/10, month%10, day/10, day%10, weekday);
-
 }
 
 /**************************************************************************/
@@ -133,8 +131,7 @@ void RTC_write_date_struct(RTC_DateTypeDef* Date){
     @returns none
 */
 /**************************************************************************/
-void RTC_write_time_fmt(uint8_t hour, uint8_t minute, uint8_t second)
-{
+void RTC_write_time_fmt(uint8_t hour, uint8_t minute, uint8_t second){
 	RTC_write_time(hour/10,hour%10,minute/10,minute%10,second/10, second%10);
 }
 

@@ -50,7 +50,7 @@ void Init_SCPI_server(void){
 		my_instrument.RegisterCommand(":SET", &Set_AnalogValues);
 	my_instrument.SetCommandTreeBase("SYSTem:");
 		my_instrument.RegisterCommand(":MODE", &SetMode);
-		my_instrument.RegisterCommand(":RATE", &SetCalSampleRate);
+		my_instrument.RegisterCommand(":RATE", &SetTestSampleRate);
 		my_instrument.RegisterCommand(":GAIN", &SetGain);
 		my_instrument.RegisterCommand(":GAIN?", &GetGain);
 		my_instrument.RegisterCommand(":CAL", &SetCalValue);
@@ -441,7 +441,7 @@ void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 				FlagMeasurementState = Meas_State_Init;
 			}
 			else{
-				FlagMeasurementState = Cal_State_Init;
+				FlagMeasurementState = Test_State_Init;
 			}
 			UART_printf("OK\n");
 		}
@@ -456,9 +456,8 @@ void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 				FlagMeasurementState = Meas_State_Deinit;
 			}
 			else{
-				FlagMeasurementState = Cal_State_DeInit;
+				FlagMeasurementState = Test_State_DeInit;
 			}
-			//UART_printf("OK\n");
 		}
 		else{
 			ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING+FlagMeasurementState);
@@ -585,7 +584,7 @@ void Set_AnalogValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		return;
 	}
 
-	if(FlagMeasurementState > Meas_State_Idle && FlagMeasurementState < Cal_State_Init){	// check if system is Idle or in Cal Mode
+	if(FlagMeasurementState > Meas_State_Idle && FlagMeasurementState < Test_State_Init){	// check if system is Idle or in Cal Mode
 		ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING + FlagMeasurementState);
 		return;
 	}
@@ -644,7 +643,7 @@ void SetMode(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		UART_printf("OK\n");
 	}
 	else if((strcmp(first_parameter,"CAL")==0)){
-		OperatingMode = MODE_CALIBRATION;
+		OperatingMode = MODE_TESTMODE;
 		UART_printf("OK\n");
 	}
 	else{
@@ -671,7 +670,7 @@ void SetPSUEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		return;
 	}
 
-	if(OperatingMode != MODE_CALIBRATION){
+	if(OperatingMode != MODE_TESTMODE){
 		ErrorResponse(ERRC_ACCESS_ERROR, ERST_NOT_ALLOWED_IN_MODE);
 		return;
 	}
@@ -720,7 +719,7 @@ void SetPWSTGEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		return;
 	}
 
-	if(OperatingMode != MODE_CALIBRATION){
+	if(OperatingMode != MODE_TESTMODE){
 		ErrorResponse(ERRC_ACCESS_ERROR, ERST_NOT_ALLOWED_IN_MODE);
 		return;
 	}
@@ -767,7 +766,7 @@ void SetGD_PowerEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart)
 		return;
 	}
 
-	if(OperatingMode != MODE_CALIBRATION){
+	if(OperatingMode != MODE_TESTMODE){
 		ErrorResponse(ERRC_ACCESS_ERROR, ERST_NOT_ALLOWED_IN_MODE);
 		return;
 	}
@@ -814,7 +813,7 @@ void GetPWSTGUVLO(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
   * @param None
   * @retval None
   */
-void SetCalSampleRate(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
+void SetTestSampleRate(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	char *first_parameter;
 	uint32_t Rcv_Param =0;
@@ -832,9 +831,9 @@ void SetCalSampleRate(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	first_parameter = parameters.First();
 	Rcv_Param = (uint32_t)atol(first_parameter);
 
-	if((Rcv_Param <= CAL_MAX_SAMPLE_TIME) && (Rcv_Param >= CAL_MIN_SAMPLE_TIME)){
-		SamplingTiming.CalSampleTime = Rcv_Param;
-		UART_printf("#CSR %d\n",SamplingTiming.CalSampleTime);
+	if((Rcv_Param <= TEST_MAX_SAMPLE_TIME) && (Rcv_Param >= TEST_MIN_SAMPLE_TIME)){
+		SamplingTiming.TestSampleTime = Rcv_Param;
+		UART_printf("#CSR %d\n",SamplingTiming.TestSampleTime);
 	}
 	else{
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_PARAM_OUT_OF_RANGE);
@@ -861,7 +860,7 @@ void SetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		return;
 	}
 
-	if(FlagMeasurementState > Meas_State_Idle && FlagMeasurementState < Cal_State_Init){	// check if system is Idle
+	if(FlagMeasurementState > Meas_State_Idle && FlagMeasurementState < Test_State_Init){	// check if system is Idle
 		ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING + FlagMeasurementState);
 		return;
 	}
@@ -1069,40 +1068,6 @@ void SetSystemTime(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 }
 
 
-uint8_t MeasurementMemoryPrediction(void){
-
-	uint32_t MemBytes = 1050+80; //Initially there should be around 270 bytes for the file header and 80 bytes for the footer
-
-	uint32_t MeasureTime = 0;
-	MeasureTime = SamplingTiming.PreHeatingTime + SamplingTiming.HeatingTime + SamplingTiming.CoolingTime;	// all values in ms
-
-	uint32_t TotalTempSamples = 0;
-	TotalTempSamples = MeasureTime / MEASURE_TEMP_UPDATE_TIME;	// Calculate the approximate number of temperature samples
-
-	UART_printf("Samples %d\n",TotalTempSamples);
-	MemBytes += (TotalTempSamples * 21);		// Add the number of bytes for temperature measurement. Each line holds up to 21bytes
-	UART_printf("Temperature Measure Bytes %d\n",MemBytes);
-
-
-	uint32_t SampleTimeSlow = (SamplingTiming.FastSampleTime <<SamplingTiming.MaxTimeMultiplier)/8000;
-	uint32_t BytesPerBlock = 0;
-	BytesPerBlock = 22 * ADC_BFR_SIZE  +14;		// assuming 22 bytes per line + 14bytes for the block header
-
-	uint32_t TotalBlocks = 0;
-
-	TotalBlocks = MeasureTime/(SampleTimeSlow * ADC_BFR_SIZE);	// Calculate the total estimated number of blocks
-
-	MemBytes += BytesPerBlock * TotalBlocks;	// Assuming the lowest sample rate this is the number of bytes over the whole measurement duration
-	UART_printf("Sampling Bytes %d\n",MemBytes);
-	MemBytes += BytesPerBlock * ADC_MAX_MULTIPLIER;				// Add the additional blocks which are required for the log-sampling
-	UART_printf("Fast Sampling Bytes %d\n",MemBytes);
-
-
-	return 0;
-}
-
-
-
 /**
   * @brief Print the file structure within the flash memory onto the serial port.
   * @param 	lfs_t *lfs		Pointer to the littleFS file system
@@ -1147,6 +1112,47 @@ int lfs_ls(lfs_t *lfs, const char *path) {
         	strcat(DirName, info.name);
         	strcat(DirName, "/");
         	lfs_ls(lfs,DirName );
+        }
+    }
+
+    err = lfs_dir_close(lfs, &dir);
+    if (err) {
+        return err;
+    }
+
+    return 0;
+}
+
+/**
+  * @brief Loops through the flash memory and accumulates the total use of memory
+  * @param 	lfs_t *lfs		Pointer to the littleFS file system
+  * @param  char *path		String of the base directory for printing. Root directory is "/"
+  * @retval None
+  */
+int lfs_mem_size(lfs_t *lfs, const char *path, uint32_t* total_memory) {
+    lfs_dir_t dir;
+    int err = lfs_dir_open(lfs, &dir, path);
+    if (err) {
+        return err;
+    }
+
+    struct lfs_info info;
+    while (true) {
+        int res = lfs_dir_read(lfs, &dir, &info);
+        if (res < 0) {
+            return res;
+        }
+
+        if (res == 0) {
+            break;
+        }
+        *total_memory += info.size;
+        //UART_printf("File: %s, size: %lu\n", info.name, info.size);
+        if (info.type == LFS_TYPE_DIR && strchr(info.name,'.') == 0){
+        	char DirName[20] = "";
+        	strcat(DirName, info.name);
+        	strcat(DirName, "/");
+        	lfs_mem_size(lfs,DirName, total_memory);
         }
     }
 

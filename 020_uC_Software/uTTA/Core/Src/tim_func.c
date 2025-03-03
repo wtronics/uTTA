@@ -93,7 +93,6 @@ void Setup_TIM1(TIM_Mode_t Mode){
 	//the right interrupt enable bit, shift a unsigned 32 bit integer 1 the IRQ number anded with 31 (modulo 32) times to the right
 	NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
 
-
 }
 
 
@@ -120,8 +119,6 @@ void CalcADCSamplingSettings(uint32_t SampleTime) // SampleTime in 125ns Steps..
 	LL_TIM_SetAutoReload(TIM1, (uint16_t)calcResCounter-1);				// Set the Auto reload register to the new period
 	LL_TIM_OC_SetCompareCH1(TIM1, (uint16_t)1);							// Set a low value, to be able to see whats going on
 	LL_TIM_SetPrescaler(TIM1, (uint16_t)(newPrescaler<<(PrescalerUpscale-1))-1);		// New prescaler
-
-
 }
 
 

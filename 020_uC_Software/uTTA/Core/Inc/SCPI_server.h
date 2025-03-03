@@ -52,7 +52,7 @@ void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);			// 
 void SetMode(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetChannelDescription(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void Set_AnalogValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
-void SetCalSampleRate(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
+void SetTestSampleRate(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetDUT(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void SetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
 void GetGain(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart);
@@ -66,6 +66,7 @@ void SetPGAGain(uint8_t Gain);
 void GetSamplingSettings(void);
 
 int lfs_ls(lfs_t *lfs, const char *path) ;
+int lfs_mem_size(lfs_t *lfs, const char *path, uint32_t* total_memory);
 void FileUpload_SerialToFile(char* message);
 
 

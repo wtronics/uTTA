@@ -65,12 +65,8 @@ void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file, uint8_t details){
 	LFS_ret = lfs_file_open(lfs, file, "Cali.ucf", LFS_O_RDONLY);
 	if( LFS_ret < 0){
 		UART_printf("NO_FILE\n");
-		//ErrorResponse(ERRC_SYSTEM_ERROR, ERST_FILE_NOT_FOUND);
 		CalAvailable = -1;
 		return;
-	}
-	else{
-		//UART_printf("OK\n");
 	}
 
 	// read the file from the memory in one step
@@ -123,7 +119,6 @@ int Write_CalibrationToFile(lfs_t *lfs, lfs_file_t *file){
 
 	sprintf(FileWriteBuff,"#VOFFS1;%f\n",DAC_SetVal[CH_VOffs1_3]);
 	LFS_WRITE_STRING(lfs, file, FileWriteBuff);
-
 
 	return LFS_ret;
 }
