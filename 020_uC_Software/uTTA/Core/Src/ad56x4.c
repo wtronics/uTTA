@@ -71,14 +71,14 @@ void AD56x4_write_byte(uint8_t cmd){
 	}
 }
 
-void AD56x4_write_channel_direct(uint8_t ch, uint16_t value){
+void AD56x4_write_channel_direct(DAC_Ch_t ch, uint16_t value){
 	if(ch < 4){
 		AD56x4_write(AD56X4_CMD_WRITE_UPDATE_CH | ch, value);
 	}
 }
 
 
-int8_t AD56x4_WriteChannelCalibrated(uint8_t ch, float value){
+int8_t AD56x4_WriteChannelCalibrated(DAC_Ch_t ch, float value){
 	if(ch < 4){
 		if(CalAvailable != 1){
 			// no calibration is available, therefore the setup will be done without scaling
