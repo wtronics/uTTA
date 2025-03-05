@@ -113,9 +113,15 @@
 #define UMF_FILEVERSION "3.2"
 
 
-#define MODE_NORMAL      0
-#define MODE_TESTMODE    1
-#define MODE_TEMPCONTROL 2
+//#define MODE_NORMAL      0
+//#define MODE_TESTMODE    1
+//#define MODE_TEMPCONTROL 2
+
+typedef enum {
+	 Mode_Normal,
+	 Mode_Test,
+	 Mode_TempControl
+} DeviceModes_t;
 
 typedef struct PGA_Gain_{
 	uint8_t Set;
@@ -139,7 +145,6 @@ typedef struct Sampling_Timing_{
 typedef enum {
 	Meas_State_Idle = 0,		// 0 :  Measurement system is not active
 	Meas_State_Init,			// 1 :
-	//Meas_State_GDPowerOn,
 	Meas_State_GDPowerCheck,
 	Meas_State_Preheating,
 	Meas_State_PrepHeating,
@@ -163,7 +168,7 @@ typedef struct ChannelParams{
 	float CH_QuadGain;
 } CH_Def;
 
-extern uint8_t OperatingMode;
+extern DeviceModes_t OperatingMode;
 
 extern CH_Def Channels[4];
 
