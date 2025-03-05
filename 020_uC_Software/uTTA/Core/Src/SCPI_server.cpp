@@ -437,7 +437,7 @@ void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	if((strcmp(last_header,"START")==0)){
 		if(FlagMeasurementState == Meas_State_Idle){
-			if( OperatingMode == MODE_NORMAL){
+			if( OperatingMode == Mode_Normal){
 				FlagMeasurementState = Meas_State_Init;
 			}
 			else{
@@ -452,7 +452,7 @@ void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	else if((strcmp(last_header,"STOP")==0)){
 
 		if(FlagMeasurementState != Meas_State_Idle){
-			if( OperatingMode == MODE_NORMAL){
+			if( OperatingMode == Mode_Normal){
 				FlagMeasurementState = Meas_State_Deinit;
 			}
 			else{
@@ -639,11 +639,11 @@ void SetMode(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	parameters.toUpperCase(first_parameter);
 
 	if((strcmp(first_parameter,"NORMAL")==0)){
-		OperatingMode = MODE_NORMAL;
+		OperatingMode = Mode_Normal;
 		UART_printf("OK\n");
 	}
 	else if((strcmp(first_parameter,"CAL")==0)){
-		OperatingMode = MODE_TESTMODE;
+		OperatingMode = Mode_Test;
 		UART_printf("OK\n");
 	}
 	else{
@@ -670,7 +670,7 @@ void SetPSUEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		return;
 	}
 
-	if(OperatingMode != MODE_TESTMODE){
+	if(OperatingMode != Mode_Test){
 		ErrorResponse(ERRC_ACCESS_ERROR, ERST_NOT_ALLOWED_IN_MODE);
 		return;
 	}
@@ -719,7 +719,7 @@ void SetPWSTGEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		return;
 	}
 
-	if(OperatingMode != MODE_TESTMODE){
+	if(OperatingMode != Mode_Test){
 		ErrorResponse(ERRC_ACCESS_ERROR, ERST_NOT_ALLOWED_IN_MODE);
 		return;
 	}
@@ -766,7 +766,7 @@ void SetGD_PowerEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart)
 		return;
 	}
 
-	if(OperatingMode != MODE_TESTMODE){
+	if(OperatingMode != Mode_Test){
 		ErrorResponse(ERRC_ACCESS_ERROR, ERST_NOT_ALLOWED_IN_MODE);
 		return;
 	}

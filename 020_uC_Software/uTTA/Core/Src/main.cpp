@@ -49,7 +49,7 @@ int FlashMemoryAvailable = 0;
 
 volatile MeasurementStates_t FlagMeasurementState = Meas_State_Idle;
 
-uint8_t OperatingMode = MODE_NORMAL;
+DeviceModes_t OperatingMode = Mode_Normal;
 char DUT_Name[MAX_DUT_NAME_LENGTH] = {"DUT.umf"};
 
 CH_Def Channels[4] = { 	{"Driver"  , 0, -2600, 0},
@@ -245,29 +245,21 @@ void DoMeasurement(void)
 			ADC_PGA_Setting[PGA_Idx] = PGA_Gains.Set;
 		}
 
-		//FlagMeasurementState = Meas_State_GDPowerOn;	// Set the step for the StateMachine to the next step
-
 		LL_GPIO_SetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin);		// turn on the power of the gate driver
 		MeasurementNextStepTime = GetTick()+ 20;
 		FlagMeasurementState=Meas_State_GDPowerCheck;
 
 		break;
-//	case Meas_State_GDPowerOn:
-//
-//		HAL_GPIO_WritePin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin, GPIO_PIN_SET);		// turn on the power of the gate driver
-//		MeasurementNextStepTime = HAL_GetTick()+ 20;
-//		FlagMeasurementState=Meas_State_GPPowerCheck;
-//		break;
 	case Meas_State_GDPowerCheck:
 
 		if(GetTick()< MeasurementNextStepTime) break;
 
-//		if(HAL_GPIO_ReadPin(PWSTG_UVLO_DI_GPIO_Port, PWSTG_UVLO_DI_Pin) != 1)
-//		{
-//			ErrorResponse(ERRC_SYSTEM_ERROR, ERST_GATEDRV_UVLO);
-//			FlagMeasurementState = Meas_State_Deinit;
-//			return;
-//		}
+		if(LL_GPIO_IsInputPinSet(PWSTG_UVLO_DI_GPIO_Port, PWSTG_UVLO_DI_Pin))
+		{
+			ErrorResponse(ERRC_SYSTEM_ERROR, ERST_GATEDRV_UVLO);
+			FlagMeasurementState = Meas_State_Deinit;
+			break;
+		}
 
 		MeasurementStartTime = GetTick();	// Calculate the time when the next Measurement step shall be started
 		MeasurementNextStepTime = MeasurementStartTime + SamplingTiming.PreHeatingTime;
@@ -432,7 +424,7 @@ void DoMeasurement(void)
 		}
 
 		if(GetTick() > NextOutput){		// Measurement is running
-			if(OperatingMode != MODE_TESTMODE){
+			if(OperatingMode == Mode_Normal){
 				WriteTemperaturesToFile();
 			}
 
