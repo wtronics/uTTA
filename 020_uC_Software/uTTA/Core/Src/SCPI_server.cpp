@@ -9,6 +9,7 @@
 #include <SCPI_server.h>
 #include "dev_cal.h"
 #include "ad56x4.h"
+#include "temp_control.h"
 
 SCPI_Parser my_instrument;
 
@@ -571,7 +572,8 @@ void SetChannelDescription(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
 /**
   * @brief Sets the analog values to the analog frontend
   * This can ONLY be done while the system is in IDLE mode (no measurement running)
-  * Syntax: MEASure:SET ch, value			ch    = Name of the Channel [ISEN, VOFFS1, VOFFS2]
+  * Syntax: MEASure:SET param,no, value		param    = Name of the Channel [ISEN, VOFFS]
+  * 										no    = Number of the Channel [0,1,2,3,4,5]
   * 										value = Floating point value of the set value, in Calibration Mode the input value is interpreted as DAC Value (Range: 0..65535)
   * @param None
   * @retval None
@@ -579,7 +581,7 @@ void SetChannelDescription(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
 void Set_AnalogValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	char *first_parameter;
 
-	if (parameters.Size() != 2) {
+	if (parameters.Size() != 3) {
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_TOO_FEW_PARAM);
 		return;
 	}
@@ -589,26 +591,39 @@ void Set_AnalogValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		return;
 	}
 
+	int8_t ChNo = atoi( parameters[1]);
+	float SetValue = atof(parameters[2]);
+
 	first_parameter = parameters.First();
 	parameters.toUpperCase(first_parameter);
-	float SetValue = atof(parameters[1]);
-	uint8_t ChNo = 0;
 
 	if((strcmp(first_parameter,"ISEN")==0)){
 		ChNo=0;
 	}
-	else if((strcmp(first_parameter,"VOFF0")==0)){
-		ChNo=2;
+	else if((strcmp(first_parameter,"VOFF")==0)){
+		ChNo+=2;		// its channels 2 and 3, therefore 2+0 and 2+1
 	}
-	else if((strcmp(first_parameter,"VOFF1")==0)){
-		ChNo=3;
+	else if((strcmp(first_parameter,"TSET")==0)){
+		ChNo+=3;
 	}
 	else{
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_UNKNOWN_COMMAND);
 		return;
 	}
 
-	int8_t DAC_ret = AD56x4_WriteChannelCalibrated((DAC_Ch_t)ChNo, SetValue);
+	int8_t DAC_ret=0;
+
+	if(ChNo <3){
+		DAC_ret = AD56x4_WriteChannelCalibrated((DAC_Ch_t)ChNo, SetValue);
+	}
+	else{
+		if(ChNo < 5){
+
+		}
+		else{
+
+		}
+	}
 	UART_printf("OK %d\n", DAC_ret);
 }
 
@@ -642,8 +657,12 @@ void SetMode(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		OperatingMode = Mode_Normal;
 		UART_printf("OK\n");
 	}
-	else if((strcmp(first_parameter,"CAL")==0)){
+	else if((strcmp(first_parameter,"TEST")==0)){
 		OperatingMode = Mode_Test;
+		UART_printf("OK\n");
+	}
+	else if((strcmp(first_parameter,"TEMP")==0)){
+		OperatingMode = Mode_TempControl;
 		UART_printf("OK\n");
 	}
 	else{
