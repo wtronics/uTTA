@@ -89,7 +89,7 @@ int8_t AD56x4_WriteChannelCalibrated(DAC_Ch_t ch, float value){
 			DAC_SetVal[ch] = value;
 			// scale the value using the calibration factors
 			DAC_SetValue =(int32_t)((value-DACCalVal[ch].Offset)/ DACCalVal[ch].LinGain);
-			if((DAC_SetValue >=0) && (DAC_SetValue <65536)){
+			if((DAC_SetValue >= 0) && (DAC_SetValue < UINT16_MAX)){
 				AD56x4_write(AD56X4_CMD_WRITE_UPDATE_CH | ch, (uint16_t)DAC_SetValue);
 				return 1;
 			}
