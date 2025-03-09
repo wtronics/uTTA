@@ -57,7 +57,7 @@ void Init_MAX6675(void){
     @returns int16_t converted temperature in 0.25°C steps. returns -1 if an error occured
 */
 /**************************************************************************/
-int16_t Read_MAX6675(uint8_t DevNo){
+float Read_MAX6675(uint8_t DevNo){
 
 	uint16_t result = 0;
 	uint8_t Clk = 0;
@@ -85,5 +85,5 @@ int16_t Read_MAX6675(uint8_t DevNo){
 	LL_GPIO_SetOutputPin(MAX6675_CS_GPIO[DevNo].gpio, MAX6675_CS_GPIO[DevNo].pin);
 	result >>= 3;
 
-	return (int16_t)(result);
+	return ((float)result)/4.0;
 }

@@ -19,7 +19,7 @@ extern "C" {
 #define MAX6675_DEVICES 4		// Number of MAX6675 connected
 
 void Init_MAX6675(void);					// Initialization routine for MAX6675 Type K converters
-int16_t Read_MAX6675(uint8_t DevNo);		// Reads the temperature of the selected MAX6675
+float Read_MAX6675(uint8_t DevNo);		// Reads the temperature of the selected MAX6675
 
 typedef struct {
  GPIO_TypeDef* gpio;
