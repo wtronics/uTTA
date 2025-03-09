@@ -51,21 +51,22 @@ typedef struct uTTA_Err_t{
 
 #define ERRC_FILE_SYSTEM			4
 
-#define ERST_LFS_ERR_OK          0   //= 0,    // No error
-#define ERST_LFS_ERR_IO          251 //= -5,   // Error during device operation
-#define ERST_LFS_ERR_CORRUPT     172 //= -84,  // Corrupted
-#define ERST_LFS_ERR_NOENT       254 //= -2,   // No directory entry
-#define ERST_LFS_ERR_EXIST       239 //= -17,  // Entry already exists
-#define ERST_LFS_ERR_NOTDIR      236 //= -20,  // Entry is not a dir
-#define ERST_LFS_ERR_ISDIR       235 //= -21,  // Entry is a dir
-#define ERST_LFS_ERR_NOTEMPTY    217 //= -39,  // Dir is not empty
-#define ERST_LFS_ERR_BADF        247 //= -9,   // Bad file number
-#define ERST_LFS_ERR_FBIG        229 //= -27,  // File too large
-#define ERST_LFS_ERR_INVAL       234 //= -22,  // Invalid parameter
-#define ERST_LFS_ERR_NOSPC       228 //= -28,  // No space left on device
-#define ERST_LFS_ERR_NOMEM       244 //= -12,  // No more memory available
-#define ERST_LFS_ERR_NOATTR      195 //= -61,  // No data/attr available
-#define ERST_LFS_ERR_NAMETOOLONG 220 //= -36,  // File name too long
+#define ERST_LFS_ERR_OK          	0   //= 0,    // No error
+#define ERST_LFS_ERR_FILE_TOO_LARGE	2   //= 2,    // Measurement file will probably not fit into the flash memory
+#define ERST_LFS_ERR_IO          	251 //= -5,   // Error during device operation
+#define ERST_LFS_ERR_CORRUPT     	172 //= -84,  // Corrupted
+#define ERST_LFS_ERR_NOENT       	254 //= -2,   // No directory entry
+#define ERST_LFS_ERR_EXIST       	239 //= -17,  // Entry already exists
+#define ERST_LFS_ERR_NOTDIR      	236 //= -20,  // Entry is not a dir
+#define ERST_LFS_ERR_ISDIR       	235 //= -21,  // Entry is a dir
+#define ERST_LFS_ERR_NOTEMPTY    	217 //= -39,  // Dir is not empty
+#define ERST_LFS_ERR_BADF        	247 //= -9,   // Bad file number
+#define ERST_LFS_ERR_FBIG        	229 //= -27,  // File too large
+#define ERST_LFS_ERR_INVAL       	234 //= -22,  // Invalid parameter
+#define ERST_LFS_ERR_NOSPC       	228 //= -28,  // No space left on device
+#define ERST_LFS_ERR_NOMEM       	244 //= -12,  // No more memory available
+#define ERST_LFS_ERR_NOATTR      	195 //= -61,  // No data/attr available
+#define ERST_LFS_ERR_NAMETOOLONG 	220 //= -36,  // File name too long
 
 
 void InitErrorBuffer(void);
