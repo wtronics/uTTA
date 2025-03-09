@@ -147,6 +147,7 @@
 		</Item>
 		<Item Name="uTTA_Main.vi" Type="VI" URL="../uTTA/uTTA_Main.vi"/>
 		<Item Name="uTTA_Main_Temperature_Control.vi" Type="VI" URL="../uTTA/uTTA_Main_Temperature_Control.vi"/>
+		<Item Name="CTL_uTTA_AnalogParameter.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_AnalogParameter.ctl"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
