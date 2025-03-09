@@ -169,14 +169,18 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                         pga_now = int(cells[1])
                     case '#T':
                         for CellIdx in range(1, 5):  # copy the cells to the new array
-                            if umf_fileversion > 3.1:
+                            if umf_fileversion >= 3.3:
+                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx])
+                            elif umf_fileversion >= 3.2:
                                 temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 4.0
                             else:
                                 temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 8.0
                         temp_idx += 1
                     case '#TEMP':
                         for CellIdx in range(1, 5):  # copy the cells to the new array
-                            if umf_fileversion > 3.1:
+                            if umf_fileversion >= 3.3:
+                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx])
+                            elif umf_fileversion >= 3.2:
                                 temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 4.0
                             else:
                                 temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 8.0
