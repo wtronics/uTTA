@@ -110,7 +110,7 @@
 #define VOFFS1_3_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 
 #define UTTA_SW_VERSION "2.3"
-#define UMF_FILEVERSION "3.2"
+#define UMF_FILEVERSION "3.3"
 
 
 //#define MODE_NORMAL      0
@@ -158,7 +158,12 @@ typedef enum {
 	Test_State_GPPowerCheck,
 	Test_State_Cal,
 	Test_State_DeInit,
-	Test_State_Exit
+	Test_State_Exit,
+	Temp_State_Init,
+	Temp_State_Heat,
+	Temp_State_Settle,
+	Temp_State_Measure,
+	Temp_State_Deinit,
 }MeasurementStates_t;
 
 typedef struct ChannelParams{
