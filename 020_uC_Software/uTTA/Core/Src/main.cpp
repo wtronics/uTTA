@@ -43,7 +43,7 @@ volatile Timing_t SamplingTiming = {ADC_DEF_SAMPLETIME, 0.0f, ADC_MAX_MULTIPLIER
 
 uint32_t Meas_RunTime = 0;
 uint32_t Meas_StartTime = 0;
-int16_t Temp_TypeK[MAX6675_DEVICES];
+float Temp_TypeK[MAX6675_DEVICES];
 int GlobalWriteErrorFlag = 0;
 int FlashMemoryAvailable = 0;
 
@@ -139,7 +139,7 @@ int main(void)
 
 	  lfs_mem_size(&littlefs, "/", &TotalMem);
 	  DBG_LVL1("Total size used memory = %lu bytes\n", TotalMem);
-
+	  DBG_LVL1("Total size used blocks = %lu blocks\n", lfs_fs_size(&littlefs));
 
 	  Read_CalibrationFromFlash(&littlefs, &file, 0);
 
@@ -394,6 +394,16 @@ void DoMeasurement(void)
 
 		FlagMeasurementState = Meas_State_Idle;
 		break;
+	case Temp_State_Init:
+		break;
+	case Temp_State_Heat:
+		break;
+	case Temp_State_Settle:
+		break;
+	case Temp_State_Measure:
+		break;
+	case Temp_State_Deinit:
+		break;
 	default:
 		break;
 	}
@@ -453,7 +463,7 @@ void DoMeasurement(void)
 
 		for(uint8_t TKidx =0; TKidx<MAX6675_DEVICES;TKidx++)
 		{
-			UART_printf(";%d",Temp_TypeK[TKidx]);
+			UART_printf(";%.2f",Temp_TypeK[TKidx]);
 		}
 		UART_printf("\n");
 	}
@@ -547,7 +557,8 @@ uint8_t WriteTemperaturesToFile(void){
 	EvalLFSError(LFS_WRITE_STRING(&littlefs, &file, "#T;"));	// Thermocouples
 	for(uint8_t TKidx =0; TKidx<MAX6675_DEVICES;TKidx++)
 	{
-		utoa(Temp_TypeK[TKidx],LogWriteBfr,10);
+		//utoa(Temp_TypeK[TKidx],LogWriteBfr,10);
+		sprintf(LogWriteBfr,"%.2f",Temp_TypeK[TKidx]);
 		EvalLFSError(LFS_WRITE_STRING(&littlefs, &file, LogWriteBfr));
 		EvalLFSError(LFS_WRITE_STRING(&littlefs, &file, ";"));
 	}
