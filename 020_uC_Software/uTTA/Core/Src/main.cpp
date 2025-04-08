@@ -139,7 +139,8 @@ int main(void)
 
 	  lfs_mem_size(&littlefs, "/", &TotalMem);
 	  DBG_LVL1("Total size used memory = %lu bytes\n", TotalMem);
-	  DBG_LVL1("Total size used blocks = %lu blocks\n", lfs_fs_size(&littlefs));
+	  uint32_t lfs_used_bytes =  lfs_fs_size(&littlefs)*0xffff;
+	  DBG_LVL1("Total size used blocks = %lu blocks, %lu bytes\n", lfs_fs_size(&littlefs), lfs_used_bytes);
 
 	  Read_CalibrationFromFlash(&littlefs, &file, 0);
 
@@ -619,24 +620,26 @@ uint32_t MeasurementMemoryPrediction(void){
 
 	uint32_t MeasureTime = SamplingTiming.PreHeatingTime + SamplingTiming.HeatingTime + SamplingTiming.CoolingTime;	// all values in ms
 
-	uint32_t TotalTempSamples = MeasureTime / MEASURE_TEMP_UPDATE_TIME;	// Calculate the approximate number of temperature samples
+	uint32_t TotalTempSamples = MeasureTime / MEASURE_DATA_UPDATE_TIME;	// Calculate the approximate number of temperature samples
 	DBG_LVL1("Temp Samples %d\n",TotalTempSamples);
 
-	uint32_t TempMeasBytes = (TotalTempSamples * 21);		// Add the number of bytes for temperature measurement. Each line holds up to 21bytes
+	uint32_t TempMeasBytes = (TotalTempSamples * 29);		// Add the number of bytes for temperature measurement. Each line holds up to 21bytes
 	MemBytes += TempMeasBytes;
 	DBG_LVL1("Temperature Measure Bytes %d\n",TempMeasBytes);
 
 	uint32_t SampleTimeSlow = (SamplingTiming.FastSampleTime <<SamplingTiming.MaxTimeMultiplier)/8000;
-	DBG_LVL1("Total slow samples %d\n",SampleTimeSlow);
+	DBG_LVL1("Slow sample time %d ms\n",SampleTimeSlow);
 
-	uint32_t BytesPerBlock = (21 * ADC_BFR_SIZE)  +14;		// assuming 22 bytes per line + 14bytes for the block header
+	uint32_t BytesPerBlock = (19 * ADC_BFR_SIZE)  +14;		// assuming 19 bytes per line + 14bytes for the block header
 	DBG_LVL1("Bytes per Block  %d\n",BytesPerBlock);
 
 	uint32_t TotalBlocks = MeasureTime/(SampleTimeSlow * ADC_BFR_SIZE);	// Calculate the total estimated number of blocks
 	DBG_LVL1("Total Blocks %d\n",TotalBlocks);
 
 	MemBytes += BytesPerBlock * TotalBlocks;	// Assuming the lowest sample rate this is the number of bytes over the whole measurement duration
-	DBG_LVL1("Bytes in Blocks %d\n",BytesPerBlock * TotalBlocks);
+	DBG_LVL1("Bytes in Blocks %d\n",BytesPerBlock * (TotalBlocks + ADC_MAX_MULTIPLIER));
+
+	DBG_LVL1("Total bytes required %d\n",MemBytes);
 
 	return MemBytes;
 }
@@ -651,8 +654,10 @@ uint8_t CheckMemoryFileFit(void){
 	uint32_t NeededMem = MeasurementMemoryPrediction();
 
 	if(FreeMem > NeededMem){
+		DBG_LVL1("File fits into memory\n");
 		return 1;
 	}
+	DBG_LVL1("File does not fit into memory!\n");
 	return 0;
 }
 
