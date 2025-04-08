@@ -71,7 +71,7 @@ uint8_t CheckMemoryFileFit(void);
 /* Private defines -----------------------------------------------------------*/
 
 #define DEBUG_INIT
-#define DEBUG_LVL1
+//#define DEBUG_LVL1
 
 #ifdef DEBUG_INIT
 #define INIT_DBG(...) UART_printf(__VA_ARGS__)
