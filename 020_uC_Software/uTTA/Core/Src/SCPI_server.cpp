@@ -604,7 +604,7 @@ void Set_AnalogValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 		ChNo+=2;		// its channels 2 and 3, therefore 2+0 and 2+1
 	}
 	else if((strcmp(first_parameter,"TSET")==0)){
-		ChNo+=3;
+		ChNo+=4;
 	}
 	else{
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_UNKNOWN_COMMAND);
@@ -613,7 +613,7 @@ void Set_AnalogValues(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	int8_t DAC_ret=0;
 
-	if(ChNo <3){
+	if(ChNo <= 3){
 		DAC_ret = AD56x4_WriteChannelCalibrated((DAC_Ch_t)ChNo, SetValue);
 	}
 	else{
