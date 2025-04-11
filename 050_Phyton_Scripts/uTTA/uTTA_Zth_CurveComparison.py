@@ -9,7 +9,7 @@ NumCurves = int(input("Please enter the number of Curves you want to compare: ")
 fig, axs = plt.subplots(nrows=3, ncols=1, layout="constrained")
 for CurveIdx in range(0, int(NumCurves)):
     FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
-    DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam, '.t3i')
+    DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam)
 
     Zth_Import = genfromtxt(FileNam, delimiter='\t', dtype=float, names=True)
     Cols = Zth_Import.dtype.names
