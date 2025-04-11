@@ -3847,7 +3847,7 @@ einem neuen Namen ab.</description>
 <attribute name="NAME" x="-136.93775" y="44.958" size="0.6096" layer="38" font="vector" rot="MR0" align="center"/>
 <attribute name="VALUE" x="-136.93775" y="43.561" size="1.27" layer="28" font="vector" rot="MR0" align="center"/>
 </element>
-<element name="R153.1" library="A_Resistor" package="R0603" value="330R" x="-161.51225" y="52.73675" smashed="yes" rot="MR180">
+<element name="R153.1" library="A_Resistor" package="R0603" value="120" x="-161.51225" y="52.73675" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="R0603" x="-161.51225" y="52.73675" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-161.51225" y="52.73675" size="0.4064" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-161.51225" y="54.13375" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
@@ -3983,7 +3983,7 @@ einem neuen Namen ab.</description>
 <attribute name="NAME" x="-148.1455" y="17.018" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-148.1455" y="18.415" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
 </element>
-<element name="R153.2" library="A_Resistor" package="R0603" value="1k2" x="-161.544" y="57.75325" smashed="yes" rot="MR180">
+<element name="R153.2" library="A_Resistor" package="R0603" value="120" x="-161.544" y="57.75325" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="R0603" x="-209.4865" y="54.4195" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-161.544" y="57.75325" size="0.4064" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-161.544" y="59.15025" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
@@ -4083,7 +4083,7 @@ einem neuen Namen ab.</description>
 <attribute name="NAME" x="-132.1435" y="16.8275" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-132.1435" y="18.2245" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
 </element>
-<element name="R153.3" library="A_Resistor" package="R0603" value="1k2" x="-157.95625" y="61.05525" smashed="yes" rot="MR180">
+<element name="R153.3" library="A_Resistor" package="R0603" value="120" x="-157.95625" y="61.05525" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="R0603" x="-207.3275" y="44.3865" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-157.95625" y="61.05525" size="0.4064" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-157.95625" y="62.45225" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
@@ -4168,7 +4168,7 @@ einem neuen Namen ab.</description>
 <variant name="Manual_Adjust" populate="no"/>
 <variant name="Controller Adjust" populate="no"/>
 </element>
-<element name="R153.4" library="A_Resistor" package="R0603" value="1k2" x="-157.988" y="63.627" smashed="yes" rot="MR180">
+<element name="R153.4" library="A_Resistor" package="R0603" value="120" x="-157.988" y="63.627" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="R0603" x="-223.0755" y="225.39325" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-157.988" y="63.627" size="0.4064" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-157.988" y="65.024" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
@@ -4247,13 +4247,13 @@ einem neuen Namen ab.</description>
 <attribute name="NAME" x="-123.444" y="47.46625" size="0.4064" layer="37" font="vector" rot="R90" align="center"/>
 <attribute name="VALUE" x="-122.047" y="47.46625" size="1.27" layer="27" font="vector" rot="R90" align="center"/>
 </element>
-<element name="C153.3" library="A_Kondensatoren" package="C0603" value="2.2n/25V" x="-161.544" y="62.357" smashed="yes" rot="MR180">
+<element name="C153.3" library="A_Kondensatoren" package="C0603" value="10n/25V" x="-161.544" y="62.357" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0603" x="-161.544" y="62.357" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-161.544" y="62.357" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-161.544" y="63.754" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
 <attribute name="NAME" x="-156.845" y="62.32525" size="1.27" layer="26" font="vector" rot="MR180" align="center"/>
 </element>
-<element name="C153.4" library="A_Kondensatoren" package="C0603" value="2.2n/25V" x="-161.544" y="64.897" smashed="yes" rot="MR180">
+<element name="C153.4" library="A_Kondensatoren" package="C0603" value="10n/25V" x="-161.544" y="64.897" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0603" x="-161.544" y="64.897" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-161.544" y="64.897" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-161.544" y="66.294" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
@@ -4261,13 +4261,13 @@ einem neuen Namen ab.</description>
 <variant name="Manual_Adjust" populate="no"/>
 <variant name="Controller Adjust" populate="no"/>
 </element>
-<element name="C153.2" library="A_Kondensatoren" package="C0603" value="2.2n/25V" x="-161.544" y="59.817" smashed="yes" rot="MR180">
+<element name="C153.2" library="A_Kondensatoren" package="C0603" value="10n/25V" x="-161.544" y="59.817" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0603" x="-161.544" y="59.817" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-161.544" y="59.817" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-161.544" y="61.214" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
 <attribute name="NAME" x="-156.7815" y="59.817" size="1.27" layer="26" font="vector" rot="MR180" align="center"/>
 </element>
-<element name="C153.1" library="A_Kondensatoren" package="C0603" value="1n/25V" x="-161.51225" y="54.76875" smashed="yes" rot="MR180">
+<element name="C153.1" library="A_Kondensatoren" package="C0603" value="10n/25V" x="-161.51225" y="54.76875" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0603" x="-161.51225" y="54.76875" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-161.51225" y="54.76875" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-161.51225" y="56.16575" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>

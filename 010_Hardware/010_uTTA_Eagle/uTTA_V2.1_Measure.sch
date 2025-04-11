@@ -9421,7 +9421,7 @@ Source: www.kingbright.com</description>
 <part name="AGND13" library="supply" deviceset="AGND_" device=""/>
 <part name="C306" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="100n/50V"/>
 <part name="AGND15" library="supply" deviceset="AGND_" device=""/>
-<part name="R153.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="330R"/>
+<part name="R153.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="120"/>
 <part name="C107.1" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="100n/50V"/>
 <part name="AGND7" library="supply" deviceset="AGND_" device=""/>
 <part name="R151.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="24k9">
@@ -9483,7 +9483,7 @@ Source: www.kingbright.com</description>
 <attribute name="PACKAGE" value="2012"/>
 </part>
 <part name="C105.2" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="10p"/>
-<part name="R153.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k2"/>
+<part name="R153.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="120"/>
 <part name="C107.2" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="100n/50V"/>
 <part name="AGND14" library="supply" deviceset="AGND_" device=""/>
 <part name="R151.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="24k9">
@@ -9534,7 +9534,7 @@ Source: www.kingbright.com</description>
 <attribute name="PACKAGE" value="2012"/>
 </part>
 <part name="C105.3" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="10p"/>
-<part name="R153.3" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k2"/>
+<part name="R153.3" library="A_Resistor" deviceset="R-EU_" device="R0603" value="120"/>
 <part name="C107.3" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="100n/50V"/>
 <part name="AGND17" library="supply" deviceset="AGND_" device=""/>
 <part name="R151.3" library="A_Resistor" deviceset="R-EU_" device="R0603" value="24k9">
@@ -9581,7 +9581,7 @@ Source: www.kingbright.com</description>
 <variant name="Manual_Adjust" populate="no"/>
 <variant name="Controller Adjust" populate="no"/>
 </part>
-<part name="R153.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k2">
+<part name="R153.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="120">
 <variant name="Manual_Adjust" populate="no"/>
 <variant name="Controller Adjust" populate="no"/>
 </part>
@@ -9628,18 +9628,18 @@ Source: www.kingbright.com</description>
 <part name="R121.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="PACKAGE" value="R0603"/>
 </part>
-<part name="C153.3" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="2.2n/25V">
+<part name="C153.3" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="10n/25V">
 <attribute name="PACKAGE" value="C0603"/>
 </part>
-<part name="C153.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="2.2n/25V">
+<part name="C153.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="10n/25V">
 <attribute name="PACKAGE" value="C0603"/>
 <variant name="Manual_Adjust" populate="no"/>
 <variant name="Controller Adjust" populate="no"/>
 </part>
-<part name="C153.2" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="2.2n/25V">
+<part name="C153.2" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="10n/25V">
 <attribute name="PACKAGE" value="C0603"/>
 </part>
-<part name="C153.1" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1n/25V">
+<part name="C153.1" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="10n/25V">
 <attribute name="PACKAGE" value="C0603"/>
 </part>
 <part name="IC601.4" library="A_MAXIM_IC" deviceset="MAX6675*" device="ISA"/>
@@ -12195,10 +12195,10 @@ Calibration</text>
 <text x="154.94" y="80.01" size="1.778" layer="98">LT1167:  G= (49k4/Rg)+1
 INA128:  G= (50k/Rg)+1</text>
 <text x="142.24" y="119.38" size="1.27" layer="98">Vout = (V_IN,P - V_IN,N)*G + V_REF</text>
-<text x="45.085" y="99.695" size="1.27" layer="98" ratio="14">tau = 330ns
-fc = 1.461MHz</text>
-<text x="40.64" y="26.035" size="1.27" layer="98" ratio="14">tau = 2.64µs
-fc = 60.2kHz</text>
+<text x="45.085" y="99.695" size="1.27" layer="98" ratio="14">tau = 1.2µs
+fc = 132.6kHz</text>
+<text x="40.64" y="26.035" size="1.27" layer="98" ratio="14">tau = 1.2µs
+fc = 132.6kHz</text>
 <wire x1="3.81" y1="60.96" x2="113.03" y2="60.96" width="0.4064" layer="98"/>
 <wire x1="113.03" y1="60.96" x2="113.03" y2="67.31" width="0.4064" layer="98"/>
 <wire x1="113.03" y1="67.31" x2="256.54" y2="67.31" width="0.4064" layer="98"/>
@@ -13087,10 +13087,10 @@ TLV2387 or OPA2376</text>
 <wire x1="245.11" y1="98.425" x2="245.11" y2="96.52" width="0.3048" layer="98"/>
 <text x="154.94" y="82.55" size="1.778" layer="98">LT1167:  G= (49k4/Rg)+1
 INA128:  G= (50k/Rg)+1</text>
-<text x="40.64" y="84.455" size="1.27" layer="98" ratio="14">tau = 2.64µs
-fc = 60.2kHz</text>
-<text x="40.64" y="28.575" size="1.27" layer="98" ratio="14">tau = 2.64µs
-fc = 60.2kHz</text>
+<text x="40.64" y="84.455" size="1.27" layer="98" ratio="14">tau = 1.2µs
+fc = 132.6kHz</text>
+<text x="40.64" y="28.575" size="1.27" layer="98" ratio="14">tau = 1.2µs
+fc = 132.6kHz</text>
 <wire x1="3.81" y1="132.08" x2="256.54" y2="132.08" width="0.4064" layer="98"/>
 <wire x1="3.81" y1="69.85" x2="256.54" y2="69.85" width="0.4064" layer="98"/>
 <text x="83.82" y="127" size="2.54" layer="98">Measurement channel 2 (not heated JUT)</text>
