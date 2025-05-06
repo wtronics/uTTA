@@ -83,14 +83,14 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                         dut_tsp_sensitivity[0, 0] = float(cells[2]) / 1000000
                         dut_tsp_sensitivity[0, 1] = float(cells[3]) / 1000000
                         dut_tsp_sensitivity[0, 2] = float(cells[4]) / 1000000
-                        print("CH1 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Cubic: {Cub:.3f}".format(
+                        print("CH1 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Quadratic: {Cub:.3f}".format(
                               Offs=dut_tsp_sensitivity[0, 0], Lin=dut_tsp_sensitivity[0, 1], Cub=dut_tsp_sensitivity[0, 2]))
                     case 'CH2 Name':
                         ch_names[1] = str(cells[1])
                         dut_tsp_sensitivity[1, 0] = float(cells[2]) / 1000000
                         dut_tsp_sensitivity[1, 1] = float(cells[3]) / 1000000
                         dut_tsp_sensitivity[1, 2] = float(cells[4]) / 1000000
-                        print("CH2 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Cubic: {Cub:.3f}".format(
+                        print("CH2 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Quadratic: {Cub:.3f}".format(
                               Offs=dut_tsp_sensitivity[1, 0], Lin=dut_tsp_sensitivity[1, 1], Cub=dut_tsp_sensitivity[1, 2]))
                     case 'CH3 Name':
                         ch_names[2] = str(cells[1])
@@ -98,49 +98,49 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                         dut_tsp_sensitivity[2, 0] = float(cells[2]) / 1000000
                         dut_tsp_sensitivity[2, 1] = float(cells[3]) / 1000000
                         dut_tsp_sensitivity[2, 2] = float(cells[4]) / 1000000
-                        print("CH3 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Cubic: {Cub:.3f}".format(
+                        print("CH3 Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Quadratic: {Cub:.3f}".format(
                               Offs=dut_tsp_sensitivity[2, 0], Lin=dut_tsp_sensitivity[2, 1], Cub=dut_tsp_sensitivity[2, 2]))
                     case '#CAL_DAC_ISEN':    # ISense DAC Calibration needs to be divided by 1000000 because values are in µA
                         cal_val_name = str(cells[0]).replace("#CAL_", "")
                         utta_cal_values[cal_val_name] = dict()
                         utta_cal_values[cal_val_name]["Offset"] = float(cells[1]) / 1000000.0
                         utta_cal_values[cal_val_name]["Lin_Gain"] = float(cells[2]) / 1000000.0
-                        utta_cal_values[cal_val_name]["Cub_Gain"] = float(cells[3]) / 1000000.0
+                        utta_cal_values[cal_val_name]["Quad_Gain"] = float(cells[3]) / 1000000.0
 
                     case s if s.startswith('#CAL_DAC_OFF'):    # ISense DAC Calibration needs to be divided by 1000 because values are in m
                         cal_val_name = str(cells[0]).replace("#CAL_", "")
                         utta_cal_values[cal_val_name] = dict()
                         utta_cal_values[cal_val_name]["Offset"] = float(cells[1]) / 1000.0
                         utta_cal_values[cal_val_name]["Lin_Gain"] = float(cells[2]) / 1000.0
-                        utta_cal_values[cal_val_name]["Cub_Gain"] = float(cells[3]) / 1000.0
+                        utta_cal_values[cal_val_name]["Quad_Gain"] = float(cells[3]) / 1000.0
 
                     # case '#CAL_DAC_SPARE':  # Dummy calibration value for the spare DAC channel
                     #     cal_val_name = str(cells[0]).replace("#CAL_", "")
                     #     utta_cal_values[cal_val_name] = dict()
                     #     utta_cal_values[cal_val_name]["Offset"] = float(cells[1]) / 1000.0
                     #     utta_cal_values[cal_val_name]["Lin_Gain"] = float(cells[2]) / 1000.0
-                    #     utta_cal_values[cal_val_name]["Cub_Gain"] = float(cells[3]) / 1000.0
+                    #     utta_cal_values[cal_val_name]["Quad_Gain"] = float(cells[3]) / 1000.0
                     #
                     # case s if s.startswith('#CAL_DIFF'):    # Differential Amplifier Calibration
                     #     cal_val_name = str(cells[0]).replace("#CAL_", "")
                     #     utta_cal_values[cal_val_name] = dict()
                     #     utta_cal_values[cal_val_name]["Offset"] = float(cells[1])
                     #     utta_cal_values[cal_val_name]["Lin_Gain"] = float(cells[2])
-                    #     utta_cal_values[cal_val_name]["Cub_Gain"] = float(cells[3])
+                    #     utta_cal_values[cal_val_name]["Quad_Gain"] = float(cells[3])
                     #
                     # case '#CAL_ADC_I':      # Heating Current Sense Calibration
                     #     cal_val_name = str(cells[0]).replace("#CAL_", "")
                     #     utta_cal_values[cal_val_name] = dict()
                     #     utta_cal_values[cal_val_name]["Offset"] = float(cells[1])
                     #     utta_cal_values[cal_val_name]["Lin_Gain"] = float(cells[2])
-                    #     utta_cal_values[cal_val_name]["Cub_Gain"] = float(cells[3])
+                    #     utta_cal_values[cal_val_name]["Quad_Gain"] = float(cells[3])
 
                     case s if s.startswith('#CAL_'):
                         cal_val_name = str(cells[0]).replace("#CAL_", "")
                         utta_cal_values[cal_val_name] = dict()
                         utta_cal_values[cal_val_name]["Offset"] = float(cells[1])
                         utta_cal_values[cal_val_name]["Lin_Gain"] = float(cells[2])
-                        utta_cal_values[cal_val_name]["Cub_Gain"] = float(cells[3])
+                        utta_cal_values[cal_val_name]["Quad_Gain"] = float(cells[3])
                     case '#ISEN':
                         i_sen = float(cells[1]) / 1000000
                         print("SENSING: Sense Current was:    {isen:>7.2f}mA".format(isen=i_sen*1000))
@@ -265,7 +265,7 @@ def read_calfile(filename):
                 diode_val.Name = str(sect).replace("$CHAN_", "")
                 diode_val.Offset = float(config[str(sect)]["Offset"].replace('"', ""))
                 diode_val.Lin_Gain = float(config[str(sect)]["LinGain"].replace('"', ""))
-                diode_val.Quad_Gain = float(config[str(sect)]["CubGain"].replace('"', ""))
+                diode_val.Quad_Gain = float(config[str(sect)]["QuadGain"].replace('"', ""))
 
                 dut_tsp_sensitivity.append(diode_val)
             case s if s.startswith('$TC_'):
@@ -273,7 +273,7 @@ def read_calfile(filename):
                 tc_cal.Name = str(sect).replace("$TC_", "")
                 tc_cal.Offset = float(config[str(sect)]["Offset"].replace('"', ""))
                 tc_cal.Lin_Gain = float(config[str(sect)]["LinGain"].replace('"', ""))
-                tc_cal.Quad_Gain = float(config[str(sect)]["CubGain"].replace('"', ""))
+                tc_cal.Quad_Gain = float(config[str(sect)]["QuadGain"].replace('"', ""))
 
                 tc_cal_values.append(tc_cal)
             case _:
@@ -281,7 +281,7 @@ def read_calfile(filename):
                 utta_cal.Name = str(sect)
                 utta_cal.Offset = float(config[str(sect)]["Offset"].replace('"', ""))
                 utta_cal.Lin_Gain = float(config[str(sect)]["LinGain"].replace('"', ""))
-                utta_cal.Quad_Gain = float(config[str(sect)]["CubGain"].replace('"', ""))
+                utta_cal.Quad_Gain = float(config[str(sect)]["QuadGain"].replace('"', ""))
 
                 utta_cal_values.append(utta_cal)
 
@@ -314,12 +314,12 @@ def write_diodes_to_calfile(filename, cal_value):
         if msgbox_ret == "yes":
             config.set(cfg_section_name, "Offset", value=tsp_offs)
             config.set(cfg_section_name, "LinGain", value=tsp_lin)
-            config.set(cfg_section_name, "CubGain", value=tsp_cub)
+            config.set(cfg_section_name, "QuadGain", value=tsp_cub)
     else:
         config.add_section(cfg_section_name)
         config.set(cfg_section_name, "Offset", value=tsp_offs)
         config.set(cfg_section_name, "LinGain", value=tsp_lin)
-        config.set(cfg_section_name, "CubGain", value=tsp_cub)
+        config.set(cfg_section_name, "QuadGain", value=tsp_cub)
 
     # save to a file
     with open(filename, 'w') as configfile:
