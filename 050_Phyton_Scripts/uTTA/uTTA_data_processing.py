@@ -1,5 +1,8 @@
 import numpy as np              # numpy 2.1.0
 import numpy.dtypes             # numpy 2.1.0
+from scipy.signal import find_peaks
+import matplotlib.pyplot as plt                 # matplotlib 3.9.2
+from skimage import color, data, restoration    # scikit-image 0.24.0
 
 
 def interpolate_to_common_timebase(timebase_in, adc, tc):
@@ -87,3 +90,98 @@ def find_static_states(data, threshold=0.01, min_length=5):
         ranges.append((start, len(data) - 1))
 
     return ranges
+
+
+def deconvolve_zth_lucy_richardson(t, zth, samp_decade, get_peaks, iterations):
+    # deconv_zShift = -2.82660000000
+
+    z_raw = np.log(t)
+
+    NoSamplePoints = int((z_raw[-1] - z_raw[0]) * samp_decade)
+    NoSamplePointsLog = int(np.power(2, np.ceil(np.log2(NoSamplePoints))))
+    print("Number of SamplePoints: {NoSampPoints} SamplePoints power of 2: {NoSampPnts}".format(NoSampPoints=NoSamplePoints, NoSampPnts=NoSamplePointsLog))
+
+    LogSampPointIntervall = (z_raw[-1] - z_raw[0]) / NoSamplePointsLog
+    print("SamplePoint Intervall: {SampInt}".format(SampInt=LogSampPointIntervall))
+
+    z = np.linspace(start=z_raw[0], stop=z_raw[-1], num=NoSamplePointsLog) # create constant step width timebase
+    a_z = np.interp(z, z_raw, zth)
+    Rth_Stat = np.mean(a_z[int(0.98 * len(a_z)):-1])
+    print("Zth end value: {ZthEnd:.3f}, Zth Curve Start Value {Rth_start}K/W".format(ZthEnd=Rth_Stat, Rth_start=zth[0]))
+
+    dadz = np.diff(a_z) / np.diff(z)
+    # sum_dadz = np.sum(dadz)
+    # dadz = dadz / np.sum(dadz)
+    w_z = np.exp(z - np.exp(z))
+
+    ref_z = (1-np.exp(-np.exp(z)))     # for testing: create a reference curve with a known reference RC Element of 1Ohm and 1F = 1tau
+    ref_dadz = np.diff(ref_z) / np.diff(z)
+
+    fig, axs = plt.subplots(nrows=3, ncols=2, layout="constrained")
+
+    axs[0, 0].loglog(np.exp(z), a_z, label="Input Zth Curve")  # Input curve to be deconvolved
+    axs[0, 0].set_title("Input Zth Curve")
+    axs[0, 0].set_ylabel('Zth / [K/W]')
+    axs[0, 0].set_xlabel('Time / [ln(s)]')
+
+    axs[0, 1].plot(z[:-1], dadz, label="da/dz", linestyle='dashed')  # Plot some data on the axes.
+
+    axs[0, 1].set_title("Interpolated and differentiated Zth Curve")
+    axs[0, 1].set_ylabel('Derivative of Zth / [K/W/ln(s)')
+    axs[0, 1].set_xlabel('Time / [ln(s)]')
+
+    print("z-Base Timestep: " + str(z[2] - z[1]))
+
+    for Step in iterations:
+        ref_deconv = restoration.richardson_lucy(ref_dadz, w_z[:-1] / np.sum(w_z[:-1]), num_iter=Step, clip=False)  # * sum_ref_dadz
+        ref_peaks, _ = find_peaks(ref_deconv)
+
+        deconv_zShift = z[ref_peaks[0]]
+
+        axs[1, 0].plot(z[:-1] - deconv_zShift, ref_deconv,
+                       label="Reference deconv with " + str(Step) + " Iterations")  # Plot some data on the axes.
+
+        print("1Ohm + 1F Reference peak height: {pheight:.4f}, peak location: {ploc:5f}".format(pheight=np.max(ref_deconv), ploc=deconv_zShift))
+
+        deconvolved = restoration.richardson_lucy(dadz, w_z, num_iter=Step, clip=False)  # * sum_dadz
+        peaks, _ = find_peaks(deconvolved)
+
+        axs[1, 0].plot(z[:-1] - deconv_zShift, deconvolved,
+                       label="Deconvolved with " + str(Step) + " Iterations")  # Plot some data on the axes.
+
+        outp = ""
+        print("Deconvolvable to {n_peaks} peaks".format(n_peaks=len(peaks)))
+        for peak in peaks:
+            outp = outp + "{tim:.4f};{R:.4f};".format(tim=z[peak] - deconv_zShift, R=deconvolved[peak])
+            # outp = outp + "{tim:.4f};{R:.4f};".format(tim=z[peak] - deconv_zShift, R=deconvolved[peak] * (zth[-1] / np.sum(peaks)))
+        print(outp)
+
+        # dadz_conv = (np.convolve(deconvolved, w_z, "same") / np.sum(deconvolved)) * (z[2] - z[1])
+        dadz_conv = (np.convolve(deconvolved, w_z, "same")) * (z[2] - z[1])
+        Zth_Conv = (np.cumsum(dadz_conv) / np.sum(deconvolved)) * Rth_Stat + a_z[0]
+
+        axs[0, 1].plot(z, dadz_conv, label="da/dz " + str(Step) + " Iterations")  # Plot some data on the axes.
+        axs[1, 1].plot(z[:-1] - deconv_zShift, dadz - dadz_conv[:-1], label="Delta da/dz " + str(Step) + " Iterations")  # Plot some data on the axes.
+        axs[0, 0].loglog(np.exp(z), Zth_Conv, label="Reconstructed Zth " + str(Step) + " Iterations")  # Plot some data on the axes.
+        axs[2, 0].plot(z - deconv_zShift, Zth_Conv - a_z, label="Delta Zth " + str(Step) + " Iterations")  # Plot some data on the axes.
+
+    axs[0, 0].legend()
+    axs[0, 0].grid(which='both')
+
+    axs[0, 1].set_title("Interpolated time constant spectrum")
+    axs[1, 0].legend()
+    axs[1, 0].grid(which='both')
+
+    axs[2, 0].legend()
+    axs[2, 0].grid(which='both')
+
+    axs[0, 1].grid(which='both')
+    axs[0, 1].legend()
+
+    axs[1, 1].grid(which='both')
+    axs[1, 1].legend()
+
+    plt.show()
+
+    return peaks
+
