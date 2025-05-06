@@ -80,6 +80,7 @@
 			<Item Name="uTTA_Device_Driver" Type="Folder">
 				<Item Name="uTTA_Controls" Type="Folder">
 					<Property Name="NI.SortType" Type="Int">0</Property>
+					<Item Name="CTL_uTTA_AnalogParameter.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_AnalogParameter.ctl"/>
 					<Item Name="CTL_uTTA_MeasurementStates.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_MeasurementStates.ctl"/>
 					<Item Name="CTL_uTTA_OperatingMode.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_OperatingMode.ctl"/>
 					<Item Name="CTL_uTTA_PGA_Gain.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_PGA_Gain.ctl"/>
@@ -147,7 +148,8 @@
 		</Item>
 		<Item Name="uTTA_Main.vi" Type="VI" URL="../uTTA/uTTA_Main.vi"/>
 		<Item Name="uTTA_Main_Temperature_Control.vi" Type="VI" URL="../uTTA/uTTA_Main_Temperature_Control.vi"/>
-		<Item Name="CTL_uTTA_AnalogParameter.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_AnalogParameter.ctl"/>
+		<Item Name="uTTA_Main_V2.vi" Type="VI" URL="../uTTA/uTTA_Main_V2.vi"/>
+		<Item Name="uTTA_GetLiveMeasureStatus_V2.vi" Type="VI" URL="../uTTA/Measurement_Window/SubVi/uTTA_GetLiveMeasureStatus_V2.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
