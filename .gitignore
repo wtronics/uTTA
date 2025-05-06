@@ -558,3 +558,8 @@
 020_uC_Software/uTTA/.settings/language.settings.xml
 /020_uC_Software/uTTA/.settings
 /020_uC_Software/uTTA/.settings
+/050_Phyton_Scripts/uTTA/__pycache__
+040_LabVIEW_GUI/uTTA/Measurement_Window/SubVi/uTTA_GetLiveMeasureStatus_V2.vi
+040_LabVIEW_GUI/uTTA/uTTA_Main_V2.vi
+040_LabVIEW_GUI/uTTA/uTTA_Main_Temperature_Control.vi
+040_LabVIEW_GUI/uTTA/uTTA_Main_Temperature_Control.vi
