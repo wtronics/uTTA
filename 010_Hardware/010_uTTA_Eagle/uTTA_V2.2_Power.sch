@@ -2230,10 +2230,10 @@ NS Package M08A</description>
 <wire x1="-1.27" y1="3.175" x2="1.27" y2="3.175" width="0.1524" layer="21"/>
 <wire x1="1.27" y1="-2.54" x2="1.27" y2="3.175" width="0.1524" layer="21"/>
 <wire x1="1.27" y1="-2.54" x2="6.604" y2="-2.54" width="0.1524" layer="21"/>
-<wire x1="-6.698" y1="7.5979" x2="10.033" y2="0" width="0.1524" layer="21" curve="227.397154" cap="flat"/>
+<wire x1="-6.698" y1="7.5979" x2="10.033" y2="0" width="0.1524" layer="21" curve="227.397154"/>
 <wire x1="3.556" y1="11.049" x2="-3.556" y2="11.049" width="0.1524" layer="21"/>
 <wire x1="6.477" y1="11.049" x2="3.556" y2="11.049" width="0.1524" layer="51"/>
-<wire x1="6.6203" y1="7.6668" x2="10.0331" y2="0" width="0.1524" layer="21" curve="-49.440271" cap="flat"/>
+<wire x1="6.6203" y1="7.6668" x2="10.0331" y2="0" width="0.1524" layer="21" curve="-49.440271"/>
 <pad name="+@1" x="-5.08" y="10.795" drill="1.1176" diameter="2.54" shape="octagon"/>
 <pad name="+" x="5.08" y="10.795" drill="1.1176" diameter="2.54" shape="octagon"/>
 <pad name="-" x="0" y="-6.985" drill="1.1176" diameter="2.54" shape="octagon"/>
@@ -12177,7 +12177,7 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <package name="SOIC08">
 <description>&lt;b&gt;Small Outline Package&lt;/b&gt;</description>
 <wire x1="-2.54" y1="-1.6002" x2="2.54" y2="-1.6002" width="0.0508" layer="21"/>
-<wire x1="-2.54" y1="1.778" x2="-2.286" y2="2.032" width="0.1524" layer="21" curve="-90" cap="flat"/>
+<wire x1="-2.54" y1="1.778" x2="-2.286" y2="2.032" width="0.1524" layer="21" curve="-90"/>
 <wire x1="-1.397" y1="2.032" x2="-1.143" y2="2.032" width="0.1524" layer="21"/>
 <wire x1="-0.127" y1="2.032" x2="0.127" y2="2.032" width="0.1524" layer="21"/>
 <wire x1="-2.286" y1="2.032" x2="-1.397" y2="2.032" width="0.1524" layer="51"/>
@@ -12185,7 +12185,7 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <wire x1="0.127" y1="2.032" x2="1.143" y2="2.032" width="0.1524" layer="51"/>
 <wire x1="1.143" y1="2.032" x2="1.397" y2="2.032" width="0.1524" layer="21"/>
 <wire x1="1.397" y1="2.032" x2="2.286" y2="2.032" width="0.1524" layer="51"/>
-<wire x1="2.286" y1="2.032" x2="2.54" y2="1.778" width="0.1524" layer="21" curve="-90" cap="flat"/>
+<wire x1="2.286" y1="2.032" x2="2.54" y2="1.778" width="0.1524" layer="21" curve="-90"/>
 <wire x1="-2.286" y1="-2.032" x2="-1.397" y2="-2.032" width="0.1524" layer="51"/>
 <wire x1="-1.397" y1="-2.032" x2="-1.143" y2="-2.032" width="0.1524" layer="21"/>
 <wire x1="-1.143" y1="-2.032" x2="-0.127" y2="-2.032" width="0.1524" layer="51"/>
@@ -12193,10 +12193,10 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <wire x1="0.127" y1="-2.032" x2="1.143" y2="-2.032" width="0.1524" layer="51"/>
 <wire x1="1.143" y1="-2.032" x2="1.397" y2="-2.032" width="0.1524" layer="21"/>
 <wire x1="1.397" y1="-2.032" x2="2.286" y2="-2.032" width="0.1524" layer="51"/>
-<wire x1="2.286" y1="-2.032" x2="2.54" y2="-1.778" width="0.1524" layer="21" curve="90" cap="flat"/>
+<wire x1="2.286" y1="-2.032" x2="2.54" y2="-1.778" width="0.1524" layer="21" curve="90"/>
 <wire x1="2.54" y1="1.778" x2="2.54" y2="-1.778" width="0.1524" layer="21"/>
 <wire x1="-2.54" y1="1.778" x2="-2.54" y2="-1.778" width="0.1524" layer="21"/>
-<wire x1="-2.54" y1="-1.778" x2="-2.286" y2="-2.032" width="0.1524" layer="21" curve="90" cap="flat"/>
+<wire x1="-2.54" y1="-1.778" x2="-2.286" y2="-2.032" width="0.1524" layer="21" curve="90"/>
 <circle x="-1.778" y="-1.016" radius="0.381" width="0.1524" layer="21"/>
 <smd name="1" x="-1.905" y="-3.0734" dx="0.6604" dy="2.032" layer="1"/>
 <smd name="8" x="-1.905" y="3.0734" dx="0.6604" dy="2.032" layer="1"/>
@@ -12298,7 +12298,12 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <connect gate="A" pin="VO" pad="6"/>
 </connects>
 <technologies>
-<technology name=""/>
+<technology name="">
+<attribute name="MF" value="AGILENT TECHNOLOGIES" constant="no"/>
+<attribute name="MPN" value="HCPL-0500-000E" constant="no"/>
+<attribute name="OC_FARNELL" value="9995226" constant="no"/>
+<attribute name="OC_NEWARK" value="31K6926" constant="no"/>
+</technology>
 </technologies>
 </device>
 </devices>
@@ -13850,7 +13855,7 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 </symbol>
 </symbols>
 <devicesets>
-<deviceset name="A4L-LOC_CC_BY_NC_SA">
+<deviceset name="A4L-LOC_CC_BY_NC_SA" prefix="FRM">
 <gates>
 <gate name="G$1" symbol="A4L-LOC_CC_BY_NC_SA" x="0" y="0"/>
 </gates>
@@ -13866,7 +13871,7 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="V1.0"/>
+<attribute name="VERSION" value="2.2"/>
 </attributes>
 <variantdefs>
 </variantdefs>
@@ -13903,10 +13908,10 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 </class>
 </classes>
 <parts>
-<part name="R127" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10R"/>
+<part name="R127" library="A_Resistor" deviceset="R-EU_" device="R0603" value="DNP"/>
 <part name="R124" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10R"/>
 <part name="R123" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10R"/>
-<part name="R126" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10R"/>
+<part name="R126" library="A_Resistor" deviceset="R-EU_" device="R0603" value="DNP"/>
 <part name="R118" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10R">
 <attribute name="PACKAGE" value="R0603"/>
 </part>
@@ -13933,7 +13938,7 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <part name="C114" library="A_Kondensatoren" deviceset="C-EU" device="C0805" value="100n/50V"/>
 <part name="D101" library="A_Dioden" deviceset="DIODE-" device="SOD123" value="1N4148"/>
 <part name="D102" library="A_Dioden" deviceset="DIODE-" device="SOD123" value="1N4148"/>
-<part name="R128" library="A_Shunts" deviceset="WSL2512" device="" value="4m"/>
+<part name="R128" library="A_Shunts" deviceset="WSL2512" device="" value="DNP"/>
 <part name="R125" library="A_Shunts" deviceset="WSL2512" device="" value="4m"/>
 <part name="C101" library="A_Kondensatoren" deviceset="CPOL-EU" device="D" value="47µF/25V"/>
 <part name="C107" library="A_Kondensatoren" deviceset="C-EU" device="C0805" value="100n/50V"/>
@@ -14819,15 +14824,15 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <text x="138.43" y="148.59" size="2.1844" layer="98">Ptot @ 30A: 278mW/FET</text>
 <text x="144.78" y="152.4" size="2.1844" layer="98">RDS,on ~3.3mR</text>
 <text x="208.28" y="68.58" size="2.1844" layer="98">2mv/A
-Ptot @ 30A: 1.8W</text>
+Ptot @ 15A: 0.9W</text>
 <text x="120.015" y="48.26" size="1.4224" layer="98">AV = 50V/V
-30A -&gt; 1.5V
-~12.2mA/digit</text>
+15A -&gt; 3.0V
+~4.02mA/digit</text>
 <text x="116.205" y="85.725" size="1.27" layer="98">Replaceable with INA128</text>
 <text x="40.64" y="115.57" size="1.27" layer="98">UF=1.7V @ 16mA</text>
 <text x="97.155" y="53.34" size="1.4224" layer="98">AV = 50V/V
-30A -&gt; 1.5V
-~12.2mA/digit
+15A -&gt; 3.0V
+~4.02mA/digit
 tau = 2.2µs
 fc = 72.343kHz</text>
 <wire x1="3.81" y1="44.45" x2="100.33" y2="44.45" width="0.4064" layer="98"/>
