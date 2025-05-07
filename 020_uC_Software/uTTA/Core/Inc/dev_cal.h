@@ -20,7 +20,7 @@ extern "C" {
 typedef struct ChannelCalibration{
 	float Offset;
 	float LinGain;
-	float CubGain;
+	float QuadGain;
 } CH_Cal;
 
 extern CH_Cal ChannelCalibValues[MaxCalChannels];
