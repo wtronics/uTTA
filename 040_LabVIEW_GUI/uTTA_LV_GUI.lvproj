@@ -150,6 +150,8 @@
 		<Item Name="uTTA_Main_Temperature_Control.vi" Type="VI" URL="../uTTA/uTTA_Main_Temperature_Control.vi"/>
 		<Item Name="uTTA_Main_V2.vi" Type="VI" URL="../uTTA/uTTA_Main_V2.vi"/>
 		<Item Name="uTTA_GetLiveMeasureStatus_V2.vi" Type="VI" URL="../uTTA/Measurement_Window/SubVi/uTTA_GetLiveMeasureStatus_V2.vi"/>
+		<Item Name="CTL_uTTA_TSP_Calibration.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TSP_Calibration.ctl"/>
+		<Item Name="CTL_uTTA_TSP_CalStatus.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TSP_CalStatus.ctl"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
