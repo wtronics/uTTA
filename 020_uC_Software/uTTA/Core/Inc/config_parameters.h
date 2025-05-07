@@ -109,8 +109,8 @@
 #define VOFFS0_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 #define VOFFS1_3_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 
-#define UTTA_SW_VERSION "2.3"
-#define UMF_FILEVERSION "3.3"
+#define UTTA_SW_VERSION "2.4"
+#define UMF_FILEVERSION "3.4"
 
 
 //#define MODE_NORMAL      0
@@ -171,6 +171,7 @@ typedef struct ChannelParams{
 	float CH_Offs;
 	float CH_LinGain;
 	float CH_QuadGain;
+	uint8_t CalStatus;
 } CH_Def;
 
 extern DeviceModes_t OperatingMode;
