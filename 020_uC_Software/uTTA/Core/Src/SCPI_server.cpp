@@ -515,11 +515,12 @@ void SetDUT(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 /**
   * @brief Sets the symbolic name for each ADC channel and the scaling factors for post processing
   * This can ONLY be done while the system is in IDLE mode (no measurement running)
-  * Syntax: MEASure:CHDESCription N,[aaaaa],O,P,Q		N       = Number of the channel (1 to 3),
+  * Syntax: MEASure:CHDESCription N,[aaaaa],O,P,Q,R		N       = Number of the channel (1 to 3),
   * 													[aaaaa] = Name of the channel in the Log-File,
   * 													O       = Offset for scaling in uV,
   * 													P       = Linear Gain in uV/K,
   * 													Q       = Quadratic Gain in uV/K^2
+  * 													R       = Calibration Status
   * @param None
   * @retval None
   */
@@ -528,7 +529,7 @@ void SetChannelDescription(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
 	char *first_parameter;
 	uint8_t ChNo=0;
 
-	if (parameters.Size() < 5) {
+	if (parameters.Size() < 6) {
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_TOO_FEW_PARAM);
 		return;
 	}
@@ -560,6 +561,13 @@ void SetChannelDescription(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
 		Param = atof(parameters[4]);
 		if(Param > -10000.0 && Param < 10000.0)			// Boundary for Quadratic Gain: +/-10mV/K
 			Channels[ChNo].CH_QuadGain = Param;
+
+		int8_t CalStatus = 0;
+		CalStatus = atoi(parameters[5]);
+		if (CalStatus >=0 && CalStatus < 3){
+			Channels[ChNo].CalStatus = (uint8_t)CalStatus;
+		}
+
 
 		UART_printf("#CH %d;%s;%f;%f;%f\n", ChNo+1, Channels[ChNo].CH_Name, Channels[ChNo].CH_Offs, Channels[ChNo].CH_LinGain, Channels[ChNo].CH_QuadGain);
 	}
@@ -994,9 +1002,9 @@ void SetCalValue(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	ChannelCalibValues[ParamIdx].LinGain = Rcv_Param;
 
 	Rcv_Param = atof(parameters[3]);
-	ChannelCalibValues[ParamIdx].CubGain = Rcv_Param;
+	ChannelCalibValues[ParamIdx].QuadGain = Rcv_Param;
 
-	UART_printf("#CAL %s, %f, %f, %f\n",CalChannelNames[ParamIdx], ChannelCalibValues[ParamIdx].Offset, ChannelCalibValues[ParamIdx].LinGain, ChannelCalibValues[ParamIdx].CubGain);
+	UART_printf("#CAL %s, %f, %f, %f\n",CalChannelNames[ParamIdx], ChannelCalibValues[ParamIdx].Offset, ChannelCalibValues[ParamIdx].LinGain, ChannelCalibValues[ParamIdx].QuadGain);
 
 }
 
