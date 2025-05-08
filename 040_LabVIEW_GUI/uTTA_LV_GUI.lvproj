@@ -86,6 +86,8 @@
 					<Item Name="CTL_uTTA_PGA_Gain.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_PGA_Gain.ctl"/>
 					<Item Name="CTL_uTTA_SamplingSettings.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_SamplingSettings.ctl"/>
 					<Item Name="CTL_uTTA_TimingSettings.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TimingSettings.ctl"/>
+					<Item Name="CTL_uTTA_TSP_Calibration.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TSP_Calibration.ctl"/>
+					<Item Name="CTL_uTTA_TSP_CalStatus.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TSP_CalStatus.ctl"/>
 				</Item>
 				<Item Name="uTTA_SubVi" Type="Folder">
 					<Item Name="MEAS" Type="Folder">
@@ -150,8 +152,6 @@
 		<Item Name="uTTA_Main_Temperature_Control.vi" Type="VI" URL="../uTTA/uTTA_Main_Temperature_Control.vi"/>
 		<Item Name="uTTA_Main_V2.vi" Type="VI" URL="../uTTA/uTTA_Main_V2.vi"/>
 		<Item Name="uTTA_GetLiveMeasureStatus_V2.vi" Type="VI" URL="../uTTA/Measurement_Window/SubVi/uTTA_GetLiveMeasureStatus_V2.vi"/>
-		<Item Name="CTL_uTTA_TSP_Calibration.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TSP_Calibration.ctl"/>
-		<Item Name="CTL_uTTA_TSP_CalStatus.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TSP_CalStatus.ctl"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
@@ -231,8 +231,6 @@
 			<Item Name="user.lib" Type="Folder">
 				<Item Name="String to 1D Array__ogtk.vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/string/string.llb/String to 1D Array__ogtk.vi"/>
 				<Item Name="Boolean Trigger__ogtk.vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/boolean/boolean.llb/Boolean Trigger__ogtk.vi"/>
-				<Item Name="End of Line Constant (bug fix).vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/string/string.llb/End of Line Constant (bug fix).vi"/>
-				<Item Name="1D Array to String__ogtk.vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/string/string.llb/1D Array to String__ogtk.vi"/>
 			</Item>
 			<Item Name="lvanlys.dll" Type="Document" URL="/&lt;resource&gt;/lvanlys.dll"/>
 			<Item Name="AR488_Write.vi" Type="VI" URL="../Drivers/AR488/AR488_Write.vi"/>
