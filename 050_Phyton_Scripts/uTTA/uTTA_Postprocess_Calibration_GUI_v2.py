@@ -18,17 +18,19 @@ PGA_Calibration = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0]], dtype=f
 ADC_Calibration = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0]], dtype=float)
 
 CalData_FileName = ''
-CH_Names = []
 Diode_Calibration = []
 TimeBaseTotal = []
 ADC = []
 Temp = []
 TableValues = []
-CoolingStartBlock = 0
+
 MaxDeltaT_StartEnd = 1.0
 DataFile = ''
 G_Plots = []
 Static_States = []
+Highlight_State = -1
+MaxJUT_Channels = 3
+MetaData = {}
 
 
 class CalApp(customtkinter.CTk):
@@ -115,6 +117,7 @@ class CalApp(customtkinter.CTk):
 
         self.t_step_sheet.grid(row=3, rowspan=6, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
         self.t_step_sheet.enable_bindings(("single_select", "edit_cell"))
+        self.t_step_sheet.extra_bindings("cell_select", self.on_cell_select)
         self.t_step_sheet.headers(tab_heading)
         self.t_step_sheet.set_all_column_widths(65)
 
@@ -160,18 +163,21 @@ class CalApp(customtkinter.CTk):
 
     def update_plots(self):
 
-        global G_Plots, Temp, Static_States
+        global G_Plots, Temp, Static_States, Highlight_State, MetaData
         G_Plots[0].clear()
 
         lines = []
         ymin = 10
         ymax = 0
-        for PlotIdx in range(0, len(CH_Names)):
-            if CH_Names[PlotIdx] != "OFF":
-                line, = G_Plots[0].plot(TimeBaseTotal, ADC[PlotIdx, :], label=CH_Names[PlotIdx])
-                lines.append(line)
-                ymin = np.min([ymin, np.min(ADC[PlotIdx, :])])
-                ymax = np.max([ymax, np.max(ADC[PlotIdx, :])])
+
+        for PlotIdx in range(0, MaxJUT_Channels):
+            ch_tsp = "TSP{Ch}".format(Ch=PlotIdx)
+            if ch_tsp in MetaData:
+                if MetaData[ch_tsp]["Name"] != "OFF":
+                    line, = G_Plots[0].plot(TimeBaseTotal, ADC[PlotIdx, :], label=MetaData[ch_tsp]["Name"])
+                    lines.append(line)
+                    ymin = np.min([ymin, np.min(ADC[PlotIdx, :])])
+                    ymax = np.max([ymax, np.max(ADC[PlotIdx, :])])
 
         G_Plots[0].set_xlabel("Time / [s]")
         G_Plots[0].set_ylabel("Diode Voltage / [V]")
@@ -214,15 +220,21 @@ class CalApp(customtkinter.CTk):
 
             ylims = G_Plots[0].axes.get_ylim()
             ypos = ylims[0] + (ylims[1] - ylims[0]) * 0.05
-            for stat_state in times:
+            for idx, stat_state in enumerate(times):
+                # Highlight_State
+                if idx == Highlight_State:
+                    bar_color = 'orange'
+                else:
+                    bar_color = 'green'
+
 
                 G_Plots[1].fill_between(TimeBaseTotal, 0, 1,
                                         where=np.logical_and((stat_state[0] <= TimeBaseTotal), (stat_state[1] >= TimeBaseTotal)),
-                                        color='green', alpha=0.5,
+                                        color=bar_color, alpha=0.5,
                                         transform=G_Plots[1].get_xaxis_transform())
                 G_Plots[0].fill_between(TimeBaseTotal, 0, 1,
                                         where=np.logical_and((stat_state[0] <= TimeBaseTotal), (stat_state[1] >= TimeBaseTotal)),
-                                        color='green', alpha=0.5,
+                                        color=bar_color, alpha=0.5,
                                         transform=G_Plots[0].get_xaxis_transform())
 
                 G_Plots[0].text((stat_state[0]+stat_state[1])/2, ypos, "{temp:.1f}°C".format(temp=stat_state[2]), ha="center", va="center")
@@ -265,12 +277,19 @@ class CalApp(customtkinter.CTk):
                         print("Creating Cal Entry for Channel {Ch}, Name: {nam}, Offset {Offs:.4f}, Gain {Gain:.4f}".format(
                             Ch=ChIdx, nam=tsp_name, Offs=tsp_offs, Gain=tsp_lin))
 
-                        tsp_cal_value.Name = tsp_name
-                        tsp_cal_value.Offset = tsp_offs
-                        tsp_cal_value.Lin_Gain = tsp_lin
-                        tsp_cal_value.Quad_Gain = tsp_quad
+                        if str(tsp_name).startswith("TC"):
+                            chan_prefix = "$TC_"
+                        else:
+                            chan_prefix = "$CHAN_"
 
-                        uTTA_data_import.write_diodes_to_calfile(cal_file_name, tsp_cal_value)
+                        tsp_cal_value = {str(chan_prefix + tsp_name): {
+                                            "Offset" : tsp_offs,
+                                            "LinGain": tsp_lin,
+                                            "QuadGain": tsp_quad,
+                                            "CalStatus": 1
+                                        }}
+
+                        uTTA_data_import.write_tsp_cal_to_file(cal_file_name, tsp_cal_value)
                         self.lbl_helpbar.configure(text="Successfully saved calibration of channel " + tsp_name + " to file: " + data_file_no_ext)
                     else:
                         self.lbl_helpbar.configure(text="Aborted saving calibration of channel " + tsp_name + "because of bad convergence")
@@ -278,14 +297,15 @@ class CalApp(customtkinter.CTk):
             self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.")
 
     def read_measurement_file_callback(self):
-        global TimeBaseTotal, ADC, CH_Names, Temp, CoolingStartBlock, DataFile, Static_States
+        global TimeBaseTotal, ADC, Temp, DataFile, Static_States, MetaData
         measfilename = uTTA_data_import.select_file("Select the measurement file",
                                                     (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
         if len(measfilename) > 0:    # check if string is not empty
             DataFile, data_file_no_ext, file_path = uTTA_data_import.split_file_path(measfilename)
 
-            tb_import, adc_import, tc_import, samp_decade, CoolingStartBlock, CH_Names, dut_tsp_sensitivity = (
-                uTTA_data_import.read_measurement_file(measfilename, 0))
+            #tb_import, adc_import, tc_import, samp_decade, dut_tsp_sensitivity = (
+            #    uTTA_data_import.read_measurement_file(measfilename, 0))
+            tb_import, adc_import, tc_import, MetaData = uTTA_data_import.read_measurement_file(measfilename, 0)
 
             TimeBaseTotal, ADC, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
@@ -348,6 +368,13 @@ class CalApp(customtkinter.CTk):
         tbl.delete_row(row_number)
         self.update_plots()
 
+    def on_cell_select(self, event):
+        global Highlight_State
+        content = event["selected"]
+        Highlight_State = content.row
+        # print("Cell Selected in row {row}".format(row=Highlight_State))
+        self.update_plots()
+
     def fit_temp_steps(self):
 
         self.update_plots()
@@ -355,7 +382,7 @@ class CalApp(customtkinter.CTk):
         if len(tbl) >= 2:  # above two selected points the interpolation calculation ca begin
 
             for ChIdx in range(0, 4):  # iterate through all the 4 channels viewed
-
+                ch_tsp = "TSP{Ch}".format(Ch=ChIdx)
                 x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
 
                 y_data = np.array(self.t_step_sheet.get_column_data(ChIdx + 1), dtype=np.float32)
@@ -375,7 +402,7 @@ class CalApp(customtkinter.CTk):
                 print("Fitting Channel {Ch} with quadratic interpolation: Offset: {Offs:.4f} ,Linear: {Lin:.4f}, Quad: {Quad:.7f}, R²: {Rsq:.4f}".format(
                      Ch=ChIdx, Lin=slope, Offs=offs, Quad=quad, Rsq=r_sq))
                 if ChIdx < 3:
-                    self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=CH_Names[ChIdx])
+                    self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=MetaData[ch_tsp]["Name"])
                 else:
                     self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value="TC0")
                 self.t_result_sheet.set_cell_data(r=ChIdx, c=1, value=offs)
@@ -385,13 +412,12 @@ class CalApp(customtkinter.CTk):
 
             self.btn_save_result.configure(state='normal')
 
-
     def on_closing(self):
         # if messagebox.askokcancel("Quit", "Do you want to quit?"):
         self.destroy()
 
     def on_xlims_change(self, event_ax):
-        global G_Plots
+        global G_Plots, MetaData
         x_limits = event_ax.get_xlim()
         xlim_min = int(x_limits[0])
         xlim_max = int(x_limits[1])
@@ -409,7 +435,7 @@ class CalApp(customtkinter.CTk):
         self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(Temp[0, xlim_min:xlim_max])))
 
         self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state. " +
-                                   "Peak-to-peak spread of " + CH_Names[0] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
+                                   "Peak-to-peak spread of " + MetaData["TSP0"]["Name"] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
                                    "\nWhen you are satisfied enter the step temperature and click on 'Add Step'")
 
 
