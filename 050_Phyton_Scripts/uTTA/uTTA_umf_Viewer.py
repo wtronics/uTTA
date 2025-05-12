@@ -20,11 +20,14 @@ DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam)
 
 start = time.time()
 
-TimeBaseTotal, ADC, Temp, SampDecade, CoolingStartBlock, CH_Names, DUT_TSP_Sensitivity = uTTA_data_import.read_measurement_file(FileNam, 0)
+TimeBaseTotal, ADC, Temp, MetaData = uTTA_data_import.read_measurement_file(FileNam, 0)
 
 # Calculate the average ambient temperature as starting point
 StartTempTC = np.mean(Temp[3, 0:10])
 print("Averaged start temperature form TC-Channel 3: {Tstart:.3f}°C".format(Tstart=StartTempTC))
+
+CoolingStartBlock = MetaData["CoolingStartBlock"]
+SampDecade = MetaData["SamplesPerDecade"]
 
 # Cut Timebase and measurement to cooling section
 TimeBase_Cooling, ADC_Cooling = uTTA_data_processing.calculate_cooling_curve(TimeBaseTotal, ADC, CoolingStartBlock, SampDecade)
@@ -37,40 +40,42 @@ UDio_Cold_End = np.zeros((NoOfDUTs,), numpy.float32)
 T_Monitor_Heated = np.zeros((NoOfDUTs,), numpy.float32)
 TDio = np.zeros(shape=ADC_Cooling.shape)
 for Ch in range(0, NoOfDUTs):
-    if CH_Names[Ch] != "OFF":
+    ch_tsp = "TSP{Ch}".format(Ch=Ch)
+    if MetaData[ch_tsp]["Name"] != "OFF":
         # Calculate the average Diode voltage at the start of the measurement
         # print ("Channel {Chan}, Min ADC: {MinADC}, Max ADC: {MaxADC}".format(Chan=Ch,MinADC=ADC[Ch, :].min(), MaxADC=ADC[Ch, :].max()))
         UDio_Cold_Start[Ch] = np.mean(ADC[Ch, 0:SampDecade])
         # Calculate the average Diode voltage at the end of the measurement
         UDio_Cold_End[Ch] = np.mean(ADC[Ch, -SampDecade:-1])
         # The TSP Offset is the average diode start voltage
-        DUT_TSP_Sensitivity[Ch, 0] = -UDio_Cold_Start[Ch]
-        TDio[Ch, :] = (ADC_Cooling[Ch, :] + DUT_TSP_Sensitivity[Ch, 0]) / DUT_TSP_Sensitivity[Ch, 1]
+        MetaData[ch_tsp]["Offset"] = -UDio_Cold_Start[Ch]
+        TDio[Ch, :] = (ADC_Cooling[Ch, :] + MetaData[ch_tsp]["Offset"]) / MetaData[ch_tsp]["LinGain"]
 
         # Calculate the start temperature of both monitoring channels to have a good starting point for Zth-Matrix
         T_Monitor_Heated[Ch] = (np.mean(ADC[Ch, ((CoolingStartBlock-2) * SampDecade):((CoolingStartBlock-1) * SampDecade) - 1])
-                                + DUT_TSP_Sensitivity[Ch, 0]) / DUT_TSP_Sensitivity[Ch, 1]
+                                + MetaData[ch_tsp]["Offset"]) / MetaData[ch_tsp]["LinGain"]
         if Ch == 0:
             print("COLD VOLTAGE: DUT{DUTno} at Start: {Ucold: 3.4f}V; at End: {UColdEnd: 3.4f}V; Delta U: {dU_DUT: 3.4f}V; Delta T: {dT_DUT: 3.4f}°C".format(
                 DUTno=Ch,
                 Ucold=UDio_Cold_Start[Ch],
                 UColdEnd=UDio_Cold_End[Ch],
                 dU_DUT=UDio_Cold_Start[Ch] - UDio_Cold_End[Ch],
-                dT_DUT=((UDio_Cold_End[Ch] - UDio_Cold_Start[Ch]) / DUT_TSP_Sensitivity[Ch, 0])))
+                dT_DUT=((UDio_Cold_End[Ch] - UDio_Cold_Start[Ch]) / MetaData[ch_tsp]["LinGain"])))
         else:
             print("COLD VOLTAGE: DUT{DUTno} at Start: {Ucold: 3.4f}V; at End: {UColdEnd: 3.4f}V; Delta U: {dU_DUT: 3.4f}V; Delta T: {dT_DUT: 3.4f}°C; "
                   "Heated Temp: {T_heated: 3.4f}°C".format(DUTno=Ch,
                                                            Ucold=UDio_Cold_Start[Ch],
                                                            UColdEnd=UDio_Cold_End[Ch],
                                                            dU_DUT=UDio_Cold_Start[Ch] - UDio_Cold_End[Ch],
-                                                           dT_DUT=((UDio_Cold_End[Ch] - UDio_Cold_Start[Ch]) / DUT_TSP_Sensitivity[Ch, 1]),
+                                                           dT_DUT=((UDio_Cold_End[Ch] - UDio_Cold_Start[Ch]) / MetaData[ch_tsp]["LinGain"]),
                                                            T_heated=T_Monitor_Heated[Ch]))
 
 
 fig, axs = plt.subplots(nrows=3, ncols=2, layout="constrained")
 for Ch in range(0, NoOfDUTs):
-    if CH_Names[Ch] != "OFF":
-        axs[0, 0].plot(TimeBaseTotal, ADC[Ch, :], label=CH_Names[Ch])  # Plot some data on the axes.
+    ch_tsp = "TSP{Ch}".format(Ch=Ch)
+    if MetaData[ch_tsp]["Name"] != "OFF":
+        axs[0, 0].plot(TimeBaseTotal, ADC[Ch, :], label=MetaData[ch_tsp]["Name"])  # Plot some data on the axes.
 
 axs[0, 0].set_title("Diode Voltages of the full measurement")
 axs[0, 0].set_ylabel('Diode Voltage / [V]')
@@ -86,8 +91,9 @@ axs[0, 1].legend()
 axs[0, 1].grid(which='both')
 
 for Ch in range(0, NoOfDUTs):
-    if CH_Names[Ch] != "OFF":
-        axs[1, 0].semilogx(TimeBase_Cooling, ADC_Cooling[Ch, :], label=CH_Names[Ch])  # Plot some data on the axes.
+    ch_tsp = "TSP{Ch}".format(Ch=Ch)
+    if MetaData[ch_tsp]["Name"] != "OFF":
+        axs[1, 0].semilogx(TimeBase_Cooling, ADC_Cooling[Ch, :], label=MetaData[ch_tsp]["Name"])  # Plot some data on the axes.
 
 axs[1, 0].set_title("Diode Voltages of the cooling section")
 axs[1, 0].set_ylabel('Diode Voltage / [V]')
