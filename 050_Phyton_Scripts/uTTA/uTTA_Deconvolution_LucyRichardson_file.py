@@ -12,7 +12,9 @@ find_peaks = 1
 SamplesPerDecade = 50
 IterationSteps = np.array([2500], dtype=int)
 
-FileNam = "C:\\temp\\Eigenentwicklungen\\GitHub\\uTTA\\060_Example_Measurement_Data\\Simulated_Measurement_1RC.t3i"
+FileNam = ""
+
+# FileNam = r"C:\temp\Eigenentwicklungen\GitHub\uTTA\060_Example_Measurement_Data\Simulated_Measurement_1RC.t3i"
 if len(FileNam) < 5:
     FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
 
