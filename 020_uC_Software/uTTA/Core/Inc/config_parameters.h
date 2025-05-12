@@ -36,6 +36,9 @@
 #define UTTA_OWNER "WK"
 #define UTTA_SERIAL_NO "001"
 
+// Define if you have an early hardware of the power PCB (before Version 1.0) or after (because of inverted Power Good Signal from Gatedriver)
+#define EARLY_HW_POWER_BOARD
+
 // Handle Definition for Flash-SPI and UART
 #define SD_SPI_HANDLE 		SPI3
 #define UART_HANDLE 		USART2
