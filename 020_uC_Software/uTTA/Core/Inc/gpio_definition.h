@@ -40,9 +40,9 @@ extern "C" {
 // Enable Powerstage pin
 #define PWSTG_EN_DO_Pin LL_GPIO_PIN_0
 #define PWSTG_EN_DO_GPIO_Port GPIOA
-// Readback pin of powerstage power supply low
-#define PWSTG_UVLO_DI_Pin LL_GPIO_PIN_1
-#define PWSTG_UVLO_DI_GPIO_Port GPIOA
+// Readback pin of powerstage power supply good signal
+#define PWSTG_PGOOD_DI_Pin LL_GPIO_PIN_1
+#define PWSTG_PGOOD_DI_GPIO_Port GPIOA
 // Enable pin of external power supply
 #define PSU_EN_DO_Pin LL_GPIO_PIN_4
 #define PSU_EN_DO_GPIO_Port GPIOA

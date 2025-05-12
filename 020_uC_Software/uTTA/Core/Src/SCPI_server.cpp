@@ -829,7 +829,7 @@ void GetGD_PowerEnable(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart)
   */
 void GetPWSTGUVLO(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
-	UART_printf("#UVLO %d\n",LL_GPIO_ReadInputPort(PWSTG_UVLO_DI_GPIO_Port) & PWSTG_UVLO_DI_Pin);
+	UART_printf("#UVLO %d\n",LL_GPIO_ReadInputPort(PWSTG_PGOOD_DI_GPIO_Port) & PWSTG_PGOOD_DI_Pin);
 }
 
 

@@ -81,10 +81,10 @@ void MX_GPIO_Init(void)
 	  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	  /* Port A inputs */
-	  GPIO_InitStruct.Pin = PWSTG_UVLO_DI_Pin;
+	  GPIO_InitStruct.Pin = PWSTG_PGOOD_DI_Pin;
 	  GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
 	  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-	  LL_GPIO_Init(PWSTG_UVLO_DI_GPIO_Port, &GPIO_InitStruct);
+	  LL_GPIO_Init(PWSTG_PGOOD_DI_GPIO_Port, &GPIO_InitStruct);
 
 	  /* PORT B Outputs */
 	  GPIO_InitStruct.Pin = PWSTG_PWR_EN_DO_Pin | AUX_SPI_TC0_CSN_Pin | AUX_SPI_TC2_CSN_Pin | STATUS_LED_DO_Pin | ERROR_LED_DO_Pin;
