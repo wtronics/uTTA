@@ -191,7 +191,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                                                                                                          TotBlocks=meas_meta_data["TotalBlocks"]))
                         if meas_meta_data["CoolingStartBlock"] > meas_meta_data["TotalBlocks"]:
                             meas_meta_data["CoolingStartBlock"] = 0
-                            
+
                     case 'ADC1':
                         cells[0] = ""
                     # dummy case to remove skipped line statement
