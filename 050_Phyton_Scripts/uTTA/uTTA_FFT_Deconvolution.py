@@ -7,7 +7,7 @@ import uTTA_data_import
 
 
 FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
-DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam, '.t3i')
+DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam)
 
 NoOfMonitors = 2
 SamplesPerDecade = 10
