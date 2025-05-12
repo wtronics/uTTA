@@ -14,9 +14,6 @@ import customtkinter as ctk         # customtkinter 5.2.2
 
 matplotlib.use("TkAgg")
 
-PGA_Calibration = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0]], dtype=float)
-ADC_Calibration = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0]], dtype=float)
-
 CalData_FileName = ''
 Diode_Calibration = []
 TimeBaseTotal = []
