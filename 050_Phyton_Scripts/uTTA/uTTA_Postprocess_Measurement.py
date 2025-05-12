@@ -19,7 +19,7 @@ InterpolationAverageHW = 1   # Should be the half width of the averaged area
 
 # Options for output files
 ExportDiodeVoltages = 0
-ExportIntermediateFile = 0
+ExportIntermediateFile = 1
 
 
 def find_nearest(arr, value):
