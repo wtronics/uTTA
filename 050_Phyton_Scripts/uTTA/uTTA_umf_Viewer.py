@@ -8,7 +8,6 @@ import uTTA_data_processing
 import uTTA_data_export
 
 NoOfDUTs = 3
-MaxDeltaT_StartEnd = 1.0
 
 
 FileNam = uTTA_data_import.select_file("Select the measurement file",
