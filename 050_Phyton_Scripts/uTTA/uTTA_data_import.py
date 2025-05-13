@@ -149,6 +149,11 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                         meas_meta_data["T_Preheat"] = int(cells[1])
                     case 'T_Heat':
                         meas_meta_data["T_Heat"] = int(cells[1])
+                        if int(cells[1]) == 0:
+                            meas_meta_data["TSP_Calibration_File"] = True
+                        else:
+                            meas_meta_data["TSP_Calibration_File"] = False
+
                     case 'T_Cool':
                         meas_meta_data["T_Cool"] = int(cells[1])
                         print("TIMING:   Preheating:    {tPreh:>7.2f}Min ; Heating:  {tHeat:>7.2f}Min ; Cooling:        {tCool:>7.2f}Min".format(
@@ -190,7 +195,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                         print("BLOCKS:   Cool start block:  {CSB}    ; Total:        {TotBlocks}".format(CSB=meas_meta_data["CoolingStartBlock"],
                                                                                                          TotBlocks=meas_meta_data["TotalBlocks"]))
                         if meas_meta_data["CoolingStartBlock"] > meas_meta_data["TotalBlocks"]:
-                            meas_meta_data["CoolingStartBlock"] = 0
+                            meas_meta_data["CoolingStartBlock"] = meas_meta_data["TotalBlocks"]
 
                     case 'ADC1':
                         cells[0] = ""
