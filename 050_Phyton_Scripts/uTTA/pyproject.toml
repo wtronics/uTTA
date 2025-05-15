@@ -1,0 +1,26 @@
+[project]
+name = "utta"
+version = "2.3.0"
+description = "The micro Thermal Transient Analyzer"
+authors = [
+    {name = "wtronics"}
+]
+license = {text = "CC-BY-NC-SA"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy (>=2.2.5,<3.0.0)",
+    "matplotlib (>=3.10.3,<4.0.0)",
+    "quantiphy (>=2.20,<3.0)",
+    "customtkinter (>=5.2.2,<6.0.0)",
+    "configparser (>=7.2.0,<8.0.0)",
+    "scipy (>=1.15.3,<2.0.0)",
+    "scikit-image (>=0.25.2,<0.26.0)",
+    "tksheet (>=7.5.5,<8.0.0)",
+    "ttkbootstrap (>=1.13.5,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
