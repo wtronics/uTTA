@@ -39,7 +39,17 @@ start = time.time()
 
 TimeBaseTotal, ADC, Temp, MetaData = uTTA_data_import.read_measurement_file(FileNam, 0)
 
-if len(TimeBaseTotal):
+ErrMeasFlag = False
+if len(TimeBaseTotal) < 1:
+    ErrMeasFlag = True
+    print("Seems like this measurement file contains no useable data. Analysis will be aborted!")
+
+if not MetaData["TSP_Calibration_File"]:
+    ErrMeasFlag = True
+    print("Seems like this measurement file contains a calibration measurement instead of a normal measurement. Analysis will be aborted!")
+
+
+if not ErrMeasFlag:
     # Calculate the average ambient temperature as starting point
     StartTempTC = np.mean(Temp[3, 0:10])
     print("Averaged start temperature form TC-Channel 3: {Tstart:.3f}°C".format(Tstart=StartTempTC))
