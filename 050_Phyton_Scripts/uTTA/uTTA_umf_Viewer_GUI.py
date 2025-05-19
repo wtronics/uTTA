@@ -25,11 +25,13 @@ MetaData = {}
 class umf_viewer_App(ttk.Window):
     def __init__(self):
         super().__init__()
-        self.title("uTTA umf-Viewver")
+        # self.hdpi = False
+        self.title("uTTA umf-Viewer")
         self.geometry("1480x900")
         self.minsize(1480, 900)
         screen_dpi = self.winfo_fpixels('1i')
-        print("DPI: " + str(screen_dpi))
+        geometry = self.winfo_geometry()
+        print("DPI: " + str(screen_dpi) + " Geometry: "+ str(geometry))
         self.protocol("WM_DELETE_WINDOW", self.on_closing)      # window closing event
 
         # widgets
@@ -63,7 +65,7 @@ class umf_viewer_App(ttk.Window):
 
         self.frm_plot_area = ttk.Frame(master=self)
         self.frm_plot_area.grid(row=1, column=1, columnspan=5, padx=10, pady=10, sticky="ew")
-        self.fig = Figure(figsize=(8.4, 4.95), dpi=screen_dpi)
+        self.fig = Figure(figsize=(12.7, 7.5), dpi=screen_dpi)
         self.fig.subplots_adjust(left=0.06, bottom=0.075, right=0.97, top=0.96, wspace=0.212, hspace=0.54)
         G_Plots = self.fig.subplots(3, 2)
 
@@ -210,6 +212,7 @@ class umf_viewer_App(ttk.Window):
     def on_closing(self):
         # if messagebox.askokcancel("Quit", "Do you want to quit?"):
         self.destroy()
+
 
 
 app = umf_viewer_App()
