@@ -27,6 +27,7 @@ G_Plots = []
 Static_States = []
 Highlight_State = -1
 MaxJUT_Channels = 3
+InterpolationDegrees = 1
 MetaData = {}
 
 
@@ -300,26 +301,27 @@ class CalApp(customtkinter.CTk):
         if len(measfilename) > 0:    # check if string is not empty
             DataFile, data_file_no_ext, file_path = uTTA_data_import.split_file_path(measfilename)
 
-            #tb_import, adc_import, tc_import, samp_decade, dut_tsp_sensitivity = (
-            #    uTTA_data_import.read_measurement_file(measfilename, 0))
             tb_import, adc_import, tc_import, MetaData = uTTA_data_import.read_measurement_file(measfilename, 0)
 
-            TimeBaseTotal, ADC, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
+            if MetaData["TSP_Calibration_File"]:
+                TimeBaseTotal, ADC, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
-            # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.5°C
-            Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.65, 300)
+                # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.5°C
+                Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.65, 300)
 
-            if Static_States:
-                for stat_state in Static_States:
-                    # for the temperature average take only the last 60 samples (1Minute) for the average
-                    t_avg = np.mean(Temp[0, (stat_state[1]-60):stat_state[1]])
-                    self.add_cal_step_entry(stat_state[1]-60, stat_state[1], t_avg)
+                if Static_States:
+                    for stat_state in Static_States:
+                        # for the temperature average take only the last 60 samples (1Minute) for the average
+                        t_avg = np.mean(Temp[0, (stat_state[1]-60):stat_state[1]])
+                        self.add_cal_step_entry(stat_state[1]-60, stat_state[1], t_avg)
 
-            self.update_plots()
+                self.update_plots()
 
-            self.btn_add_steps.configure(state='normal')
-            self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported. Now click on the magnifying glass below the plot and select "+
-                                       "the first horizontal section in the upper plot.")
+                self.btn_add_steps.configure(state='normal')
+                self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported. Now click on the magnifying glass below the plot and select "+
+                                           "the first horizontal section in the upper plot.")
+            else:
+                self.lbl_helpbar.configure(text="Seems like : " + DataFile + " is not a calibration measurement. Therefore the measurement was not imported.")
         else:
             self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.")
 
@@ -374,6 +376,8 @@ class CalApp(customtkinter.CTk):
 
     def fit_temp_steps(self):
 
+        global InterpolationDegrees
+
         self.update_plots()
         tbl = self.t_step_sheet.data
         if len(tbl) >= 2:  # above two selected points the interpolation calculation ca begin
@@ -383,9 +387,11 @@ class CalApp(customtkinter.CTk):
                 x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
 
                 y_data = np.array(self.t_step_sheet.get_column_data(ChIdx + 1), dtype=np.float32)
-                fitting_degrees = 2
 
-                p_fit = np.polyfit(x_data, y_data, fitting_degrees)
+                p_fit = np.polyfit(x_data, y_data, InterpolationDegrees)
+
+                if InterpolationDegrees == 1:
+                    p_fit = np.insert(p_fit, 0, 0.0)
 
                 [quad, slope, offs] = p_fit
 
