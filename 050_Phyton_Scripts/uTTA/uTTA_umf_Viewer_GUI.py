@@ -29,7 +29,8 @@ class umf_viewer_App(ttk.Window):
         self.geometry("1480x900")
         self.minsize(1480, 900)
         screen_dpi = self.winfo_fpixels('1i')
-#        self.protocol("WM_DELETE_WINDOW", self.on_closing)      # window closing event
+        print("DPI: " + str(screen_dpi))
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)      # window closing event
 
         # widgets
         global G_Plots
@@ -198,8 +199,7 @@ class umf_viewer_App(ttk.Window):
             self.update_plots()
 
 
-            self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported. Now click on the magnifying glass below the plot and select "+
-                                       "the first horizontal section in the upper plot.", bootstyle="inverse-success")
+            self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported.", bootstyle="inverse-success")
             self.frm_help_bar.configure(bootstyle="success")
 
         else:
@@ -207,9 +207,9 @@ class umf_viewer_App(ttk.Window):
             self.frm_help_bar.configure(bootstyle="danger")
 
 
-def on_closing(self):
-    # if messagebox.askokcancel("Quit", "Do you want to quit?"):
-    self.destroy()
+    def on_closing(self):
+        # if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        self.destroy()
 
 
 app = umf_viewer_App()
