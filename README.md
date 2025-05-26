@@ -3,7 +3,7 @@
 
 TTA (Thermal Transient Analysis) is a technique to retrieve the thermal impedance model of a cooling path by measuring its thermal step response.
 This method was detailed specified in JESD 51-14 and is briefly described in the following tutorial:
-[THERMINIC 20005 Tutorial](https://therminic.org/therminic2005/APoppe_Tutorial.pdf) (Highly recommended!)
+[Transient thermal measurements and thermal equivalent circuit models]([https://therminic.org/therminic2005/APoppe_Tutorial.pdf](https://www.infineon.com/dgdl/Infineon-Thermal_equivalent_circuit_models-ApplicationNotes-v01_02-EN.pdf?fileId=db3a30431a5c32f2011aa65358394dd2)) (Highly recommended!)
 
 Ideally after performing the measurement, you should be able to transform the measured data into a so called thermal impedance curve. This curve can be found in almost every datasheet of any power semiconductor. In a nutshell out of a thermal impedance curve the user can read the thermal resistance which applies to the device when a rectangular power pulse of the time x is applied. From this thermal resistance, in combination with the dissipated power the user can calculate the junction temperature of the power semiconductor at the end of the rectangular pulse. This only works as long as the power pulse is short enough to not reach the thermal boundaries of the power semiconductor. As soon as the thermal boundaries of the power semiconductor are reached a dedicated thermal impedance curve of your specific cooling path is needed. 
 Nexperia released a very interesting application note on this topic: [Nexperia AN11156](https://assets.nexperia.com/documents/application-note/AN11156.pdf)
@@ -33,7 +33,7 @@ The following points are my target picture for this little project and what I ac
 + [x] Software tools for the calibration of the hardware itself.
 + [ ] Ability to calculate the time constant spectra of the Z<sub>th</sub>-curve via the NID method (either the "classical" method by FFT deconvolution, or by using the Bayesian method).
 + [ ] Obtain RC-thermal equivalent models from the time constant spectrum.
-+ [ ] Software and hardware tools for the calibration of the junction.
++ [x] Software and hardware tools for the calibration of the junction.
 
 #### Design Requirements
 The device shall...
