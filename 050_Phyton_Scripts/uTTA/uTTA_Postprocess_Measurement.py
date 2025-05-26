@@ -44,7 +44,7 @@ if len(TimeBaseTotal) < 1:
     ErrMeasFlag = True
     print("Seems like this measurement file contains no useable data. Analysis will be aborted!")
 
-if not MetaData["TSP_Calibration_File"]:
+if MetaData["TSP_Calibration_File"]:
     ErrMeasFlag = True
     print("Seems like this measurement file contains a calibration measurement instead of a normal measurement. Analysis will be aborted!")
 
