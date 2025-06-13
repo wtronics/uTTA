@@ -201,7 +201,6 @@ class CalApp(ttk.Window):
                 else:
                     bar_color = 'green'
 
-
                 G_Plots[1].fill_between(TimeBaseTotal, 0, 1,
                                         where=np.logical_and((stat_state[0] <= TimeBaseTotal), (stat_state[1] >= TimeBaseTotal)),
                                         color=bar_color, alpha=0.5,
@@ -369,7 +368,7 @@ class CalApp(ttk.Window):
         tbl = self.t_step_sheet.data
         if len(tbl) >= 2:  # above two selected points the interpolation calculation ca begin
 
-            for ChIdx in range(0, 4):  # iterate through all the 4 channels viewed
+            for ChIdx in range(0, 3):  # iterate through all the 4 channels viewed
                 ch_tsp = "TSP{Ch}".format(Ch=ChIdx)
                 x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
 
@@ -393,8 +392,8 @@ class CalApp(ttk.Window):
                      Ch=ChIdx, Lin=slope, Offs=offs, Quad=quad, Rsq=r_sq))
                 if ChIdx < 3:
                     self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=MetaData[ch_tsp]["Name"])
-                else:
-                    self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value="TC0")
+                # else:
+                    #self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value="TC0")
                 self.t_result_sheet.set_cell_data(r=ChIdx, c=1, value=offs)
                 self.t_result_sheet.set_cell_data(r=ChIdx, c=2, value=slope)
                 self.t_result_sheet.set_cell_data(r=ChIdx, c=3, value=quad)
