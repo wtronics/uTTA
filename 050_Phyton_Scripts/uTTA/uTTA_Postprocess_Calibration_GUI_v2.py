@@ -9,8 +9,7 @@ import uTTA_data_import
 import uTTA_data_processing
 import numpy as np                  # numpy 2.1.1
 import matplotlib                   # matplotlib 3.9.2
-import customtkinter                # customtkinter 5.2.2
-import customtkinter as ctk         # customtkinter 5.2.2
+import ttkbootstrap as ttk
 
 matplotlib.use("TkAgg")
 
@@ -31,128 +30,105 @@ InterpolationDegrees = 1
 MetaData = {}
 
 
-class CalApp(customtkinter.CTk):
+class CalApp(ttk.Window):
     def __init__(self):
         super().__init__()
+        # self.hdpi = False
+        self.title("uTTA Calibration Factor Calculation Tool")
+        self.geometry("1480x750")
+        self.minsize(1480, 750)
+        screen_dpi = self.winfo_fpixels('1i')
+        geometry = self.winfo_geometry()
+        print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
         global G_Plots
 
-        self.geometry("1480x750")
-        screen_dpi = self.winfo_fpixels('1i')
-        ctk.deactivate_automatic_dpi_awareness()
-        print("DPI: " + str(screen_dpi))
-        self.minsize(1480, 750)
-        self.title("uTTA Calibration Factor Calculation Tool")
-        self.update()
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)      # window closing event
-        self.grid_columnconfigure(6, weight=1)
-        self.grid_rowconfigure(20, weight=1)
+        self.frm_file_btns = ttk.Frame(master=self,  width=350, height=60, style="secondary.TFrame")
+        self.frm_file_btns.place(x=10, y=10)
 
-        self.frm_file_btns = ctk.CTkFrame(master=self)
-        self.frm_file_btns.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
-        self.frm_file_btns.grid_rowconfigure(1, weight=1)
-        self.frm_file_btns.grid_columnconfigure(21, weight=1)
+        self.btn_measure_file = ttk.Button(master=self.frm_file_btns, text="Measurement File", width=35,
+                                           command=self.read_measurement_file_callback)
+        self.btn_measure_file.place(x=10, y=10)
 
-        self.btn_measure_file = ctk.CTkButton(master=self.frm_file_btns,
-                                              text="Measurement File", fg_color="lightblue",
-                                              command=self.read_measurement_file_callback,
-                                              text_color="black")
-        self.btn_measure_file.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        self.frm_help_bar = ttk.Frame(master=self, width=1050, height=60, style='info.TFrame')
+        self.frm_help_bar.place(x=370, y=10)
 
-        self.frm_help_bar = ctk.CTkFrame(master=self)
-        self.frm_help_bar.grid(row=0, column=1, columnspan=5, padx=10, pady=10, sticky="ew")
-        self.frm_help_bar.grid_rowconfigure(1, weight=1)
-        self.frm_help_bar.grid_columnconfigure(1, weight=1)
-
-        self.lbl_helpbar = ctk.CTkLabel(master=self.frm_help_bar,
-                                        fg_color="lightblue", width=1050, anchor="w", padx=10, text_color="black")
-        self.lbl_helpbar.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, width=150, style='info.Inverse.TLabel')
+        self.lbl_helpbar.place(x=10, y=15)
         self.lbl_helpbar.configure(text="Welcome to the calibration GUI v2. Click 'Measurement File' and import a calibration measurement")
 
-        frm_step_table = ctk.CTkFrame(master=self)
-        frm_step_table.grid(row=1, rowspan=12, column=0, padx=10, pady=10, sticky="ew")
-        frm_step_table.grid_rowconfigure(index=8, weight=1)
-        frm_step_table.grid_columnconfigure(index=1, weight=1)
+        frm_step_table = ttk.Frame(master=self,  width=350, height=400, style="secondary.TFrame")
+        frm_step_table.place(x=10, y=80)
 
-        tab_label = ctk.CTkLabel(master=frm_step_table,
-                                 text_color="white",
-                                 text="Calibration Temperature Steps", justify="center")
-        tab_label.grid(row=0, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
-        self.btn_add_steps = ctk.CTkButton(master=frm_step_table,
-                                           text="Add Step", fg_color="lightblue",
-                                           command=self.add_calibration_step,
-                                           state="disabled", text_color="black")
-        self.btn_add_steps.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+        tab_label = ttk.Label(master=frm_step_table, text="Calibration Temperature Steps", style='secondary.Inverse.TLabel',
+                              justify="center", width=330)
+        tab_label.place(x=10, y=10)
 
-        self.btn_rem_steps = ctk.CTkButton(master=frm_step_table,
-                                           text="Remove Step", fg_color="lightblue",
-                                           command=self.remove_calibration_step, text_color="black")
-        self.btn_rem_steps.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+        lbl_no_steps = ttk.Label(master=frm_step_table, text="Step Temp:", width=120,
+                                 style='secondary.Inverse.TLabel', justify="right")
+        lbl_no_steps.place(x=170, y=45)
 
-        self.btn_calc_steps = ctk.CTkButton(master=frm_step_table,
-                                            text="Recalculate", fg_color="lightblue",
-                                            command=self.fit_temp_steps,
-                                            state="disabled", text_color="black")
-        self.btn_calc_steps.grid(row=2, column=1, columnspan=2, padx=10, pady=10, sticky="ew")
+        self.ent_step_temp = ttk.Entry(master=frm_step_table, width=8, justify="right")
+        self.ent_step_temp.insert(-1, "°C")
+        self.ent_step_temp.place(x=250, y=40)
 
-        lbl_no_steps = ctk.CTkLabel(master=frm_step_table,
-                                    text_color="white",
-                                    text="Step Temp:", justify="right")
-        lbl_no_steps.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+        self.btn_add_steps = ttk.Button(master=frm_step_table, text="Add Step", width=13,
+                                        command=self.add_calibration_step, state="disabled")
+        self.btn_add_steps.place(x=10, y=40)
 
-        self.ent_step_temp = ctk.CTkEntry(master=frm_step_table,
-                                          fg_color="lightblue",
-                                          placeholder_text="°C", width=60, justify="right", text_color="black")
-        self.ent_step_temp.grid(row=1, column=2, padx=10, pady=10, sticky="ew")
+        self.btn_rem_steps = ttk.Button(master=frm_step_table, text="Remove Step", width=13,
+                                        command=self.remove_calibration_step)
+        self.btn_rem_steps.place(x=10, y=80)
+
+        self.btn_calc_steps = ttk.Button(master=frm_step_table, text="Recalculate", width=13,
+                                         command=self.fit_temp_steps, state="disabled")
+        self.btn_calc_steps.place(x=10, y=120)
 
         tab_heading = ["T/[°C]", "CH0 Avg.", "CH1 Avg.", "CH2 Avg.", "Temp Avg.", "Start", "End"]
-        self.t_step_sheet = Sheet(frm_step_table,
-                                  startup_select=(0, 1, "rows"),
-                                  page_up_down_select_row=True,
-                                  height=200)
+        self.t_step_sheet = Sheet(frm_step_table, startup_select=(0, 1, "rows"),
+                                  page_up_down_select_row=True, height=230, width=330)
         self.t_step_sheet.format("A", formatter_options=float_formatter(), decimals=3)
         self.t_step_sheet.format("B:E", formatter_options=float_formatter(), decimals=4)
 
-        self.t_step_sheet.grid(row=3, rowspan=6, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+        self.t_step_sheet.place(x=10, y=160)
         self.t_step_sheet.enable_bindings(("single_select", "edit_cell"))
         self.t_step_sheet.extra_bindings("cell_select", self.on_cell_select)
         self.t_step_sheet.headers(tab_heading)
         self.t_step_sheet.set_all_column_widths(65)
 
-        frm_result_table = ctk.CTkFrame(master=self)
-        frm_result_table.grid(row=14, rowspan=7, column=0, padx=10, pady=10, sticky="ew")
-        frm_result_table.grid_rowconfigure(index=6, weight=1)
-        frm_result_table.grid_columnconfigure(index=0, weight=1)
+        frm_result_table = ttk.Frame(master=self, width=350, height=250, style="secondary.TFrame")
+        frm_result_table.place(x=10, y=490)
 
-        result_label = ctk.CTkLabel(master=frm_result_table,
-                                    text_color="white",
-                                    text="Linearization Results", justify="center")
-        result_label.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        result_label = ttk.Label(master=frm_result_table, width=330, style='secondary.Inverse.TLabel',
+                                 text="Linearization Results", justify="center")
+        result_label.place(x=10, y=10)
 
         tab_result_heading = ["Channel", "Offset", "Lin.", "Quad.", "R²"]
-        self.t_result_sheet = Sheet(frm_result_table, show_y_scrollbar=False, height=150)
-        self.t_result_sheet.grid(row=1, rowspan=4, column=0, padx=10, pady=10, sticky="ew")
+        self.t_result_sheet = Sheet(frm_result_table, show_y_scrollbar=False, height=160, width=330, row_index_width=30)
+        self.t_result_sheet.place(x=10, y=40)
         self.t_result_sheet.insert_columns(columns=4)
         self.t_result_sheet.insert_rows(rows=3)
         self.t_result_sheet.enable_bindings()
         self.t_result_sheet.sheet_data_dimensions(total_rows=4, total_columns=4)
+        self.t_result_sheet.format("B:E", formatter_options=float_formatter(), decimals=4)
+        # self.t_result_sheet.format("C:E", formatter_options=float_formatter(), decimals=4)
         self.t_result_sheet.headers(tab_result_heading)
-        self.t_result_sheet.set_all_column_widths(85)
+        self.t_result_sheet.set_all_column_widths(65)
 
-        self.btn_save_result = ctk.CTkButton(master=frm_result_table,
-                                             text="Save Calibration", fg_color="lightblue",
-                                             command=self.save_calibration_results,
-                                             state="disabled", text_color="black")
-        self.btn_save_result.grid(row=5, column=0, padx=10, pady=10, sticky="ew")
+        self.btn_save_result = ttk.Button(master=frm_result_table, text="Save Calibration", width=35,
+                                          command=self.save_calibration_results, state="disabled")
+        self.btn_save_result.place(x=10, y=210)
 
-        self.fig = Figure(figsize=(11, 6.5), dpi=screen_dpi)
+        self.fig = Figure(figsize=(880/screen_dpi, 500/screen_dpi), dpi=screen_dpi, tight_layout = True)
         G_Plots = self.fig.subplots(2, 1)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=1, column=1, rowspan=18, columnspan=5, padx=10, pady=10, sticky="ew")
+        self.canvas.get_tk_widget().place(x=370, y=80)
+
         # Toolbar #########
-        toolbar_frame = ctk.CTkFrame(master=self)
-        toolbar_frame.grid(row=20, column=1, columnspan=5)
+        toolbar_frame = ttk.Frame(master=self, width=1050, style="secondary.TFrame")
+        toolbar_frame.place(x=370, y=700)
         self.toolbar = NavigationToolbar2Tk(self.canvas, toolbar_frame)
         self.toolbar.update()
 
@@ -288,11 +264,16 @@ class CalApp(customtkinter.CTk):
                                         }}
 
                         uTTA_data_import.write_tsp_cal_to_file(cal_file_name, tsp_cal_value)
-                        self.lbl_helpbar.configure(text="Successfully saved calibration of channel " + tsp_name + " to file: " + data_file_no_ext)
+                        self.lbl_helpbar.configure(text="Successfully saved calibration of channel " + tsp_name + " to file: " + data_file_no_ext,
+                                                   style='success.Inverse.TLabel')
+                        self.frm_help_bar.configure(style='success.Inverse.TLabel')
                     else:
-                        self.lbl_helpbar.configure(text="Aborted saving calibration of channel " + tsp_name + "because of bad convergence")
+                        self.lbl_helpbar.configure(text="Aborted saving calibration of channel " + tsp_name + "because of bad convergence",
+                                                   style='warning.Inverse.TLabel')
+                        self.frm_help_bar.configure(style='warning.Inverse.TLabel')
         else:
-            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.")
+            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.", style='warning.Inverse.TLabel')
+            self.frm_help_bar.configure(style='warning.Inverse.TLabel')
 
     def read_measurement_file_callback(self):
         global TimeBaseTotal, ADC, Temp, DataFile, Static_States, MetaData
@@ -306,8 +287,9 @@ class CalApp(customtkinter.CTk):
             if MetaData["TSP_Calibration_File"]:
                 TimeBaseTotal, ADC, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
-                # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.5°C
-                Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.65, 300)
+                # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.7°C
+                # Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.7, 200)
+                Static_States = uTTA_data_processing.find_static_states(ADC[0, :], 0.0008, 500)
 
                 if Static_States:
                     for stat_state in Static_States:
@@ -318,12 +300,17 @@ class CalApp(customtkinter.CTk):
                 self.update_plots()
 
                 self.btn_add_steps.configure(state='normal')
-                self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported. Now click on the magnifying glass below the plot and select "+
-                                           "the first horizontal section in the upper plot.")
+                self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported.\nNow click on the magnifying glass below the plot and select "+
+                                           "the first horizontal section in the upper plot.",
+                                           style='info.Inverse.TLabel')
+                self.frm_help_bar.configure(style='info.Inverse.TLabel')
             else:
-                self.lbl_helpbar.configure(text="Seems like : " + DataFile + " is not a calibration measurement. Therefore the measurement was not imported.")
+                self.lbl_helpbar.configure(text="Seems like : " + DataFile + " is not a calibration measurement. Therefore the measurement was not imported.",
+                                           style='warning.Inverse.TLabel')
+                self.frm_help_bar.configure(style='warning.Inverse.TLabel')
         else:
-            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.")
+            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.", style='danger.Inverse.TLabel')
+            self.frm_help_bar.configure(style='danger.Inverse.TLabel')
 
     def add_calibration_step(self):
         cal_range = G_Plots[0].get_xlim()
@@ -437,9 +424,10 @@ class CalApp(customtkinter.CTk):
         self.ent_step_temp.delete(0, 'end')
         self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(Temp[0, xlim_min:xlim_max])))
 
-        self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state. " +
+        self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state.\n" +
                                    "Peak-to-peak spread of " + MetaData["TSP0"]["Name"] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
-                                   "\nWhen you are satisfied enter the step temperature and click on 'Add Step'")
+                                   "\nWhen you are satisfied enter the step temperature and click on 'Add Step'", style='info.Inverse.TLabel')
+        self.frm_help_bar.configure(style='info.TFrame')
 
 
 # Declare and register callbacks
