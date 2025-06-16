@@ -251,7 +251,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
 
     timebase_total = timebase_total / 1000000.0
 
-    print(meas_meta_data)
+    # print(meas_meta_data)
     return timebase_total, adc, temp, meas_meta_data
 
 
