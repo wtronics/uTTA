@@ -27,7 +27,7 @@ def interpolate_to_common_timebase(timebase_in, adc, tc):
     return timebase_int, adc_int, tc_int
 
 
-def calculate_cooling_curve(timebase_total, adc, cooling_start_block, samp_decade):
+def calculate_cooling_curve(timebase_total, adc, cooling_start_block, samp_decade, meta_data):
     # Cut Timebase and measurement to cooling section
     time_base_cooling = (timebase_total[(cooling_start_block * samp_decade):-1] - timebase_total[(cooling_start_block * samp_decade) - 1])
     adc_cooling = adc[:, (cooling_start_block * samp_decade):-1]
@@ -35,15 +35,18 @@ def calculate_cooling_curve(timebase_total, adc, cooling_start_block, samp_decad
     # Get Min and Max Values of the Full Cooling Curve
     dut_imin = min(adc_cooling[3, :])
     dut_imax = max(adc_cooling[3, :])
+    meta_data["DUT_Imin"] = dut_imin
+    meta_data["DUT_Imax"] = dut_imax
     print("Min Diode Current:  {min:.2f}A; Max Diode current: {max:.2f}A".format(min=dut_imin, max=dut_imax))
     cooling_start_index = (np.where(np.isclose(adc_cooling[3, :], dut_imin)))[0][0]
+    meta_data["Cooling_Start_Index"] = cooling_start_index
     print("Index of closest value: " + str(cooling_start_index))
 
     # Cut the measurement data down to the starting point of the cooling phase
     adc_cooling = adc_cooling[:, cooling_start_index:-1]
     time_base_cooling = time_base_cooling[cooling_start_index:-1] - time_base_cooling[cooling_start_index - 1]
 
-    return time_base_cooling, adc_cooling
+    return time_base_cooling, adc_cooling, meta_data
 
 
 def calculate_diode_heating(timebase, adc, cooling_start_block, samp_decade):
@@ -58,7 +61,7 @@ def calculate_diode_heating(timebase, adc, cooling_start_block, samp_decade):
         volts=u_dio_heated,
         pow=p_dio_heat))
 
-    return p_dio_heat
+    return p_dio_heat, i_heat
 
 
 def find_static_states(data, threshold=0.01, min_length=5):
