@@ -34,20 +34,21 @@ FileNam = uTTA_data_import.select_file("Select the measurement file",
                                         ('All files', '*.*')))
 
 DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam)
-
-start = time.time()
-
-TimeBaseTotal, ADC, Temp, MetaData = uTTA_data_import.read_measurement_file(FileNam, 0)
-
 ErrMeasFlag = False
-if len(TimeBaseTotal) < 1:
-    ErrMeasFlag = True
-    print("Seems like this measurement file contains no useable data. Analysis will be aborted!")
+start = time.time()
+if len(FileNam) > 0:
+    TimeBaseTotal, ADC, Temp, MetaData = uTTA_data_import.read_measurement_file(FileNam, 0)
 
-if MetaData["TSP_Calibration_File"]:
-    ErrMeasFlag = True
-    print("Seems like this measurement file contains a calibration measurement instead of a normal measurement. Analysis will be aborted!")
+    if len(TimeBaseTotal) < 1:
+        ErrMeasFlag = True
+        print("Seems like this measurement file contains no useable data. Analysis will be aborted!")
 
+    if MetaData["TSP_Calibration_File"]:
+        ErrMeasFlag = True
+        print("Seems like this measurement file contains a calibration measurement instead of a normal measurement. Analysis will be aborted!")
+else:
+    ErrMeasFlag = True
+    print("No file was selected")
 
 if not ErrMeasFlag:
     # Calculate the average ambient temperature as starting point
