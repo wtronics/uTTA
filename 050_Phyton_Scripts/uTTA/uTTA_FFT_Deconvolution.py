@@ -2,12 +2,12 @@ import numpy as np                  # numpy 2.1.0
 from numpy import genfromtxt        # numpy 2.1.0
 import matplotlib.pyplot as plt     # matplotlib 3.9.2
 import time                         # part of python 3.12.5
-import os                           # part of python 3.12.5
-import uTTA_data_import
+
+import uTTA_data_processing as udpc
 
 
-FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
-DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam)
+FileNam = udpc.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
+DataFile, DataFileNoExt, FilePath = udpc.split_file_path(FileNam)
 
 NoOfMonitors = 2
 SamplesPerDecade = 10
