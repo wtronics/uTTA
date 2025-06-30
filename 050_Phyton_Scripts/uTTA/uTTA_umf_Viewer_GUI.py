@@ -17,8 +17,8 @@ class umf_viewer_App(ttk.Window):
         super().__init__()
         # self.hdpi = False
         self.title("uTTA umf-Viewer")
-        self.geometry("1480x900")
-        self.minsize(1480, 900)
+        self.geometry("1480x960")
+        self.minsize(1480, 960)
         screen_dpi = self.winfo_fpixels('1i')
         geometry = self.winfo_geometry()
         print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
@@ -38,9 +38,11 @@ class umf_viewer_App(ttk.Window):
         self.btn_measure_file.place(x=10, y=10)
 
         # Measurement Meta Data Frame
-        self.frm_meas_data = ttk.Frame(master=self, width=350, height=810, style="secondary.TFrame")
+        self.frm_meas_data = ttk.Frame(master=self, width=350, height=860, style="secondary.TFrame")
         self.frm_meas_data.place(x=10, y=80)
 
+        self.meas_meta_dummy = ttk.Frame(master=self.frm_meas_data, width=336, height=846, style="info.TFrame")
+        self.meas_meta_dummy.place(x=7, y=7)
         self.meas_meta_data = ttk.Label(master=self.frm_meas_data, anchor="w", bootstyle="inverse-info", width=41, wraplength=330)
         self.meas_meta_data.configure(text="")
         self.meas_meta_data.place(x=10, y=10)
@@ -64,7 +66,8 @@ class umf_viewer_App(ttk.Window):
         matplotlib.rcParams['xtick.labelsize'] = 8
         matplotlib.rcParams['ytick.labelsize'] = 8
 
-        self.fig = Figure(figsize=(11.1, 7.9), dpi=78)
+        self.fig = Figure(figsize=(1090/screen_dpi, 810/screen_dpi), dpi=96)
+        # self.fig = Figure(figsize=(11.1, 7.5), dpi=96)
         self.fig.subplots_adjust(left=0.06, bottom=0.075, right=0.97, top=0.96, wspace=0.212, hspace=0.54)
         G_Plots = self.fig.subplots(3, 2)
 
@@ -74,7 +77,7 @@ class umf_viewer_App(ttk.Window):
 
         # Toolbar Frame
         toolbar_frame = ttk.Frame(master=self)
-        toolbar_frame.place(x=370, y=850)
+        toolbar_frame.place(x=370, y=900)
         self.toolbar = NavigationToolbar2Tk(self.canvas, toolbar_frame)
         self.toolbar.update()
         self.update_plots()
