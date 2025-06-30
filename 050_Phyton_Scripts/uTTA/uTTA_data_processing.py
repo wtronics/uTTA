@@ -1,75 +1,579 @@
+import tkinter.filedialog as fd
+import os
 import numpy as np              # numpy 2.1.0
 import numpy.dtypes             # numpy 2.1.0
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt                 # matplotlib 3.9.2
 from skimage import color, data, restoration    # scikit-image 0.24.0
+import uTTA_data_import
+import uTTA_data_export
 
 
-def interpolate_to_common_timebase(timebase_in, adc, tc):
 
-    print("Number of temperature samples: {TCsamp}, Duration of measurement: {tmeas} = {TCsS} Samples/Second".format(TCsamp=len(tc[0]),
-                                                                                                                     tmeas=timebase_in[-1],
-                                                                                                                     TCsS=len(tc[0]) / timebase_in[-1]))
-    timebase_int = np.linspace(0, stop=timebase_in[-1], num=int(timebase_in[-1]) + 1)
+class UttaZthProcessing:
+    def __init__(self):
+        self.data_imported = False
+        self.adc_timebase = np.array([])        # full measurement timebase
+        self.adc = np.array([])                 # full measurement ADC values scaled according to the calibration
+        self.adc_cooling = np.array([])         # Cooling Section ADC values
+        self.adc_timebase_cooling = np.array([])    # Cooling Section timebase
+        self.meta_data = {}                     # all meta data generated during the measurement and postprocessing
+        self.no_of_tsp = 3
+        self.MaxDeltaT_StartEnd = 1.0
 
-    num_adc = len(adc)
-    adc_int = np.zeros((num_adc, len(timebase_int)), numpy.float32)
+        # Parameters for Interpolation
+        self.InterpolationTStart = 0.00030
+        self.InterpolationTEnd = 0.0025
+        self.InterpolationAverageHW = 1   # Should be the half width of the averaged area
 
-    for ch_idx in range(0, num_adc):
-        adc_int[ch_idx] = np.interp(timebase_int, timebase_in, adc[ch_idx])
+        # Parameters for the interpolation depth estimation
+        self.Cth_Si = 700.0  # Thermal capacity of silicon J*(kg*K)
+        self.rho_Si = 2330  # Density of silicon kg/m3
+        self.kappa_SI = 148.0  # Heat transmissivity of silicon W/(m*K)
 
-    num_tc = len(tc)
-    timebase_tc = np.linspace(start=0, stop=timebase_in[-1], num=len(tc[0]))    # Create a dummy timebase for the thermocouples for interpolation
-    tc_int = np.zeros((num_tc, len(timebase_int)), numpy.float32)
-    for ch_idx in range(0, num_adc):
-        tc_int[ch_idx] = np.interp(timebase_int, timebase_tc, tc[ch_idx])
+        # Interpolation results
+        self.InterpolationFactorM = 0
+        self.InterpolationOffset = 0
+        self.k_therm = (2 / np.sqrt(self.Cth_Si * self.rho_Si * self.kappa_SI))
+        self.EstimatedDieSize = 0
+        self.TDie_Start = 0
+        self.DieMaxThickness = 0
 
-    return timebase_int, adc_int, tc_int
+        self.tc = np.array([])      # measured thermocouple data
 
+        # Variables for interpolated adc and TC-K values
+        self.timebase_int = np.array([])        # interpolated timebase, when ADC and TC-K are interpolated to each other
+        self.adc_int = np.array([])             # interpolated ADC-data, when ADC and TC-K are interpolated to each other
+        self.tc_int = np.array([])              # interpolated thermocouple data, when ADC and TC-K are interpolated to each other
 
-def calculate_cooling_curve(timebase_total, adc, cooling_start_block, samp_decade, meta_data):
-    # Cut Timebase and measurement to cooling section
-    time_base_cooling = (timebase_total[(cooling_start_block * samp_decade):-1] - timebase_total[(cooling_start_block * samp_decade) - 1])
-    adc_cooling = adc[:, (cooling_start_block * samp_decade):-1]
+        self.u_dio_cold_start = np.array([])
+        self.u_dio_cold_end = np.array([])
+        self.t_monitor_heated = np.array([])
+        self.t_dio_raw = np.array([])
+        self.t_dio_interpolated = np.array([])
 
-    # Get Min and Max Values of the Full Cooling Curve
-    dut_imin = min(adc_cooling[3, :])
-    dut_imax = max(adc_cooling[3, :])
-    meta_data["DUT_Imin"] = dut_imin
-    meta_data["DUT_Imax"] = dut_imax
-    print("Min Diode Current:  {min:.2f}A; Max Diode current: {max:.2f}A".format(min=dut_imin, max=dut_imax))
-    cooling_start_index = (np.where(np.isclose(adc_cooling[3, :], dut_imin)))[0][0]
-    meta_data["Cooling_Start_Index"] = cooling_start_index
-    print("Index of closest value: " + str(cooling_start_index))
-
-    # Cut the measurement data down to the starting point of the cooling phase
-    adc_cooling = adc_cooling[:, cooling_start_index:-1]
-    time_base_cooling = time_base_cooling[cooling_start_index:-1] - time_base_cooling[cooling_start_index - 1]
-
-    return time_base_cooling, adc_cooling, meta_data
-
-
-def calculate_diode_heating(timebase, adc, cooling_start_block, samp_decade):
-    # Calculate the average heating current, voltage and power through the diode
-    i_heat = np.mean(adc[3, ((cooling_start_block - 2) * samp_decade):((cooling_start_block - 1) * samp_decade) - 1])
-    u_dio_heated = np.mean(adc[0, ((cooling_start_block - 2) * samp_decade):((cooling_start_block - 1) * samp_decade) - 1])
-    p_dio_heat = i_heat * u_dio_heated
-    print("HEATING VALUES: Range: {tstart:.2f}s to {tend:.2f}s, Current: {curr:.2f}A, Voltage: {volts:.2f}V, Power: {pow:.2f}W".format(
-        tstart=timebase[(cooling_start_block - 2) * samp_decade],
-        tend=timebase[((cooling_start_block - 1) * samp_decade) - 1],
-        curr=i_heat,
-        volts=u_dio_heated,
-        pow=p_dio_heat))
-
-    return p_dio_heat, i_heat
+        # Zth curve Data
+        self.dT_diode = np.array([])    # delta T curve of each diode based on the interpolated diode voltage curve
+        self.zth = np.array([])         # calculated zth curve with the interpolation at the beginning
+        self.r_th_static = np.array([]) # static Rth end values of each curve
 
 
-def find_static_states(data, threshold=0.01, min_length=5):
-    """
+
+    def import_data(self, file_nam):
+        retval = False
+        if len(file_nam) > 1:
+            self.adc_timebase, self.adc, self.tc, self.meta_data = uTTA_data_import.read_measurement_file(file_nam, 0)
+            if len(self.adc_timebase) > 0:
+                self.data_imported = True
+                self.meta_data["Import_successful"] = True
+                print("\033[92mSUCCESS: File import completed\033[0m")
+                retval = True
+            else:
+                print("\033[91mERROR: File import failed due to an unknown reason\033[0m")
+        else:
+            print("\033[91mERROR: No proper file selected\033[0m")
+
+        return retval
+
+    def interpolate_to_common_timebase(self):
+        if self.data_imported:
+            print("Number of temperature samples: {TCsamp}, Duration of measurement: {tmeas} = {TCsS} Samples/Second".
+                  format(TCsamp=len(self.tc[0]),
+                         tmeas=self.adc_timebase[-1],
+                         TCsS=len(self.tc[0]) / self.adc_timebase[-1]))
+
+            timebase_int = np.linspace(0, stop=self.adc_timebase[-1], num=int(self.adc_timebase[-1]) + 1)
+
+            num_adc = len(self.adc)
+            adc_int = np.zeros((num_adc, len(timebase_int)), numpy.float32)
+
+            for ch_idx in range(0, num_adc):
+                adc_int[ch_idx, :] = np.interp(timebase_int, self.adc_timebase, self.adc[ch_idx, :])
+
+            num_tc = len(self.tc)
+            timebase_tc = np.linspace(start=0, stop=self.adc_timebase[-1], num=len(self.tc[0]))    # Create a dummy timebase for the thermocouples for interpolation
+            tc_int = np.zeros((num_tc, len(timebase_int)), numpy.float32)
+            for ch_idx in range(0, num_adc):
+                tc_int[ch_idx, :] = np.interp(timebase_int, timebase_tc, self.tc[ch_idx, :])
+        else:
+            timebase_int = []
+            adc_int = []
+            tc_int = []
+
+        self.timebase_int = timebase_int
+        self.adc_int = adc_int
+        self.tc_int = tc_int
+
+        return
+
+    def calculate_cooling_curve(self):
+
+        if self.meta_data["Import_successful"]:
+            # Cut Timebase and measurement to cooling section
+            pre_cooling_samples = self.meta_data["CoolingStartBlock"] * self.meta_data["SamplesPerDecade"]
+            time_base_cooling = (self.adc_timebase[pre_cooling_samples:-1] -
+                                 self.adc_timebase[pre_cooling_samples - 1])
+            self.adc_cooling = self.adc[:, pre_cooling_samples:-1]
+
+            # Get Min and Max Values of the Full Cooling Curve
+            self.meta_data["DUT_Imin"] = min(self.adc_cooling[3, :])
+            self.meta_data["DUT_Imax"] = max(self.adc_cooling[3, :])
+
+            print("Min Diode Current:  {min:.2f}A; Max Diode current: {max:.2f}A".format(min=self.meta_data["DUT_Imin"],
+                                                                                         max=self.meta_data["DUT_Imax"]))
+            cooling_start_index = (np.where(np.isclose(self.adc_cooling[3, :], self.meta_data["DUT_Imin"])))[0][0]
+            self.meta_data["Cooling_Start_Index"] = cooling_start_index
+            print("Index of closest value: " + str(cooling_start_index))
+            if cooling_start_index > 150:
+                print("\033[91mERROR: The start index of the cooling curve is far out of the nominal range! \n"
+                      "Calculation is not feasible and will be stopped!\033[0m")
+
+            # Cut the measurement data down to the starting point of the cooling phase
+            self.adc_cooling = self.adc_cooling[:, cooling_start_index:-1]
+            self.adc_timebase_cooling = time_base_cooling[cooling_start_index:-1] - time_base_cooling[cooling_start_index - 1]
+            self.meta_data["Cooling_Curve_Calculated"] = True
+
+        return
+
+    def calculate_tsp_start_voltages(self):
+        u_dio_cold_start = np.zeros((self.no_of_tsp,), numpy.float32)
+        u_dio_cold_end = np.zeros((self.no_of_tsp,), numpy.float32)
+        t_monitor_heated = np.zeros((self.no_of_tsp,), numpy.float32)
+        samp_decade = self.meta_data["SamplesPerDecade"]
+        t_dio = np.zeros(shape=self.adc_cooling.shape)
+        for Ch in range(0, self.no_of_tsp):
+            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            if self.meta_data[ch_tsp]["Name"] != "OFF":
+                # Calculate the average Diode voltage at the start of the measurement
+                # print ("Channel {Chan}, Min ADC: {MinADC}, Max ADC: {MaxADC}".format(Chan=Ch,MinADC=ADC[Ch, :].min(), MaxADC=ADC[Ch, :].max()))
+                u_dio_cold_start[Ch] = np.mean(self.adc[Ch, 0:samp_decade])
+                # Calculate the average Diode voltage at the end of the measurement
+                u_dio_cold_end[Ch] = np.mean(self.adc[Ch, -samp_decade:-1])
+                # The TSP Offset is the average diode start voltage
+                self.meta_data[ch_tsp]["Offset"] = -u_dio_cold_start[Ch]
+                t_dio[Ch, :] = (self.adc_cooling[Ch, :] + self.meta_data[ch_tsp]["Offset"]) / self.meta_data[ch_tsp]["LinGain"]
+
+                # Calculate the start temperature of both monitoring channels to have a good starting point for Zth-Matrix
+                t_monitor_heated[Ch] = (np.mean(
+                    self.adc[Ch, ((self.meta_data["CoolingStartBlock"] - 2) * samp_decade):((self.meta_data["CoolingStartBlock"] - 1) * samp_decade) - 1])
+                                        + self.meta_data[ch_tsp]["Offset"]) / self.meta_data[ch_tsp]["LinGain"]
+                if Ch == 0:
+                    print(
+                        "COLD VOLTAGE: DUT{DUTno} at Start: {Ucold: 3.4f}V; at End: {UColdEnd: 3.4f}V; Delta U: {dU_DUT: 3.4f}V; Delta T: {dT_DUT: 3.4f}°C".format(
+                            DUTno=Ch,
+                            Ucold=u_dio_cold_start[Ch],
+                            UColdEnd=u_dio_cold_end[Ch],
+                            dU_DUT=u_dio_cold_start[Ch] - u_dio_cold_end[Ch],
+                            dT_DUT=((u_dio_cold_end[Ch] - u_dio_cold_start[Ch]) / self.meta_data[ch_tsp]["LinGain"])))
+                else:
+                    print(
+                        "COLD VOLTAGE: DUT{DUTno} at Start: {Ucold: 3.4f}V; at End: {UColdEnd: 3.4f}V; Delta U: {dU_DUT: 3.4f}V; Delta T: {dT_DUT: 3.4f}°C; "
+                        "Heated Temp: {T_heated: 3.4f}°C".format(DUTno=Ch,
+                                                                 Ucold=u_dio_cold_start[Ch],
+                                                                 UColdEnd=u_dio_cold_end[Ch],
+                                                                 dU_DUT=u_dio_cold_start[Ch] - u_dio_cold_end[Ch],
+                                                                 dT_DUT=((u_dio_cold_end[Ch] - u_dio_cold_start[Ch]) /
+                                                                         self.meta_data[ch_tsp]["LinGain"]),
+                                                                 T_heated=t_monitor_heated[Ch]))
+        self.u_dio_cold_start = u_dio_cold_start
+        self.u_dio_cold_end = u_dio_cold_end
+        self.t_monitor_heated = t_monitor_heated
+        self.t_dio_raw = t_dio
+
+    def calculate_diode_heating(self):
+        # Calculate the average heating current, voltage and power through the diode
+        if not self.meta_data["Import_successful"]:
+            print("\033[93mWARNING: No file imported. Unable to calculate power dissipation!\033[0m")
+            return
+        if self.meta_data["TSP_Calibration_File"]:
+            print("\033[91mERROR: Unable to calculate power dissipation on a calibration file!\033[0m")
+            return
+
+        cooling_start_block = self.meta_data["CoolingStartBlock"]
+        samp_decade = self.meta_data["SamplesPerDecade"]
+        t_calc_start_idx = ((cooling_start_block - 2) * samp_decade)
+        t_calc_end_idx = ((cooling_start_block - 1) * samp_decade) - 1
+        i_heat = np.mean(self.adc[3, t_calc_start_idx : t_calc_end_idx])
+        u_dio_heated = np.mean(self.adc[0, t_calc_start_idx : t_calc_end_idx])
+        p_dio_heat = i_heat * u_dio_heated
+        print("HEATING VALUES: Range: {tstart:.2f}s to {tend:.2f}s, Current: {curr:.2f}A, Voltage: {volts:.2f}V, Power: {pow:.2f}W".format(
+            tstart=self.adc_timebase[t_calc_start_idx],
+            tend=self.adc_timebase[t_calc_end_idx],
+            curr=i_heat,
+            volts=u_dio_heated,
+            pow=p_dio_heat))
+        self.meta_data["I_Heat"] = i_heat
+        self.meta_data["P_Heat"] = p_dio_heat
+        self.meta_data["U_Heat"] = u_dio_heated
+        self.meta_data["Diode_Heating_Calculated"] = True
+
+        return
+
+    def interpolate_zth_curve_start(self):
+        interp_points_idx_start = find_nearest(self.adc_timebase_cooling, self.InterpolationTStart)
+        interp_points_idx_end = find_nearest(self.adc_timebase_cooling, self.InterpolationTEnd)
+
+        print(
+            "INTERPOLATION: Start: {IntStart: .6f}s; Index: {IdxStart:3d}; End: {IntEnd: .6f}s; Index: {IdxEnd:3d}".format(
+                IntStart=self.InterpolationTStart,
+                IntEnd=self.InterpolationTEnd,
+                IdxStart=interp_points_idx_start,
+                IdxEnd=interp_points_idx_end))
+
+        interpol_sq_t_start = np.sqrt(self.InterpolationTStart)
+        interpol_sq_t_end = np.sqrt(self.InterpolationTEnd)
+
+        # Get the measured temperatures at the interpolation points
+        interpol_y_start = np.mean(
+            self.t_dio_raw[0, interp_points_idx_start - self.InterpolationAverageHW:interp_points_idx_start + self.InterpolationAverageHW])
+        interpol_y_end = np.mean(
+            self.t_dio_raw[0, interp_points_idx_end - self.InterpolationAverageHW:interp_points_idx_end + self.InterpolationAverageHW])
+
+        # Calculation of the interpolation parameters
+        self.InterpolationFactorM = (interpol_y_end - interpol_y_start) / (interpol_sq_t_end - interpol_sq_t_start)
+        self.InterpolationOffset = interpol_y_start - (self.InterpolationFactorM * interpol_sq_t_start)
+        self.k_therm = (2 / np.sqrt(self.Cth_Si * self.rho_Si * self.kappa_SI))
+        self.EstimatedDieSize = 1000000 * (self.k_therm * (-self.meta_data["P_Heat"] / self.InterpolationFactorM))
+        self.TDie_Start = self.InterpolationOffset  # Starting temperature of the Die at the moment of switch off
+
+        # Calculate the maximum thickness the Die can have until the calculation method becomes unusable
+        # dchip = sqrt(t_valid * 2*lambda/(cth*rho))
+        self.DieMaxThickness = np.sqrt((self.adc_timebase_cooling[interp_points_idx_start] * 2 * self.kappa_SI) /
+                                       (self.Cth_Si * self.rho_Si))  # Die thickness in METER
+
+        print("Maximum Die thickness based on current interpolation: {MaxThick: .4f}mm".
+              format(MaxThick=self.DieMaxThickness*1000))
+
+        # Interpolated curve of the temperature.
+        interpolated_start = (np.sqrt(self.adc_timebase_cooling[0:interp_points_idx_start]) * self.InterpolationFactorM +
+                             self.InterpolationOffset)
+
+        # Build the final Zth-curve with interpolated start
+        self.t_dio_interpolated = self.t_dio_raw        # take the raw input array
+
+        #overwrite the beginning with the interpolated curve
+        self.t_dio_interpolated[0, 0:interp_points_idx_start] = interpolated_start[0:interp_points_idx_start]
+        print("INTERPOLATION: Start: {StartY: .3f}K; End: {EndY: .3f}K; Factor M: {IntFactM: .4f}; "
+              "Offset: {IntOffs: .4f}; Estimated Die Size: {DieSize: .2f}mm²".format(StartY=interpol_y_start,
+                                                                                     EndY=interpol_y_end,
+                                                                                     IntFactM=self.InterpolationFactorM,
+                                                                                     IntOffs=self.InterpolationOffset,
+                                                                                     DieSize=self.EstimatedDieSize))
+
+        self.zth = np.zeros(shape=self.adc_cooling.shape)
+        self.r_th_static = np.zeros(self.no_of_tsp)
+        self.dT_diode = np.zeros(shape=(self.no_of_tsp, len(self.t_dio_interpolated[3, :])))
+        # self.dT_diode = np.zeros(shape=(self.no_of_tsp, len(self.t_dio_interpolated[3, interp_points_idx_start:-1])))
+        for Ch in range(0, self.no_of_tsp):
+            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            if self.meta_data[ch_tsp]["Name"] != "OFF":
+                if Ch == 0:
+                    # Do the Zth calculation for the driven channel
+                    self.dT_diode[Ch, :] = self.t_dio_interpolated[Ch, :] - self.TDie_Start
+                    self.zth[Ch, :] = self.dT_diode[Ch, :] / -self.meta_data["P_Heat"]
+                    # take the last 100 samples to calculate the static Zth
+                    self.r_th_static[Ch] = np.mean(self.zth[Ch, -100:-1])
+                    print("Static Zth for Channel{ChNo}: {ZthStat: .4f}K/W".format(ChNo=Ch, ZthStat=self.r_th_static[Ch]))
+                else:
+                    # Do the Zth calculation for the Monitor channels
+                    # ToDo: Check the correctness of this calculation
+                    self.t_monitor_heated[Ch] = self.InterpolationOffset - self.t_monitor_heated[Ch]
+                    # self.dT_diode[Ch, :] = (self.t_dio_interpolated[Ch, interp_points_idx_start:-1] -
+                    #                         self.t_dio_interpolated[0, interp_points_idx_start:-1] +
+                    #                         self.t_monitor_heated[Ch])
+                    self.dT_diode[Ch, :] = (self.t_dio_interpolated[Ch, :] -
+                                            self.t_dio_interpolated[0, :] +
+                                            self.t_monitor_heated[Ch])
+                    #self.zth[Ch, interp_points_idx_start:-1] = self.dT_diode[Ch, :] / self.meta_data["P_Heat"]
+                    self.zth[Ch, :] = self.dT_diode[Ch, :] / self.meta_data["P_Heat"]
+                    self.r_th_static[Ch] = np.mean(self.zth[Ch, -100:-1])
+                    print("Static Coupling-Zth for Channels 0-{ChNo}: {RthStat: .4f}K/W".
+                          format(ChNo=Ch, RthStat=self.r_th_static[Ch]))
+
+    def export_diode_voltages(self, filename):
+        uTTA_data_export.write_diode_voltages(self.adc_timebase_cooling, self.adc_cooling,
+                                              self.meta_data["TSP0"]["Name"],
+                                              filename,)
+
+    def export_t3i_file(self, filename):
+        uTTA_data_export.export_t3i_file(self.adc_timebase_cooling, self.zth,
+                                         headername=str(self.meta_data["TSP0"]["Name"]) + "\t" +
+                                                    str(self.meta_data["TSP1"]["Name"]) + "\t" +
+                                                    str(self.meta_data["TSP2"]["Name"]),
+                                         filename=filename)
+
+    def add_input_tsp_measure_curve_plot(self, plot_id):
+
+        for Ch in range(0, self.no_of_tsp):
+            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            if self.meta_data[ch_tsp]["Name"] != "OFF":
+                plot_id.plot(self.adc_timebase, self.adc[Ch, :], label=self.meta_data[ch_tsp]["Name"])  # Plot some data on the axes.
+
+        plot_id.set_title("Diode Voltages of the full measurement")
+        plot_id.set_ylabel('Diode Voltage / [V]')
+        plot_id.set_xlabel('Time / [s]')
+        plot_id.legend()
+        plot_id.grid(which='both')
+
+    def add_tsp_measure_cooling_curve_plot(self, plot_id):
+
+        for Ch in range(0, self.no_of_tsp):
+            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            if self.meta_data[ch_tsp]["Name"] != "OFF":
+                plot_id.semilogx(self.adc_timebase_cooling, self.adc_cooling[Ch, :], label=self.meta_data[ch_tsp]["Name"])  # Plot some data on the axes.
+
+        plot_id.set_title("Diode Voltages of the full measurement")
+        plot_id.set_ylabel('Diode Voltage / [V]')
+        plot_id.set_xlabel('Time / [s]')
+        plot_id.legend()
+        plot_id.grid(which='both')
+
+    def add_input_current_measure_curve_plot(self, plot_id):
+        plot_id.plot(self.adc_timebase, self.adc[3, :], label="Current")  # Plot some data on the axes.
+        plot_id.set_title("Drive current")
+        plot_id.set_ylabel('Current / [A]')
+        plot_id.set_xlabel('Time / [s]')
+        plot_id.legend()
+        plot_id.grid(which='both')
+
+    def add_current_measure_cooling_curve_plot(self, plot_id):
+        plot_id.plot(self.adc_timebase_cooling, self.adc_cooling[3, :], label="Current")  # Plot some data on the axes.
+        plot_id.set_title("Drive current")
+        plot_id.set_ylabel('Current / [A]')
+        plot_id.set_xlabel('Time / [s]')
+        plot_id.legend()
+        plot_id.grid(which='both')
+
+    def add_diode_dt_curve_plot(self, plot_id):
+        for Ch in range(0, self.no_of_tsp):
+            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            if self.meta_data[ch_tsp]["Name"] != "OFF":
+                plot_id.semilogx(self.adc_timebase_cooling, self.t_dio_interpolated[Ch, :], label=self.meta_data[ch_tsp]["Name"])  # Plot some data on the axes.
+
+        plot_id.set_title("Diode temperature delta of the cooling section")
+        plot_id.set_ylabel(r'$\Delta$' + 'Diode Temperature / [K]')
+        plot_id.set_xlabel('Time / [s]')
+        plot_id.legend()
+        plot_id.grid(which='both')
+
+    def add_thermocouple_plot(self, plot_id):
+        for Ch in range(0, 4):
+            plot_id.plot(self.tc[0, :], label="Sensor {no}".format(no=Ch))  # Plot some data on the axes.
+        plot_id.set_ylabel('Temperature / [°C]')
+        plot_id.set_xlabel('Sample')
+        plot_id.legend()
+        plot_id.grid(which='both')
+
+    def add_zth_curve_plot(self, plot_id):
+
+        plot_id.loglog(self.adc_timebase_cooling, self.zth[0, :], label=self.meta_data["TSP0"]["Name"])  # Plot some data on the axes.
+        plot_id.set_title("Thermal Impedance of the driven DUT")
+        plot_id.set_ylabel('Thermal Impedance / [K/W]')
+        plot_id.set_xlabel('Time / [s]')
+        plot_id.legend()
+        plot_id.grid(which='both')
+
+    def add_zth_coupling_curve_plot(self, plot_id):
+        channels_plotted = 0
+        for Ch in range(1, self.no_of_tsp):
+            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            if self.meta_data[ch_tsp]["Name"] != "OFF":
+                plot_id.loglog(self.adc_timebase_cooling, self.zth[Ch, :], label=self.meta_data[ch_tsp]["Name"])  # Plot some data on the axes.
+                channels_plotted += 1
+
+        if channels_plotted:
+            plot_id.set_title("Thermal Impedance of the monitored DUT")
+            plot_id.set_ylabel('Thermal Impedance / [K/W]')
+            plot_id.set_xlabel('Time / [s]')
+            plot_id.legend()
+            plot_id.grid(which='both')
+
+
+class UttaDeconvolution:
+
+    def __init__(self):
+        # Variables for the Zth deconvolution with Lucy-Richardson Algorithm
+        self.rth_stat = 0
+        self.deconv_samples_per_decade = 50
+        self.z_raw = np.array([])       # the raw converted cooling time base, basically just ln(t)
+        self.zth_raw = np.array([])  # the raw converted cooling time base, basically just ln(t)
+        self.z = np.array([])           # interpolated, equidistant linear ln(t)-timebase
+
+        self.a_z = np.array([])         # interpolated input Zth-curve with timebase z
+        self.dadz = np.array([])        # differentiated input Zth-curve
+        self.w_z = np.array([])         # weighing function  --> exp(z - exp(z)), needed for interpolation
+        self.deconv_z_shift = 0         # deconv_z_shift = -2.82660000000
+        self.deconvolved = np.array([])
+        self.dadz_deconvolved = np.array([])
+        self.zth_deconvolved = np.array([])
+        self.peaks = np.array([])
+
+        # Additional experimental curves
+        self.ref_z = np.array([])       # reference curve with a known reference RC Element of 1Ohm and 1F = 1tau
+        self.ref_dadz = np.array([])    # differentiated reference curve
+        self.ref_peaks = np.array([])
+        self.ref_deconv = np.array([])
+
+    def import_zth_input_data(self, timebase, zth):
+        self.z_raw = np.log(timebase)
+        self.zth_raw = zth
+
+    def prepare_zth_deconvolution(self):
+
+        no_sample_points = int((self.z_raw[-1] - self.z_raw[0]) * self.deconv_samples_per_decade)
+        no_sample_points_log = int(np.power(2, np.ceil(np.log2(no_sample_points))))
+        print("Number of SamplePoints: {NoSampPoints} SamplePoints power of 2: {NoSampPnts}".format(NoSampPoints=no_sample_points, NoSampPnts=no_sample_points_log))
+
+        log_samp_point_intervall = (self.z_raw[-1] - self.z_raw[0]) / no_sample_points_log
+        print("SamplePoint Intervall: {SampInt}".format(SampInt=log_samp_point_intervall))
+
+        z = np.linspace(start=self.z_raw[0], stop=self.z_raw[-1], num=no_sample_points_log) # create constant step width timebase
+        self.a_z = np.interp(z, self.z_raw, self.zth_raw)
+        self.rth_stat = np.mean(self.a_z[int(0.98 * len(self.a_z)):-1])
+        print("Zth end value: {ZthEnd:.3f}, Zth Curve Start Value {Rth_start}K/W".format(ZthEnd=self.rth_stat, Rth_start=self.zth_raw[0]))
+
+        self.dadz = np.diff(self.a_z) / np.diff(z)
+        # sum_dadz = np.sum(dadz)
+        # dadz = dadz / np.sum(dadz)
+        self.w_z = np.exp(z - np.exp(z))
+        self.z = z
+
+        self.create_zth_reference_curve()       # for trials generate the Zth reference curve
+        return
+
+    def create_zth_reference_curve(self):
+
+        self.ref_z = (1-np.exp(-np.exp(self.z)))     # for testing: create a reference curve with a known reference RC Element of 1Ohm and 1F = 1tau
+        self.ref_dadz = np.diff(self.ref_z) / np.diff(self.z)
+        return
+
+    def add_deconv_plot_input_zth_curve(self, plot_id):
+
+        plot_id.loglog(np.exp(self.z), self.a_z, label="Input Zth Curve")  # Input curve to be deconvolved
+        plot_id.set_title("Input Zth Curve")
+        plot_id.set_ylabel('Zth / [K/W]')
+        plot_id.set_xlabel('Time / [ln(s)]')
+        plot_id.legend()
+        plot_id.grid(which='both')
+        return
+
+    def add_deconv_input_dadz_plot(self, plot_id):
+
+        plot_id.plot(self.z[:-1], self.dadz, label="da/dz", linestyle='dashed')  # Plot some data on the axes.
+        plot_id.set_title("Interpolated and differentiated Zth Curve")
+        plot_id.set_ylabel('Derivative of Zth / [K/W/ln(s)')
+        plot_id.set_xlabel('Time / [ln(s)]')
+        plot_id.legend()
+        plot_id.grid(which='both')
+        return
+
+    def deconvolve_reference_zth_lucy_richardson(self, iterations):
+
+        self.ref_deconv, self.ref_peaks = self.deconvolve_get_peaks(self.ref_dadz, self.w_z, iterations)
+
+        print("1Ohm + 1F Reference peak height: {PHeight:.4f}, peak location: {ploc:5f}".format(
+              PHeight=np.max(self.ref_deconv), ploc=self.deconv_z_shift))
+        return
+
+    def deconvolve_get_peaks(self, dadz, w_z, iterations):
+
+        deconv = restoration.richardson_lucy(dadz, self.w_z[:-1] / np.sum(w_z[:-1]),
+                                             num_iter=iterations,
+                                             clip=False)  # * sum_ref_dadz
+        peaks, _ = find_peaks(deconv)
+
+        # ToDo: find a better way to determine the zshift. at the moment this relies on having the ref curve deconvolved first.
+        if self.deconv_z_shift == 0:
+            self.deconv_z_shift = self.z[peaks[0]]
+
+        return deconv, peaks
+
+    def add_reference_deconv_output_plot(self, plot_id,  iterations):
+        plot_id.plot(self.z[:-1] - self.deconv_z_shift, self.ref_deconv,
+                     label="Reference deconv with {iter} Iterations".format(iter=iterations))  # Plot some data on the axes.
+
+    def add_deconv_output_plot(self, plot_id,  iterations):
+        plot_id.plot(self.z[:-1] - self.deconv_z_shift, self.deconvolved,
+                     label="Deconvolved with {iter} Iterations".format(iter=iterations))  #
+
+    def add_dadz_deconv_output_plot(self, plot_id, iterations):
+        plot_id.plot(self.z, self.dadz_deconvolved,
+                     label="da/dz {iter} Iterations".format(iter=iterations))  #
+
+    def add_dadz_deconv_error_plot(self, plot_id, iterations):
+        plot_id.plot(self.z[:-1] - self.deconv_z_shift, self.dadz - self.dadz_deconvolved[:-1],
+                     label="Delta da/dz {iter} Iterations".format(iter=iterations))  #
+
+    def add_zth_deconvolution_error_plot(self, plot_id, iterations):
+        plot_id.plot(self.z - self.deconv_z_shift, self.zth_deconvolved - self.a_z,
+                     label="Delta Zth {iter} Iterations".format(iter=iterations))  # Plot some data on the axes.
+
+    def add_deconv_zth_output_plot(self, plot_id, iterations):
+        plot_id.loglog(np.exp(self.z), self.zth_deconvolved,
+                       label="Reconstructed Zth {iter} Iterations".format(iter=iterations))  #
+
+    def deconvolve_zth_lucy_richardson(self, iterations):
+        self.deconvolved, self.peaks = self.deconvolve_get_peaks(self.dadz, self.w_z, iterations)
+
+        self.report_peaks_to_console(self.peaks)
+
+        # dadz_conv = (np.convolve(deconvolved, w_z, "same") / np.sum(deconvolved)) * (z[2] - z[1])
+        self.dadz_deconvolved = (np.convolve(self.deconvolved, self.w_z, "same")) * (self.z[2] - self.z[1])
+        self.zth_deconvolved = (np.cumsum(self.dadz_deconvolved) / np.sum(self.deconvolved)) * self.rth_stat + self.a_z[0]
+        return
+
+    def report_peaks_to_console(self, peaks):
+        outp = ""
+        print("Deconvolvable to {n_peaks} peaks".format(n_peaks=len(peaks)))
+        for peak in peaks:
+            outp = outp + "{tim:.4f};{R:.4f};".format(tim=self.z[peak] - self.deconv_z_shift, R=self.deconvolved[peak])
+        print(outp)
+        return
+
+    def deconvolve_zth_full(self, iterations, do_plot):
+        #print("z-Base Timestep: " + str(self.z[2] - self.z[1]))
+        #peaks = []
+
+        self.deconvolve_reference_zth_lucy_richardson(iterations)  # for trials, do the zth reference deconvolution to get the real z-shift
+        self.deconvolve_zth_lucy_richardson(iterations)
+
+        fig, axs = plt.subplots(nrows=3, ncols=2, layout="constrained")
+        self.add_deconv_plot_input_zth_curve(axs[0 ,0])
+        self.add_deconv_zth_output_plot(axs[0, 0], iterations)
+
+        self.add_deconv_input_dadz_plot(axs[0 ,1])
+        self.add_dadz_deconv_output_plot(axs[0, 1], iterations)
+
+        self.add_reference_deconv_output_plot(axs[1, 0],  iterations)
+        self.add_deconv_output_plot( axs[1, 0],  iterations)
+
+        self.add_dadz_deconv_error_plot(axs[1, 1], iterations)
+
+        self.add_zth_deconvolution_error_plot(axs[2, 0], iterations)
+
+        axs[0, 0].legend()
+        axs[0, 0].grid(which='both')
+
+        axs[0, 1].grid(which='both')
+        axs[0, 1].legend()
+
+        axs[1, 0].legend()
+        axs[1, 0].grid(which='both')
+
+        axs[2, 0].grid(which='both')
+        axs[2, 0].legend()
+
+        plt.show()
+
+        return
+
+
+def find_static_states(indata, threshold=0.01, min_length=5):
+    """ Generated with Google Gemini
     Detects static areas within a numpy-array where values stay within a certain threshold and have a minimum length.
 
     Args:
-        data (numpy.ndarray): Input data array
+        indata (numpy.ndarray): Input data array
         threshold (float): Maximum absolute difference between values of the range.
         min_length (int): Minimum amount of consecutive values which must be within the threshold.
 
@@ -80,111 +584,43 @@ def find_static_states(data, threshold=0.01, min_length=5):
     ranges = []
     start = None
 
-    for i in range(len(data)):
+    for i in range(len(indata)):
         if start is None:
             start = i
-        elif abs(data[i] - data[start]) > threshold:
+        elif abs(indata[i] - indata[start]) > threshold:
             if i - start >= min_length:
                 ranges.append((start, i - 1))
             start = i
 
     # checking if the last range is long enough
-    if len(data) - start >= min_length:
-        ranges.append((start, len(data) - 1))
+    if len(indata) - start >= min_length:
+        ranges.append((start, len(indata) - 1))
 
     return ranges
 
+def find_nearest(arr, value):
+    # Element in nd array `arr` closest to the scalar value `value`
+    idx = np.abs(arr - value).argmin()
+    return idx
 
-def deconvolve_zth_lucy_richardson(t, zth, samp_decade, get_peaks, iterations):
-    # deconv_zShift = -2.82660000000
+def select_file(heading, file_filter):
+    filename = fd.askopenfilename(
+        title=heading,
+        initialdir=os.path.realpath(__file__),
+        filetypes=file_filter
+    )
+    return filename
 
-    z_raw = np.log(t)
+def split_file_path(file_path):
+    # get the filename including the file extension (should be the last value in the split tuple)
+    data_file = os.path.basename(file_path).split('/')[-1]
 
-    NoSamplePoints = int((z_raw[-1] - z_raw[0]) * samp_decade)
-    NoSamplePointsLog = int(np.power(2, np.ceil(np.log2(NoSamplePoints))))
-    print("Number of SamplePoints: {NoSampPoints} SamplePoints power of 2: {NoSampPnts}".format(NoSampPoints=NoSamplePoints, NoSampPnts=NoSamplePointsLog))
+    # get the file extension. Should be the last item when splitting the filename at the dots
+    file_extension = data_file.split('.')[-1]
 
-    LogSampPointIntervall = (z_raw[-1] - z_raw[0]) / NoSamplePointsLog
-    print("SamplePoint Intervall: {SampInt}".format(SampInt=LogSampPointIntervall))
+    data_file_no_ext = data_file.replace('.' + file_extension, '')
+    file_path = os.path.dirname(file_path)
+    return data_file, data_file_no_ext, file_path
 
-    z = np.linspace(start=z_raw[0], stop=z_raw[-1], num=NoSamplePointsLog) # create constant step width timebase
-    a_z = np.interp(z, z_raw, zth)
-    Rth_Stat = np.mean(a_z[int(0.98 * len(a_z)):-1])
-    print("Zth end value: {ZthEnd:.3f}, Zth Curve Start Value {Rth_start}K/W".format(ZthEnd=Rth_Stat, Rth_start=zth[0]))
-
-    dadz = np.diff(a_z) / np.diff(z)
-    # sum_dadz = np.sum(dadz)
-    # dadz = dadz / np.sum(dadz)
-    w_z = np.exp(z - np.exp(z))
-
-    ref_z = (1-np.exp(-np.exp(z)))     # for testing: create a reference curve with a known reference RC Element of 1Ohm and 1F = 1tau
-    ref_dadz = np.diff(ref_z) / np.diff(z)
-
-    fig, axs = plt.subplots(nrows=3, ncols=2, layout="constrained")
-
-    axs[0, 0].loglog(np.exp(z), a_z, label="Input Zth Curve")  # Input curve to be deconvolved
-    axs[0, 0].set_title("Input Zth Curve")
-    axs[0, 0].set_ylabel('Zth / [K/W]')
-    axs[0, 0].set_xlabel('Time / [ln(s)]')
-
-    axs[0, 1].plot(z[:-1], dadz, label="da/dz", linestyle='dashed')  # Plot some data on the axes.
-
-    axs[0, 1].set_title("Interpolated and differentiated Zth Curve")
-    axs[0, 1].set_ylabel('Derivative of Zth / [K/W/ln(s)')
-    axs[0, 1].set_xlabel('Time / [ln(s)]')
-
-    print("z-Base Timestep: " + str(z[2] - z[1]))
-
-    for Step in iterations:
-        ref_deconv = restoration.richardson_lucy(ref_dadz, w_z[:-1] / np.sum(w_z[:-1]), num_iter=Step, clip=False)  # * sum_ref_dadz
-        ref_peaks, _ = find_peaks(ref_deconv)
-
-        deconv_zShift = z[ref_peaks[0]]
-
-        axs[1, 0].plot(z[:-1] - deconv_zShift, ref_deconv,
-                       label="Reference deconv with " + str(Step) + " Iterations")  # Plot some data on the axes.
-
-        print("1Ohm + 1F Reference peak height: {pheight:.4f}, peak location: {ploc:5f}".format(pheight=np.max(ref_deconv), ploc=deconv_zShift))
-
-        deconvolved = restoration.richardson_lucy(dadz, w_z, num_iter=Step, clip=False)  # * sum_dadz
-        peaks, _ = find_peaks(deconvolved)
-
-        axs[1, 0].plot(z[:-1] - deconv_zShift, deconvolved,
-                       label="Deconvolved with " + str(Step) + " Iterations")  # Plot some data on the axes.
-
-        outp = ""
-        print("Deconvolvable to {n_peaks} peaks".format(n_peaks=len(peaks)))
-        for peak in peaks:
-            outp = outp + "{tim:.4f};{R:.4f};".format(tim=z[peak] - deconv_zShift, R=deconvolved[peak])
-            # outp = outp + "{tim:.4f};{R:.4f};".format(tim=z[peak] - deconv_zShift, R=deconvolved[peak] * (zth[-1] / np.sum(peaks)))
-        print(outp)
-
-        # dadz_conv = (np.convolve(deconvolved, w_z, "same") / np.sum(deconvolved)) * (z[2] - z[1])
-        dadz_conv = (np.convolve(deconvolved, w_z, "same")) * (z[2] - z[1])
-        Zth_Conv = (np.cumsum(dadz_conv) / np.sum(deconvolved)) * Rth_Stat + a_z[0]
-
-        axs[0, 1].plot(z, dadz_conv, label="da/dz " + str(Step) + " Iterations")  # Plot some data on the axes.
-        axs[1, 1].plot(z[:-1] - deconv_zShift, dadz - dadz_conv[:-1], label="Delta da/dz " + str(Step) + " Iterations")  # Plot some data on the axes.
-        axs[0, 0].loglog(np.exp(z), Zth_Conv, label="Reconstructed Zth " + str(Step) + " Iterations")  # Plot some data on the axes.
-        axs[2, 0].plot(z - deconv_zShift, Zth_Conv - a_z, label="Delta Zth " + str(Step) + " Iterations")  # Plot some data on the axes.
-
-    axs[0, 0].legend()
-    axs[0, 0].grid(which='both')
-
-    axs[0, 1].set_title("Interpolated time constant spectrum")
-    axs[1, 0].legend()
-    axs[1, 0].grid(which='both')
-
-    axs[2, 0].legend()
-    axs[2, 0].grid(which='both')
-
-    axs[0, 1].grid(which='both')
-    axs[0, 1].legend()
-
-    axs[1, 1].grid(which='both')
-    axs[1, 1].legend()
-
-    plt.show()
-
-    return peaks
-
+def write_tsp_cal_to_file(filename, tsp_cal):
+    uTTA_data_import.write_tsp_cal_to_file(filename, tsp_cal)
