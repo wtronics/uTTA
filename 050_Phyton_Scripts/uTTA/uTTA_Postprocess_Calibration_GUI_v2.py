@@ -2,11 +2,11 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 from matplotlib.figure import Figure
 import tkinter as tk
 from tkinter import messagebox  # part of python 3.12.5
-from tksheet import (  # tksheet 7.2.16
-    Sheet, float_formatter)
+from tksheet import (Sheet, float_formatter)
 from quantiphy import Quantity      # quantiphy 2.20
-import uTTA_data_import
-import uTTA_data_processing
+# import uTTA_data_import
+# import uTTA_data_processing
+import uTTA_data_processing as udpc
 import numpy as np                  # numpy 2.1.1
 import matplotlib                   # matplotlib 3.9.2
 import ttkbootstrap as ttk
@@ -15,9 +15,9 @@ matplotlib.use("TkAgg")
 
 CalData_FileName = ''
 Diode_Calibration = []
-TimeBaseTotal = []
-ADC = []
-Temp = []
+#TimeBaseTotal = []
+#ADC = []
+#Temp = []
 TableValues = []
 
 MaxDeltaT_StartEnd = 1.0
@@ -43,6 +43,8 @@ class CalApp(ttk.Window):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
         global G_Plots
+
+        self.utta_data = udpc.UttaZthProcessing()
 
         self.frm_file_btns = ttk.Frame(master=self,  width=350, height=60, style="secondary.TFrame")
         self.frm_file_btns.place(x=10, y=10)
@@ -137,7 +139,7 @@ class CalApp(ttk.Window):
 
     def update_plots(self):
 
-        global G_Plots, Temp, Static_States, Highlight_State, MetaData
+        global G_Plots, Static_States, Highlight_State, MetaData
         G_Plots[0].clear()
 
         lines = []
@@ -146,12 +148,12 @@ class CalApp(ttk.Window):
 
         for PlotIdx in range(0, MaxJUT_Channels):
             ch_tsp = "TSP{Ch}".format(Ch=PlotIdx)
-            if ch_tsp in MetaData:
-                if MetaData[ch_tsp]["Name"] != "OFF":
-                    line, = G_Plots[0].plot(TimeBaseTotal, ADC[PlotIdx, :], label=MetaData[ch_tsp]["Name"])
+            if ch_tsp in self.utta_data.meta_data:
+                if self.utta_data.meta_data[ch_tsp]["Name"] != "OFF":
+                    line, = G_Plots[0].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label=self.utta_data.meta_data[ch_tsp]["Name"])
                     lines.append(line)
-                    ymin = np.min([ymin, np.min(ADC[PlotIdx, :])])
-                    ymax = np.max([ymax, np.max(ADC[PlotIdx, :])])
+                    ymin = np.min([ymin, np.min(self.utta_data.adc_int[PlotIdx, :])])
+                    ymax = np.max([ymax, np.max(self.utta_data.adc_int[PlotIdx, :])])
 
         G_Plots[0].set_xlabel("Time / [s]")
         G_Plots[0].set_ylabel("Diode Voltage / [V]")
@@ -159,7 +161,7 @@ class CalApp(ttk.Window):
         G_Plots[0].callbacks.connect('xlim_changed', self.on_xlims_change)
         G_Plots[0].grid(True)
 
-        if len(ADC) > 0:
+        if len(self.utta_data.adc_int) > 0:
             G_Plots[0].legend(loc="lower left")
             G_Plots[0].set_ylim([ymin - (ymax - ymin)*0.05 , ymax + (ymax - ymin)*0.05])
 
@@ -168,12 +170,12 @@ class CalApp(ttk.Window):
         ymin = 100
         ymax = -100
 
-        if len(Temp) > 0:
+        if len(self.utta_data.adc_int) > 0:
             for PlotIdx in range(1):
-                G_Plots[1].plot(TimeBaseTotal, Temp[PlotIdx, :], label="TC " + str(PlotIdx))
+                G_Plots[1].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label="TC " + str(PlotIdx))
 
-                ymin = np.min([ymin, np.min(Temp[PlotIdx, :])])
-                ymax = np.max([ymax, np.max(Temp[PlotIdx, :])])
+                ymin = np.min([ymin, np.min(self.utta_data.adc_int[PlotIdx, :])])
+                ymax = np.max([ymax, np.max(self.utta_data.adc_int[PlotIdx, :])])
 
             G_Plots[1].set_xlim(left=0)
             G_Plots[1].legend(loc="lower left")
@@ -201,12 +203,12 @@ class CalApp(ttk.Window):
                 else:
                     bar_color = 'green'
 
-                G_Plots[1].fill_between(TimeBaseTotal, 0, 1,
-                                        where=np.logical_and((stat_state[0] <= TimeBaseTotal), (stat_state[1] >= TimeBaseTotal)),
+                G_Plots[1].fill_between(self.utta_data.timebase_int, 0, 1,
+                                        where=np.logical_and((stat_state[0] <= self.utta_data.timebase_int), (stat_state[1] >= self.utta_data.timebase_int)),
                                         color=bar_color, alpha=0.5,
                                         transform=G_Plots[1].get_xaxis_transform())
-                G_Plots[0].fill_between(TimeBaseTotal, 0, 1,
-                                        where=np.logical_and((stat_state[0] <= TimeBaseTotal), (stat_state[1] >= TimeBaseTotal)),
+                G_Plots[0].fill_between(self.utta_data.timebase_int, 0, 1,
+                                        where=np.logical_and((stat_state[0] <= self.utta_data.timebase_int), (stat_state[1] >= self.utta_data.timebase_int)),
                                         color=bar_color, alpha=0.5,
                                         transform=G_Plots[0].get_xaxis_transform())
 
@@ -224,11 +226,11 @@ class CalApp(ttk.Window):
 
     def save_calibration_results(self):
 
-        cal_file_name = uTTA_data_import.select_file("Select the measurement file",
+        cal_file_name = udpc.select_file("Select the measurement file",
                                                      (('uTTA Calibration Files', '*.ucf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
-        cfile, data_file_no_ext, file_path = uTTA_data_import.split_file_path(cal_file_name)
+        cfile, data_file_no_ext, file_path = udpc.split_file_path(cal_file_name)
         if len(cal_file_name) > 0:  # check if string is not empty
-            tsp_cal_value = uTTA_data_import.DevCalibration
+            tsp_cal_value = {}
 
             for ChIdx in range(0, 4):  # iterate through all the 4 channels viewed
                 tsp_name = self.t_result_sheet.get_cell_data(ChIdx, 0)
@@ -262,7 +264,7 @@ class CalApp(ttk.Window):
                                             "CalStatus": 1
                                         }}
 
-                        uTTA_data_import.write_tsp_cal_to_file(cal_file_name, tsp_cal_value)
+                        udpc.write_tsp_cal_to_file(cal_file_name, tsp_cal_value)
                         self.lbl_helpbar.configure(text="Successfully saved calibration of channel " + tsp_name + " to file: " + data_file_no_ext,
                                                    style='success.Inverse.TLabel')
                         self.frm_help_bar.configure(style='success.Inverse.TLabel')
@@ -275,25 +277,26 @@ class CalApp(ttk.Window):
             self.frm_help_bar.configure(style='warning.Inverse.TLabel')
 
     def read_measurement_file_callback(self):
-        global TimeBaseTotal, ADC, Temp, DataFile, Static_States, MetaData
-        measfilename = uTTA_data_import.select_file("Select the measurement file",
+        global DataFile, Static_States, MetaData
+        measfilename = udpc.select_file("Select the measurement file",
                                                     (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
         if len(measfilename) > 0:    # check if string is not empty
-            DataFile, data_file_no_ext, file_path = uTTA_data_import.split_file_path(measfilename)
+            DataFile, data_file_no_ext, file_path = udpc.split_file_path(measfilename)
+            self.utta_data.import_data(measfilename)
+            #tb_import, adc_import, tc_import, MetaData = uTTA_data_import.read_measurement_file(measfilename, 0)
 
-            tb_import, adc_import, tc_import, MetaData = uTTA_data_import.read_measurement_file(measfilename, 0)
-
-            if MetaData["TSP_Calibration_File"]:
-                TimeBaseTotal, ADC, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
+            if self.utta_data.meta_data["TSP_Calibration_File"]:
+                self.utta_data.interpolate_to_common_timebase()
+                #self.utta_data.timebase_int, self.utta_data.adc_int, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
                 # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.7°C
                 # Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.7, 200)
-                Static_States = uTTA_data_processing.find_static_states(ADC[0, :], 0.0008, 500)
+                Static_States = udpc.find_static_states(self.utta_data.adc_int[0, :], 0.0008, 500)
 
                 if Static_States:
                     for stat_state in Static_States:
                         # for the temperature average take only the last 60 samples (1Minute) for the average
-                        t_avg = np.mean(Temp[0, (stat_state[1]-60):stat_state[1]])
+                        t_avg = np.mean(self.utta_data.tc_int[0, (stat_state[1]-60):stat_state[1]])
                         self.add_cal_step_entry(stat_state[1]-60, stat_state[1], t_avg)
 
                 self.update_plots()
@@ -337,10 +340,10 @@ class CalApp(ttk.Window):
     def add_cal_step_entry(self, starttime, endtime, temp_step):
         self.t_step_sheet.insert_row(idx=0)
         self.t_step_sheet["A1"].data = float(temp_step)
-        self.t_step_sheet["B1"].data = np.mean(ADC[0, starttime:endtime])
-        self.t_step_sheet["C1"].data = np.mean(ADC[1, starttime:endtime])
-        self.t_step_sheet["D1"].data = np.mean(ADC[2, starttime:endtime])
-        self.t_step_sheet["E1"].data = np.mean(Temp[0, starttime:endtime])
+        self.t_step_sheet["B1"].data = np.mean(self.utta_data.adc_int[0, starttime:endtime])
+        self.t_step_sheet["C1"].data = np.mean(self.utta_data.adc_int[1, starttime:endtime])
+        self.t_step_sheet["D1"].data = np.mean(self.utta_data.adc_int[2, starttime:endtime])
+        self.t_step_sheet["E1"].data = np.mean(self.utta_data.adc_int[0, starttime:endtime])
         self.t_step_sheet["F1"].data = starttime
         self.t_step_sheet["G1"].data = endtime
 
@@ -412,16 +415,16 @@ class CalApp(ttk.Window):
         xlim_max = int(x_limits[1])
         # print("updated xlims: ", event_ax.get_xlim())
         G_Plots[1].set_xlim(left=x_limits[0], right=x_limits[1])
-        ymin = np.min(Temp[0, xlim_min:xlim_max])
-        ymax = np.max(Temp[0, xlim_min:xlim_max])
+        ymin = np.min(self.utta_data.adc_int[0, xlim_min:xlim_max])
+        ymax = np.max(self.utta_data.adc_int[0, xlim_min:xlim_max])
         G_Plots[1].set_ylim(bottom=ymin, top=ymax)
 
-        tsp_min = np.min(ADC[0, xlim_min:xlim_max])
-        tsp_max = np.max(ADC[0, xlim_min:xlim_max])
+        tsp_min = np.min(self.utta_data.adc_int[0, xlim_min:xlim_max])
+        tsp_max = np.max(self.utta_data.adc_int[0, xlim_min:xlim_max])
         tsp_pp = Quantity(tsp_max-tsp_min, "V")
 
         self.ent_step_temp.delete(0, 'end')
-        self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(Temp[0, xlim_min:xlim_max])))
+        self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(self.utta_data.adc_int[0, xlim_min:xlim_max])))
 
         self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state.\n" +
                                    "Peak-to-peak spread of " + MetaData["TSP0"]["Name"] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
