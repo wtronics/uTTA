@@ -1,6 +1,6 @@
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # matplotlib 3.9.2
 from matplotlib.figure import Figure
-import matplotlib  # matplotlib 3.9.2
+import matplotlib # matplotlib 3.9.2
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
 import uTTA_data_processing as udpc
 
@@ -57,6 +57,13 @@ class umf_viewer_App(ttk.Window):
         self.frm_plot_area = ttk.Frame(master=self)
         self.frm_plot_area.place(x=370, y=80)
 
+        matplotlib.rcParams['axes.labelsize'] = 8
+        matplotlib.rcParams['legend.fontsize'] = 7
+        #matplotlib.rcParams['axes.grid'] = 'both'
+        matplotlib.rcParams['font.size'] = 11
+        matplotlib.rcParams['xtick.labelsize'] = 8
+        matplotlib.rcParams['ytick.labelsize'] = 8
+
         self.fig = Figure(figsize=(11.1, 7.9), dpi=78)
         self.fig.subplots_adjust(left=0.06, bottom=0.075, right=0.97, top=0.96, wspace=0.212, hspace=0.54)
         G_Plots = self.fig.subplots(3, 2)
@@ -86,7 +93,7 @@ class umf_viewer_App(ttk.Window):
 
             self.utta_data.add_input_tsp_measure_curve_plot(G_Plots[0, 0])
 
-            self.utta_data.add_input_tsp_measure_curve_plot(G_Plots[0, 1])
+            self.utta_data.add_input_current_measure_curve_plot(G_Plots[0, 1])
 
             if not self.utta_data.meta_data["TSP_Calibration_File"]:
                 self.utta_data.calculate_cooling_curve()
@@ -101,16 +108,7 @@ class umf_viewer_App(ttk.Window):
 
                 self.utta_data.add_current_measure_cooling_curve_plot(G_Plots[1, 1])
 
-                # self.utta_data.add_diode_dt_curve_plot(G_Plots[2, 0])
-                #self.utta_data.add_zth_curve_plot(G_Plots[3, 0])
-                #self.utta_data.add_zth_coupling_curve_plot(G_Plots[3, 1])
-
-            self.utta_data.add_thermocouple_plot(G_Plots[2, 0])
-            # G_Plots[0, 1].tick_params(axis='both', which='major', labelsize=7)
-            # G_Plots[0, 1].set_ylabel('Current / [A]', size=8)
-            # G_Plots[0, 1].set_xlabel('Time / [s]', size=8)
-            # G_Plots[0, 1].legend(prop={'size': 6})
-            # G_Plots[0, 1].grid(which='both')
+            self.utta_data.add_thermocouple_plot(G_Plots[2, 1])
 
             MetaString = "File Name: " + DataFile + "\n"
             MetaString += "Measurement started: " + self.utta_data.meta_data["StartDate"] + " " + self.utta_data.meta_data["StartTime"] + "\n\n"
