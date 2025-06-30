@@ -41,7 +41,7 @@ if NoErrFlag:
 
     udp.add_input_tsp_measure_curve_plot(axs[0, 0])
 
-    udp.add_input_tsp_measure_curve_plot(axs[0, 1])
+    udp.add_input_current_measure_curve_plot(axs[0, 1])
 
     udp.add_tsp_measure_cooling_curve_plot(axs[1, 0])
 
