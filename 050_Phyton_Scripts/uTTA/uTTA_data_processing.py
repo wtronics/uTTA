@@ -322,7 +322,7 @@ class UttaZthProcessing:
             if self.meta_data[ch_tsp]["Name"] != "OFF":
                 plot_id.semilogx(self.adc_timebase_cooling, self.adc_cooling[Ch, :], label=self.meta_data[ch_tsp]["Name"])  # Plot some data on the axes.
 
-        plot_id.set_title("Diode Voltages of the full measurement")
+        plot_id.set_title("Diode Voltages of the cooling section")
         plot_id.set_ylabel('Diode Voltage / [V]')
         plot_id.set_xlabel('Time / [s]')
         plot_id.legend()
@@ -338,7 +338,7 @@ class UttaZthProcessing:
 
     def add_current_measure_cooling_curve_plot(self, plot_id):
         plot_id.plot(self.adc_timebase_cooling, self.adc_cooling[3, :], label="Current")  # Plot some data on the axes.
-        plot_id.set_title("Drive current")
+        plot_id.set_title("Drive current in the cooling section")
         plot_id.set_ylabel('Current / [A]')
         plot_id.set_xlabel('Time / [s]')
         plot_id.legend()
@@ -350,8 +350,8 @@ class UttaZthProcessing:
             if self.meta_data[ch_tsp]["Name"] != "OFF":
                 plot_id.semilogx(self.adc_timebase_cooling, self.t_dio_interpolated[Ch, :], label=self.meta_data[ch_tsp]["Name"])  # Plot some data on the axes.
 
-        plot_id.set_title("Diode temperature delta of the cooling section")
-        plot_id.set_ylabel(r'$\Delta$' + 'Diode Temperature / [K]')
+        plot_id.set_title(r'Calculated Diode $\Delta$T of the cooling section')
+        plot_id.set_ylabel(r'$\Delta$T Diode / [K]')
         plot_id.set_xlabel('Time / [s]')
         plot_id.legend()
         plot_id.grid(which='both')
@@ -361,13 +361,14 @@ class UttaZthProcessing:
             plot_id.plot(self.tc[0, :], label="Sensor {no}".format(no=Ch))  # Plot some data on the axes.
         plot_id.set_ylabel('Temperature / [°C]')
         plot_id.set_xlabel('Sample')
+        plot_id.set_title(r'Measured thermocouple temperatures during the full measurement')
         plot_id.legend()
         plot_id.grid(which='both')
 
     def add_zth_curve_plot(self, plot_id):
 
         plot_id.loglog(self.adc_timebase_cooling, self.zth[0, :], label=self.meta_data["TSP0"]["Name"])  # Plot some data on the axes.
-        plot_id.set_title("Thermal Impedance of the driven DUT")
+        plot_id.set_title("Thermal Impedance of the driven JUT")
         plot_id.set_ylabel('Thermal Impedance / [K/W]')
         plot_id.set_xlabel('Time / [s]')
         plot_id.legend()
@@ -382,7 +383,7 @@ class UttaZthProcessing:
                 channels_plotted += 1
 
         if channels_plotted:
-            plot_id.set_title("Thermal Impedance of the monitored DUT")
+            plot_id.set_title("Thermal Impedance of the monitored JUT")
             plot_id.set_ylabel('Thermal Impedance / [K/W]')
             plot_id.set_xlabel('Time / [s]')
             plot_id.legend()
