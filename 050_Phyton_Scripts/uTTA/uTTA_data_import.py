@@ -29,7 +29,6 @@ def read_measurement_file(filename, flag_raw_value_mode):
         num_lines = len(lines)
 
         if num_lines > 0:
-            print("Reading file: {fil} was successful".format(fil=filename))
             # read the file version from the first line and decide how to process the file
             cells = lines[0].split(";")
             t3r_file_version = str(cells[1])
@@ -53,9 +52,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
     tsamp_fast = (1000000 * 4.0) / TimerClock
     tsamp_slow = (1000000 * 524288.0) / TimerClock
 
-    meas_meta_data = {}
-    meas_meta_data["SamplesPerDecade"] = 250
-    meas_meta_data["MaxDivider"] = 17
+    meas_meta_data = {"SamplesPerDecade": 250, "MaxDivider": 17}
 
     for line in lines:
         line = line.replace("\r", "").replace("\n", "")
@@ -264,7 +261,7 @@ def read_calfile2dict(filename):
     utta_cal_data = {}  # dictionary for device calibration data
     utta_dev_meta_data = {}  # dictionary for device meta data
     utta_tc_cal = {}  # dictionary for thermocouple calibration data
-    utta_tsp_cal = {}  # dictionary for TSP (temerature sensitive paramter)
+    utta_tsp_cal = {}  # dictionary for TSP (temperature sensitive parameter)
 
     # look for Diode channel calibration values
     for sect in config.sections():
@@ -342,24 +339,3 @@ def write_tsp_cal_to_file(filename, tsp_cal):
             config.write(configfile)
 
     return
-
-
-def select_file(heading, file_filter):
-    filename = fd.askopenfilename(
-        title=heading,
-        initialdir=os.path.realpath(__file__),
-        filetypes=file_filter
-    )
-    return filename
-
-
-def split_file_path(file_path):
-    # get the filename including the file extension (should be the last value in the split tuple)
-    data_file = os.path.basename(file_path).split('/')[-1]
-
-    # get the file extension. Should be the last item when splitting the filename at the dots
-    file_extension = data_file.split('.')[-1]
-
-    data_file_no_ext = data_file.replace('.' + file_extension, '')
-    file_path = os.path.dirname(file_path)
-    return data_file, data_file_no_ext, file_path
