@@ -119,6 +119,9 @@
 						<Item Name="uTTA_SwitchPSU.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/SYSTEM/uTTA_SwitchPSU.vi"/>
 						<Item Name="uTTA_SetAnalogSettings.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/SYSTEM/uTTA_SetAnalogSettings.vi"/>
 						<Item Name="uTTA_SwitchPWSTG.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/SYSTEM/uTTA_SwitchPWSTG.vi"/>
+						<Item Name="uTTA_SetSystemTime.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/SYSTEM/uTTA_SetSystemTime.vi"/>
+						<Item Name="uTTA_GetSystemTime.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/SYSTEM/uTTA_GetSystemTime.vi"/>
+						<Item Name="uTTA_CheckSystemTime.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/SYSTEM/uTTA_CheckSystemTime.vi"/>
 					</Item>
 					<Item Name="Flash_Memory" Type="Folder">
 						<Item Name="uTTA_Memory_Writetest.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_SubVi/FLASH_Memory/uTTA_Memory_Writetest.vi"/>
