@@ -51,12 +51,20 @@ The device shall...
 
 # The Implementation
 ## µTTA Hardware
-This is how µTTA looks like (this is an older PCB version which has been modified to match the current µTTA hardware version. 
-![Board_Stackup](https://github.com/user-attachments/assets/138ebe40-68f3-4df5-a533-04464e3c2e3f)
+This is how µTTA looks like in the current version. It consists of 3 PCBs which are stacked up on top of each other. All PCBs are mounted into a 3D printed housing. The housing is available under 010_Hardware/060_Mechanics. 
+![uTTA_Device_Setup_Annotated](https://github.com/user-attachments/assets/7c182419-f98b-485b-b2a3-c33c398a1492)
 
-## The final test setup
+
+## The final test setup (simplified version)
 Below you can see all the parts involved in the test setup. The JUT setup is placed next to the power supply. In a real setup this part will be placed within a still air chamber to minimize effects of uncontrolled ambient air circulation. Ideally this part should be placed on a temperature controlled coolplate, but this is something I will not build for my purposes.
-![Test Setup](https://github.com/user-attachments/assets/3a8780f4-51e5-43f8-9253-6b1bf6234ee3)
+![Simple_Test_Setup](https://github.com/user-attachments/assets/ae0f6380-08d0-41af-bd2d-36de6dc38122)
+
+The setup consists of the following components:
+### The Heating Power Supply
+This power supply delivers the heating current to the junction under test (JUT). In my case its a quite big 40A power supply, but under normal conditions any power supply with an adjustable current limit of up to 10A should be more than sufficient. The heating current needed depends on the Junction and the cooling setup you want to measure. If you expect a super low (less than 10 K/W) thermal resistacnte you might need a bigger power supply. The output voltage of the power supply is not super critical . In my setups I always had the power supply setup to roughly 3V. This was always sufficient to drive the heating current. 
+
+### The Junction Under Test
+to be continued....
 
 ## The JUT setup
 
