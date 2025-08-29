@@ -2,7 +2,7 @@
 ## What's this TTA stuff anyhow?
 
 TTA (Thermal Transient Analysis) is a technique to retrieve the thermal impedance model of a cooling path by measuring its thermal step response.
-This method was detailed specified in JESD 51-14 and is briefly described in the following tutorial:
+This method was in detail specified in JESD 51-14 and is briefly described in the following tutorial:
 [Transient thermal measurements and thermal equivalent circuit models]([https://therminic.org/therminic2005/APoppe_Tutorial.pdf](https://www.infineon.com/dgdl/Infineon-Thermal_equivalent_circuit_models-ApplicationNotes-v01_02-EN.pdf?fileId=db3a30431a5c32f2011aa65358394dd2)) (Highly recommended!)
 
 Ideally after performing the measurement, you should be able to transform the measured data into a so called thermal impedance curve. This curve can be found in almost every datasheet of any power semiconductor. In a nutshell out of a thermal impedance curve the user can read the thermal resistance which applies to the device when a rectangular power pulse of the time x is applied. From this thermal resistance, in combination with the dissipated power the user can calculate the junction temperature of the power semiconductor at the end of the rectangular pulse. This only works as long as the power pulse is short enough to not reach the thermal boundaries of the power semiconductor. As soon as the thermal boundaries of the power semiconductor are reached a dedicated thermal impedance curve of your specific cooling path is needed. 
@@ -16,13 +16,13 @@ For a MOSFET you might get thermal models, but most of these are often only prov
 
 ## How to perform these measurements?
 ### The proper way
-To measure thermal transients needed to perform the analysis a specialized measurement system is needed. This system is called T3ster and was developed by MicReD (which was later sold to Siemens).
+To obtain thermal transient measurements a specialized measurement system is needed. This system is called T3ster and was developed by MicReD (a hungarian company which was later sold to Siemens).
 This system costs enormous amounts of money (high 5 to 6 digit €). That's why I decided to try and build my own little system for private and educational purposes.
 
 
 ### My own little Thermal Transient Analyzer (uTTA)
-uTTA started off as a pastime project during short-time work in the first COVID lockdown. During this time, I was playing around with various kinds of power electronics and always faced the same problems... 
-How long can I dissipate this or that power dissipation in a MOSFET until it reaches a critical temperature? As mentioned above there are various ways to accomplish this task. But all of them require you to know the thermal impedance curve of your specific hardware setup.
+uTTA started off as a pastime project during the first COVID lockdown. During this time, I was playing around with various kinds of power electronics (mostly MOSFET based power switches and electronic loads) and always faced the same problem... 
+How long can I dissipate this or that power dissipation in a MOSFET until it reaches its critical temperature? As mentioned above there are various ways to accomplish this task. But all of them require you to know the thermal impedance curve of your specific hardware setup.
 
 
 #### Target Picture
@@ -34,6 +34,7 @@ The following points are my target picture for this little project and what I ac
 + [ ] Ability to calculate the time constant spectra of the Z<sub>th</sub>-curve via the NID method (either the "classical" method by FFT deconvolution, or by using the Bayesian method).
 + [ ] Obtain RC-thermal equivalent models from the time constant spectrum.
 + [x] Software and hardware tools for the calibration of the junction.
++ [ ] Build a hardware simulator which is capable if simulating predictable and repeatable cooling curves in a way that all further processing steps can be validated with it.
 
 #### Design Requirements
 The device shall...
