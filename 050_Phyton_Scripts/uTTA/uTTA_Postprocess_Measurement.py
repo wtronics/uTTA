@@ -45,7 +45,8 @@ if NoErrFlag:
 
     udp.add_tsp_measure_cooling_curve_plot(axs[1, 0])
 
-    udp.add_current_measure_cooling_curve_plot(axs[1, 1])
+    udp.add_cooling_curve_start_plot(axs[1, 1])
+    # udp.add_current_measure_cooling_curve_plot(axs[1, 1])
 
     udp.add_diode_dt_curve_plot(axs[2, 0])
 
