@@ -12,9 +12,11 @@ import uTTA_data_export
 
 class UttaZthProcessing:
     def __init__(self):
+        self.print_to_console = True            # Variable for future use to switch off all the print statements
         self.data_imported = False
         self.adc_timebase = np.array([])        # full measurement timebase
         self.adc = np.array([])                 # full measurement ADC values scaled according to the calibration
+        self.cooling_start_index = 0            # first array index where the cooling curve starts
         self.adc_cooling = np.array([])         # Cooling Section ADC values
         self.adc_timebase_cooling = np.array([])    # Cooling Section timebase
         self.meta_data = {}                     # all meta data generated during the measurement and postprocessing
@@ -22,9 +24,10 @@ class UttaZthProcessing:
         self.MaxDeltaT_StartEnd = 1.0
 
         # Parameters for Interpolation
-        self.InterpolationTStart = 0.00030
-        self.InterpolationTEnd = 0.0025
-        self.InterpolationAverageHW = 1   # Should be the half width of the averaged area
+        self.InterpolationTStart = 0.00010
+        self.InterpolationTEnd = 0.00020
+        self.__InterpolationCurveMaxLen = 1 # All Interpolation curves will be calculated up to 1s
+        self.InterpolationAverageHW = 3   # Should be the half width of the averaged area
 
         # Parameters for the interpolation depth estimation
         self.Cth_Si = 700.0  # Thermal capacity of silicon J*(kg*K)
@@ -51,11 +54,15 @@ class UttaZthProcessing:
         self.t_monitor_heated = np.array([])
         self.t_dio_raw = np.array([])
         self.t_dio_interpolated = np.array([])
+        self.t_dio_start_interpolation = np.array([])
 
         # Zth curve Data
         self.dT_diode = np.array([])    # delta T curve of each diode based on the interpolated diode voltage curve
         self.zth = np.array([])         # calculated zth curve with the interpolation at the beginning
         self.r_th_static = np.array([]) # static Rth end values of each curve
+
+        # Zth curve export settings
+        self.export_zth_samples_decade = 10     # Samples/Decade when exporting the Zth curve
 
 
 
@@ -121,19 +128,59 @@ class UttaZthProcessing:
 
             print("Min Diode Current:  {min:.2f}A; Max Diode current: {max:.2f}A".format(min=self.meta_data["DUT_Imin"],
                                                                                          max=self.meta_data["DUT_Imax"]))
-            cooling_start_index = (np.where(np.isclose(self.adc_cooling[3, :], self.meta_data["DUT_Imin"])))[0][0]
-            self.meta_data["Cooling_Start_Index"] = cooling_start_index
-            print("Index of closest value: " + str(cooling_start_index))
-            if cooling_start_index > 150:
+            self.cooling_start_index = (np.where(np.isclose(self.adc_cooling[3, :], self.meta_data["DUT_Imin"])))[0][0]
+            self.meta_data["Cooling_Start_Index"] = self.cooling_start_index
+            print("Index of closest value: " + str(self.cooling_start_index))
+            if self.cooling_start_index > 150:
                 print("\033[91mERROR: The start index of the cooling curve is far out of the nominal range! \n"
                       "Calculation is not feasible and will be stopped!\033[0m")
 
             # Cut the measurement data down to the starting point of the cooling phase
-            self.adc_cooling = self.adc_cooling[:, cooling_start_index:-1]
-            self.adc_timebase_cooling = time_base_cooling[cooling_start_index:-1] - time_base_cooling[cooling_start_index - 1]
+            self.adc_cooling = self.adc_cooling[:, self.cooling_start_index:-1]
+            self.adc_timebase_cooling = time_base_cooling[self.cooling_start_index:-1] - time_base_cooling[self.cooling_start_index - 1]
             self.meta_data["Cooling_Curve_Calculated"] = True
 
         return
+
+    def add_cooling_curve_start_plot(self, plot_id):
+        pre_cooling_samples = self.meta_data["CoolingStartBlock"] * self.meta_data["SamplesPerDecade"]
+        addon_samples = 100
+        start = self.cooling_start_index + pre_cooling_samples
+        before_start = pre_cooling_samples
+        after_start = start + addon_samples
+
+        plot_id.plot(self.adc_timebase[before_start:start],
+                     self.adc[0, before_start:start],
+                     label=self.meta_data["TSP0"]["Name"] + "before",
+                     linestyle="dotted",
+                     marker='x',
+                     color="blue")  # Plot some data on the axes.
+
+        plot_id.plot(self.adc_timebase[start:after_start],
+                     self.adc[0, start:after_start],
+                     label=self.meta_data["TSP0"]["Name"],
+                     linestyle="solid", color="blue")  # Plot some data on the axes.
+        plot_id.set_title("Cooling Curve Start section")
+        plot_id.set_ylabel('Diode Voltage / [V]')
+        plot_id.set_xlabel('Time / [s]')
+        #plot_id.legend()
+        plot_id.grid(which='both')
+
+        sec_plot = plot_id.twinx()
+        sec_plot.plot(self.adc_timebase[before_start:start],
+                     self.adc[3, before_start:start],
+                     label="Current before",
+                     linestyle="dotted",
+                     marker='x',
+                     color="red")  # Plot some data on the axes.
+        sec_plot.plot(self.adc_timebase[start:after_start],
+                     self.adc[3, start:after_start],
+                     label="Current",
+                     linestyle="solid", color="red")  # Plot some data on the axes.
+        sec_plot.set_ylabel('Heating Current  / [A]')
+
+        return
+
 
     def calculate_tsp_start_voltages(self):
         u_dio_cold_start = np.zeros((self.no_of_tsp,), numpy.float32)
@@ -241,18 +288,18 @@ class UttaZthProcessing:
         self.DieMaxThickness = np.sqrt((self.adc_timebase_cooling[interp_points_idx_start] * 2 * self.kappa_SI) /
                                        (self.Cth_Si * self.rho_Si))  # Die thickness in METER
 
-        print("Maximum Die thickness based on current interpolation: {MaxThick: .4f}mm".
-              format(MaxThick=self.DieMaxThickness*1000))
+        print("Maximum Die thickness based on current interpolation: {MaxThick: .2f}µm".
+              format(MaxThick=self.DieMaxThickness*1000*1000))
 
         # Interpolated curve of the temperature.
-        interpolated_start = (np.sqrt(self.adc_timebase_cooling[0:interp_points_idx_start]) * self.InterpolationFactorM +
-                             self.InterpolationOffset)
+        self.t_dio_start_interpolation = (np.sqrt(self.adc_timebase_cooling[0:interp_points_idx_end]) * self.InterpolationFactorM +
+                                          self.InterpolationOffset)
 
         # Build the final Zth-curve with interpolated start
-        self.t_dio_interpolated = self.t_dio_raw        # take the raw input array
+        self.t_dio_interpolated = np.copy(self.t_dio_raw)         # take the raw input array
 
         #overwrite the beginning with the interpolated curve
-        self.t_dio_interpolated[0, 0:interp_points_idx_start] = interpolated_start[0:interp_points_idx_start]
+        self.t_dio_interpolated[0, 0:interp_points_idx_start] = self.t_dio_start_interpolation[0:interp_points_idx_start]
         print("INTERPOLATION: Start: {StartY: .3f}K; End: {EndY: .3f}K; Factor M: {IntFactM: .4f}; "
               "Offset: {IntOffs: .4f}; Estimated Die Size: {DieSize: .2f}mm²".format(StartY=interpol_y_start,
                                                                                      EndY=interpol_y_end,
@@ -301,6 +348,19 @@ class UttaZthProcessing:
                                                     str(self.meta_data["TSP1"]["Name"]) + "\t" +
                                                     str(self.meta_data["TSP2"]["Name"]),
                                          filename=filename)
+
+    def export_tdim_master(self,fname):
+        uTTA_data_export.export_tdim_master_file(self.adc_timebase_cooling,
+                                                 self.adc_cooling,
+                                                 self.meta_data,
+                                                 fname)
+
+    def export_zth_curve(self,fname):
+        uTTA_data_export.export_zth_curve(self.adc_timebase_cooling,
+                                          self.adc_cooling,
+                                          self.meta_data,
+                                          self.export_zth_samples_decade ,
+                                          fname)
 
     def add_input_tsp_measure_curve_plot(self, plot_id):
 
