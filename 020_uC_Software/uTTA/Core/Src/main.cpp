@@ -42,6 +42,7 @@ volatile Timing_t SamplingTiming = {ADC_DEF_SAMPLETIME, 0.0f, ADC_MAX_MULTIPLIER
 
 
 uint32_t Meas_RunTime = 0;
+uint8_t Error_BlinkCtr = 0;
 uint32_t Meas_StartTime = 0;
 float Temp_TypeK[MAX6675_DEVICES];
 int GlobalWriteErrorFlag = 0;
@@ -180,7 +181,35 @@ int main(void)
 		  for(uint8_t TKidx =0 ; TKidx<MAX6675_DEVICES; TKidx++){
 			  Temp_TypeK[TKidx] = Read_MAX6675(TKidx);
 		  }
+
+		  if(FlagMeasurementState){
+			  LL_GPIO_SetOutputPin(ACTIVE_LED_DO_GPIO_Port, ACTIVE_LED_DO_Pin);
+			  LL_GPIO_TogglePin(STATUS_LED_DO_GPIO_Port, STATUS_LED_DO_Pin);
+		  }
+		  else{
+			  LL_GPIO_ResetOutputPin(ACTIVE_LED_DO_GPIO_Port, ACTIVE_LED_DO_Pin);
+			  LL_GPIO_ResetOutputPin(STATUS_LED_DO_GPIO_Port, STATUS_LED_DO_Pin);
+		  }
+
+		  if(ErrorTotalCount > 0){
+			  if(Error_BlinkCtr < 2*ErrorTotalCount)
+			  {
+				  LL_GPIO_TogglePin(ERROR_LED_DO_GPIO_Port, ERROR_LED_DO_Pin);
+			  }else{
+				  LL_GPIO_ResetOutputPin(ERROR_LED_DO_GPIO_Port, ERROR_LED_DO_Pin);
+			  }
+			  Error_BlinkCtr++;
+
+			  if(Error_BlinkCtr >= (2*ErrorTotalCount +5)){	// Reset for a new blink sequence
+				  Error_BlinkCtr = 0;
+			  }
+		  }
+		  else{	// No Errors, no LED
+			  LL_GPIO_ResetOutputPin(ERROR_LED_DO_GPIO_Port, ERROR_LED_DO_Pin);
+		  }
 	  }
+
+
   }
 }
 
@@ -213,7 +242,7 @@ void DoMeasurement(void)
 
 		ADC_TotalBlocks = 0;
 		ADC_CoolingStartBlock = 0;
-		ADC_BufferReadBlock =0;
+		ADC_BufferReadBlock = 0;
 		Log_WrittenBlocks = 0;
 		Meas_StartTime = GetTick();
 		NextOutput = GetTick();
@@ -316,6 +345,7 @@ void DoMeasurement(void)
 		break;
 	case Meas_State_Deinit:					// cooling time is over, stop the whole system
 		DISABLE_TIMER;												// Disable the timer, to stop the ADC
+		Deinit_ADC();
 		LL_GPIO_ResetOutputPin(PWSTG_EN_DO_GPIO_Port, PWSTG_EN_DO_Pin);		// Disable the powerstage to shut down the heating current
 		LL_GPIO_ResetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin);			// Disable the power supply to minimize parasitic effects through the hot powerstage
 		FlagMeasurementState = Meas_State_CloseLog;					// Tell the logging routine to write all data including the last block
@@ -381,6 +411,7 @@ void DoMeasurement(void)
 	case Test_State_DeInit:
 
 		DISABLE_TIMER;									// Disable the timer, to stop the ADC
+		Deinit_ADC();
 		LL_GPIO_ResetOutputPin(PWSTG_EN_DO_GPIO_Port, PWSTG_EN_DO_Pin);		// Disable the powerstage to shut down the heating current
 		LL_GPIO_ResetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin);			// Disable the power supply to minimize parasitic effects through the hot powerstage
 		LL_GPIO_ResetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin); // Disable the gate driver power supply
