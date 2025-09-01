@@ -29,3 +29,113 @@ def export_t3i_file(timebase, zth, headername, filename):
                newline='\n',
                header="Time\t" + str(headername))
     del zth_output
+
+def export_tdim_master_file(timebase, zth, meta_data, filename):
+    print(meta_data)
+    if meta_data is not None:
+        header = "# Transient Dual Interface Measurement: {dutname}\n".format(dutname=meta_data["TSP0"]["Name"])
+        header += "# Measurement Date: {datemeas}\n".format(datemeas=meta_data["StartDate"])
+        header += "# Measurement Time: {tmeas}\n".format(tmeas=meta_data["StartTime"])
+        header += "POWERSTEP    = {pheat:.3f}       # Power Dissipation [W].\n".format(pheat=meta_data["P_Heat"])
+        header += "HEATSINKTEMP = 25.0           # Cold-plate temperature [degC].\n"
+        header += "SENSITIVITY  = {sens:.3e}     # Temperature coefficient [V/K].\n".format(sens=meta_data["TSP0"]["LinGain"])
+        header += "# Please note the sign convention: the temperature\n"
+        header += "# coefficient (sensitivity) for diodes is negative!\n"
+        header += "DATA\n"
+        header += "#Time [s]        Usens [V]"
+
+        tdim_data_limit = 49999
+        t_reduce_data = 100     # above 100s data will be reduced to fit into the 49999 samples TDIM Master can handle
+        reduce_data = 1
+        reduce_above_idx = int(find_nearest(timebase, t_reduce_data))
+
+        if reduce_data:
+            zth_output = np.zeros(shape=(2, tdim_data_limit))
+            zth_output[0, 0:reduce_above_idx-1] = timebase[0:reduce_above_idx-1]
+            zth_output[1, 0:reduce_above_idx-1] = zth[0, 0:reduce_above_idx-1]
+            print("Input Samples {nsamp}, Reduction Index {red_idx}".format(nsamp=len(zth[0]), red_idx=reduce_above_idx))
+
+            zth_output[0, reduce_above_idx:] = compress_array(timebase[reduce_above_idx:-1], tdim_data_limit - reduce_above_idx)
+            zth_output[1, reduce_above_idx:] = compress_array(zth[0, reduce_above_idx:-1], tdim_data_limit - reduce_above_idx)
+        else:
+            meas_len = min(len(zth[0]),
+                           tdim_data_limit)  # limit the export length to 49999 because TDIM Master doesn't work with more lines
+            zth_output = np.zeros(shape=(2, meas_len))
+            zth_output[0, 0:meas_len] = timebase[0:meas_len]
+            zth_output[1, 0:meas_len] = zth[0, 0:meas_len]
+
+        zth_output = np.transpose(zth_output)
+
+        np.savetxt(filename, zth_output,delimiter="  ", newline='\n',fmt='%1.8e',header=header, comments='')
+        del zth_output
+
+
+def export_zth_curve(timebase, zth, meta_data,samples_decade, filename):
+
+    if not isinstance(samples_decade, int) or samples_decade <= 0:
+        raise ValueError("Input 'samples_decade' must be a non-negative integer.")
+    if samples_decade >= len(timebase):
+        return
+
+    if meta_data is not None:
+        header = "# Transient Dual Interface Measurement: {dutname}\n".format(dutname=meta_data["TSP0"]["Name"])
+        header += "# Measurement Date: {datemeas}\n".format(datemeas=meta_data["StartDate"])
+        header += "# Measurement Time: {tmeas}\n".format(tmeas=meta_data["StartTime"])
+        header += "# POWERSTEP    = {pheat:.3f}       # Power Dissipation [W].\n".format(pheat=meta_data["P_Heat"])
+        header += "#Time [s]        Zth [K/W]"
+
+        tstart_log = np.log10(min(timebase))
+        tend_log = np.log10(max(timebase))
+        export_samples = int((tend_log - tstart_log) * samples_decade) + 1 # add one to account for the fence pole problem
+        zth_output = np.zeros(shape=(2, export_samples))
+        print("Start Time: {tstart:.4e}s, End Time {tend:.3e}s\n".format(tstart=np.log10(min(timebase)), tend=np.log10(max(timebase))))
+
+        ideal_timebase = np.pow(10, np.linspace(tstart_log, tend_log, export_samples))
+        print("Export Timebase:")
+        for i, t in enumerate(ideal_timebase):        # build a new array with the corresponding values
+            # this method does not provide any interpolation between samples. Given the high sample rates the error should be relatively small
+
+            nearest_idx = find_nearest(timebase, t)
+            zth_output[1, i] = zth[0, nearest_idx]
+            zth_output[0, i] = timebase[nearest_idx]
+            print("{texp:.4e}; {tbase:.4e}; {tdelta:.4e}".format(texp=t, tbase=zth_output[0, i], tdelta=t - zth_output[0, i]))
+
+        zth_output = np.transpose(zth_output)
+
+        np.savetxt(filename, zth_output,delimiter="  ", newline='\n',fmt='%1.4e',header=header, comments='')
+        del zth_output
+
+def compress_array(arr, length):
+
+    if not isinstance(length, int) or length < 0:
+        raise ValueError("Input 'length' must be a non-negative integer.")
+    if length == 0:
+        return []
+    if length >= len(arr):
+        return list(arr)  # returns the original array because the desired length is longer than the input length
+
+    compressed_arr = []
+    ratio = len(arr) / length
+
+    for i in range(length):
+
+        start_index = int(i * ratio)
+        end_index = int((i + 1) * ratio)
+
+        # Make sure the end index is within the range of the input array
+        end_index = min(end_index, len(arr))
+
+        segment = arr[start_index:end_index]
+        if segment:
+            compressed_arr.append(sum(segment) / len(segment))
+        else:
+            # In case segment is empty (should be impossible due to ratio calculation),
+            # 0 is returned as a standard value
+            compressed_arr.append(0)
+
+    return compressed_arr
+
+def find_nearest(arr, value):
+    # Element in nd array `arr` closest to the scalar value `value`
+    idx = np.abs(arr - value).argmin()
+    return idx
