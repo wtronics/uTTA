@@ -73,7 +73,11 @@ void MX_GPIO_Init(void)
 	  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	  /* PORT A outputs */
+#ifdef HW_MEASURE_BOARD_BELOW_V2P2
+	  GPIO_InitStruct.Pin = PWSTG_EN_DO_Pin | PSU_EN_DO_Pin | LD2_Pin | GAIN_B0_DO_Pin | GAIN_B1_DO_Pin | AUX_SPI_MOSI_Pin | AD56x4_CSN_PIN | ERROR_LED_DO_Pin;
+#else
 	  GPIO_InitStruct.Pin = PWSTG_EN_DO_Pin | PSU_EN_DO_Pin | LD2_Pin | GAIN_B0_DO_Pin | GAIN_B1_DO_Pin | AUX_SPI_MOSI_Pin | AD56x4_CSN_PIN | ACTIVE_LED_DO_Pin;
+#endif
 	  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
 	  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
 	  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
@@ -87,7 +91,11 @@ void MX_GPIO_Init(void)
 	  LL_GPIO_Init(PWSTG_PGOOD_DI_GPIO_Port, &GPIO_InitStruct);
 
 	  /* PORT B Outputs */
+#ifdef HW_MEASURE_BOARD_BELOW_V2P2
+	  GPIO_InitStruct.Pin = PWSTG_PWR_EN_DO_Pin | AUX_SPI_TC0_CSN_Pin | AUX_SPI_TC2_CSN_Pin | STATUS_LED_DO_Pin | ACTIVE_LED_DO_Pin;
+#else
 	  GPIO_InitStruct.Pin = PWSTG_PWR_EN_DO_Pin | AUX_SPI_TC0_CSN_Pin | AUX_SPI_TC2_CSN_Pin | STATUS_LED_DO_Pin | ERROR_LED_DO_Pin;
+#endif
 	  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
 	  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
 	  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
