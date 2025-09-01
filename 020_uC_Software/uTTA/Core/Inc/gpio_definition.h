@@ -8,10 +8,13 @@
 #ifndef INC_GPIO_DEFINITION_H_
 #define INC_GPIO_DEFINITION_H_
 
+#include "config_parameters.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 //Button 1 port
 #define Btn_Start_Stop_Pin LL_GPIO_PIN_13
 #define Btn_Start_Stop_GPIO_Port GPIOC
@@ -107,17 +110,6 @@ extern "C" {
 #define AUX_SPI_DAC_CSN_Pin          LL_GPIO_PIN_11
 #define AUX_SPI_DAC_CSN_GPIO_Port    GPIOA
 
-
-// Status LEDs
-// Status
-#define STATUS_LED_DO_Pin LL_GPIO_PIN_5
-#define STATUS_LED_DO_GPIO_Port GPIOB
-// Error
-#define ERROR_LED_DO_Pin LL_GPIO_PIN_13
-#define ERROR_LED_DO_GPIO_Port GPIOB
-// Active
-#define ACTIVE_LED_DO_Pin LL_GPIO_PIN_10
-#define ACTIVE_LED_DO_GPIO_Port GPIOA
 
 
 
