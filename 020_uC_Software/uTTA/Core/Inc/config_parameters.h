@@ -38,6 +38,13 @@
 
 // Define if you have an early hardware of the power PCB (before Version 1.0) or after (because of inverted Power Good Signal from Gatedriver)
 #define EARLY_HW_POWER_BOARD
+#define HW_MEASURE_BOARD_BELOW_V2P2				// uncomment in case of an older Measure Board Hardware (Active and Error LED were twisted)
+//#define ENABLE_TIMER_DEBUGGING
+
+
+#define UTTA_SW_VERSION "2.5"
+#define UMF_FILEVERSION "3.4"
+
 
 // Handle Definition for Flash-SPI and UART
 #define SD_SPI_HANDLE 		SPI3
@@ -112,8 +119,33 @@
 #define VOFFS0_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 #define VOFFS1_3_DEF_VALUE_RAW	  18000.0f	// roughly -0.2V
 
-#define UTTA_SW_VERSION "2.4"
-#define UMF_FILEVERSION "3.4"
+
+#ifdef HW_MEASURE_BOARD_BELOW_V2P2
+	// Status LEDs
+	// Active
+	#define ACTIVE_LED_DO_Pin LL_GPIO_PIN_13
+	#define ACTIVE_LED_DO_GPIO_Port GPIOB
+	// Status
+	#define STATUS_LED_DO_Pin LL_GPIO_PIN_5
+	#define STATUS_LED_DO_GPIO_Port GPIOB
+	// Error
+	#define ERROR_LED_DO_Pin LL_GPIO_PIN_10
+	#define ERROR_LED_DO_GPIO_Port GPIOA
+
+
+#else
+	// Status LEDs
+	// Active
+	#define ACTIVE_LED_DO_Pin LL_GPIO_PIN_10
+	#define ACTIVE_LED_DO_GPIO_Port GPIOA
+	// Status
+	#define STATUS_LED_DO_Pin LL_GPIO_PIN_5
+	#define STATUS_LED_DO_GPIO_Port GPIOB
+	// Error
+	#define ERROR_LED_DO_Pin LL_GPIO_PIN_13
+	#define ERROR_LED_DO_GPIO_Port GPIOB
+
+#endif
 
 
 //#define MODE_NORMAL      0
