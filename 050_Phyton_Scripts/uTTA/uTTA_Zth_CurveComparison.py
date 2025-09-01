@@ -2,14 +2,20 @@ import numpy as np                      # numpy 2.1.0
 from numpy import genfromtxt            # numpy 2.1.0
 import matplotlib.pyplot as plt         # matplotlib 3.9.2
 import uTTA_data_import
+import uTTA_data_processing as udpc
 
-LogLogPlot = 0
+#ExportDiodeVoltages = 0
+#ExportIntermediateFile = 1
+LogLogPlot = 1
+
 NumCurves = int(input("Please enter the number of Curves you want to compare: "))
+udp = udpc.UttaZthProcessing()
 
 fig, axs = plt.subplots(nrows=3, ncols=1, layout="constrained")
 for CurveIdx in range(0, int(NumCurves)):
-    FileNam = uTTA_data_import.select_file('Open a t3i-File', (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
-    DataFile, DataFileNoExt, FilePath = uTTA_data_import.split_file_path(FileNam)
+    FileNam = udpc.select_file('Open a t3i-File',
+                               (('T3I Measurement Files', '*.t3i'), ('All files', '*.*')))
+    DataFile, DataFileNoExt, FilePath = udpc.split_file_path(FileNam)
 
     Zth_Import = genfromtxt(FileNam, delimiter='\t', dtype=float, names=True)
     Cols = Zth_Import.dtype.names
