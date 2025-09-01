@@ -7,6 +7,7 @@
 
 #include "tim_func.h"
 
+
 TIM_TypeDef htim1;
 
 /**
@@ -17,12 +18,13 @@ TIM_TypeDef htim1;
 void MX_TIM1_Init(void)
 {
 
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
   /**TIM1 GPIO Configuration
   PA10   ------> TIM1_CH3
   */
+#ifdef ENABLE_TIMER_DEBUGGING
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
   GPIO_InitStruct.Pin = TIM_DBG_PO_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
@@ -30,7 +32,7 @@ void MX_TIM1_Init(void)
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_6;
   LL_GPIO_Init(TIM_DBG_PO_GPIO_Port, &GPIO_InitStruct);
-
+#endif
 }
 
 
