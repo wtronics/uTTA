@@ -146,38 +146,41 @@ class UttaZthProcessing:
         pre_cooling_samples = self.meta_data["CoolingStartBlock"] * self.meta_data["SamplesPerDecade"]
         addon_samples = 100
         start = self.cooling_start_index + pre_cooling_samples
+        start_time = self.adc_timebase[start]
         before_start = pre_cooling_samples
         after_start = start + addon_samples
 
-        plot_id.plot(self.adc_timebase[before_start:start],
+        plot_id.plot(self.adc_timebase[before_start:start]-start_time,
                      self.adc[0, before_start:start],
-                     label=self.meta_data["TSP0"]["Name"] + "before",
+                     label=self.meta_data["TSP0"]["Name"] + " before Zero-Current",
                      linestyle="dotted",
                      marker='x',
                      color="blue")  # Plot some data on the axes.
 
-        plot_id.plot(self.adc_timebase[start:after_start],
+        plot_id.plot(self.adc_timebase[start:after_start]-start_time,
                      self.adc[0, start:after_start],
                      label=self.meta_data["TSP0"]["Name"],
                      linestyle="solid", color="blue")  # Plot some data on the axes.
         plot_id.set_title("Cooling Curve Start section")
         plot_id.set_ylabel('Diode Voltage / [V]')
         plot_id.set_xlabel('Time / [s]')
-        #plot_id.legend()
         plot_id.grid(which='both')
 
         sec_plot = plot_id.twinx()
-        sec_plot.plot(self.adc_timebase[before_start:start],
+        sec_plot.plot(self.adc_timebase[before_start:start]-start_time,
                      self.adc[3, before_start:start],
                      label="Current before",
                      linestyle="dotted",
                      marker='x',
                      color="red")  # Plot some data on the axes.
-        sec_plot.plot(self.adc_timebase[start:after_start],
+        sec_plot.plot(self.adc_timebase[start:after_start]-start_time,
                      self.adc[3, start:after_start],
                      label="Current",
                      linestyle="solid", color="red")  # Plot some data on the axes.
         sec_plot.set_ylabel('Heating Current  / [A]')
+
+        plot_id.legend()
+        # sec_plot.legend()
 
         return
 
