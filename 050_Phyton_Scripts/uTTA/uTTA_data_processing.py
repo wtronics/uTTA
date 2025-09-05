@@ -35,6 +35,7 @@ class UttaZthProcessing:
         self.kappa_SI = 148.0  # Heat transmissivity of silicon W/(m*K)
 
         # Interpolation results
+        # ToDo: Review calculation of k_therm, EstimatedDieSize and DieMaxThickness
         self.InterpolationFactorM = 0
         self.InterpolationOffset = 0
         self.k_therm = (2 / np.sqrt(self.Cth_Si * self.rho_Si * self.kappa_SI))
@@ -421,7 +422,7 @@ class UttaZthProcessing:
 
     def add_thermocouple_plot(self, plot_id):
         for Ch in range(0, 4):
-            plot_id.plot(self.tc[0, :], label="Sensor {no}".format(no=Ch))  # Plot some data on the axes.
+            plot_id.plot(self.tc[Ch, :], label="Sensor {no}".format(no=Ch))  # Plot some data on the axes.
         plot_id.set_ylabel('Temperature / [°C]')
         plot_id.set_xlabel('Sample')
         plot_id.set_title(r'Measured thermocouple temperatures during the full measurement')
