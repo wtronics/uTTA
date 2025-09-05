@@ -1,5 +1,4 @@
 import numpy as np              # numpy 2.1.0
-import numpy.dtypes             # numpy 2.1.0
 
 
 def write_diode_voltages(timebase, adc, headername, filename):
@@ -84,24 +83,28 @@ def export_zth_curve(timebase, zth, meta_data,samples_decade, filename):
         header += "# POWERSTEP    = {pheat:.3f}       # Power Dissipation [W].\n".format(pheat=meta_data["P_Heat"])
         header += "#Time [s]        Zth [K/W]"
 
-        tstart_log = np.log10(min(timebase))
-        tend_log = np.log10(max(timebase))
-        export_samples = int((tend_log - tstart_log) * samples_decade) + 1 # add one to account for the fence pole problem
-        zth_output = np.zeros(shape=(2, export_samples))
-        print("Start Time: {tstart:.4e}s, End Time {tend:.3e}s\n".format(tstart=np.log10(min(timebase)), tend=np.log10(max(timebase))))
+        # build the basic timebase for one decade. This will be reused and multiplied by the corresponding decade
+        sub_timebase = np.power(10.0, np.linspace(0, 1/samples_decade * (samples_decade-1), samples_decade))
 
-        ideal_timebase = np.pow(10, np.linspace(tstart_log, tend_log, export_samples))
-        print("Export Timebase:")
-        for i, t in enumerate(ideal_timebase):        # build a new array with the corresponding values
-            # this method does not provide any interpolation between samples. Given the high sample rates the error should be relatively small
+        time_multiplier = -6.0
+        interpol_timebase = []
+        while(True):    # make a little do-while loop...
+            timestep = np.power(10.0, time_multiplier)
+            segment_timebase =  timestep * sub_timebase
+            time_multiplier += 1
+            interpol_timebase.extend(segment_timebase)
 
-            nearest_idx = find_nearest(timebase, t)
-            zth_output[1, i] = zth[0, nearest_idx]
-            zth_output[0, i] = timebase[nearest_idx]
-            print("{texp:.4e}; {tbase:.4e}; {tdelta:.4e}".format(texp=t, tbase=zth_output[0, i], tdelta=t - zth_output[0, i]))
+            if np.max(interpol_timebase) > np.max(timebase):
+                break
 
+        filtered_timebase = [tim for tim in interpol_timebase if tim < np.max(timebase)]
+        zth_output = np.zeros(shape=(2, len(filtered_timebase)))
+        zth_output[0, :] = filtered_timebase
+        zth_output[1, :] = np.interp(filtered_timebase, timebase, zth[0, :])
+
+        # print("Export Timebase:")
+        # print(zth_output[0, :])
         zth_output = np.transpose(zth_output)
-
         np.savetxt(filename, zth_output,delimiter="  ", newline='\n',fmt='%1.4e',header=header, comments='')
         del zth_output
 
