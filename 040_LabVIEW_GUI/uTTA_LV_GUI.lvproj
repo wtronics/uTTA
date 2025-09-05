@@ -88,6 +88,7 @@
 					<Item Name="CTL_uTTA_TimingSettings.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TimingSettings.ctl"/>
 					<Item Name="CTL_uTTA_TSP_Calibration.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TSP_Calibration.ctl"/>
 					<Item Name="CTL_uTTA_TSP_CalStatus.ctl" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/CTL_uTTA_TSP_CalStatus.ctl"/>
+					<Item Name="GV_uTTA_Configuration.vi" Type="VI" URL="../uTTA/uTTA_Device_Driver/uTTA_Controls/GV_uTTA_Configuration.vi"/>
 				</Item>
 				<Item Name="uTTA_SubVi" Type="Folder">
 					<Item Name="MEAS" Type="Folder">
