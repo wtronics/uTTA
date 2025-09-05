@@ -45,6 +45,8 @@
 #define UTTA_SW_VERSION "2.5"
 #define UMF_FILEVERSION "3.4"
 
+#define MAX_DUT_NAME_LENGTH 24 		// Max length of the Dut name is 20 Characters + 4 characters for .umf
+#define CHANNEL_NAME_MAX_LENGTH 20	// Max Length of the channel Name
 
 // Handle Definition for Flash-SPI and UART
 #define SD_SPI_HANDLE 		SPI3
@@ -74,9 +76,6 @@
 
 #define ADC_MAX_MULTIPLIER  17UL
 #define ADC_DEF_SAMPLETIME	PRESC_SAMPLECLOCK_INITIAL/ADC_MAX_SAMPLERATE
-
-
-#define MAX_DUT_NAME_LENGTH 18
 
 
 #define MEASURE_DATA_UPDATE_TIME	500UL
@@ -202,7 +201,7 @@ typedef enum {
 }MeasurementStates_t;
 
 typedef struct ChannelParams{
-	char CH_Name[16];
+	char CH_Name[CHANNEL_NAME_MAX_LENGTH+1];
 	float CH_Offs;
 	float CH_LinGain;
 	float CH_QuadGain;
