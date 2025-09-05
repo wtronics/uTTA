@@ -494,7 +494,7 @@ void SetDUT(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	first_parameter = parameters.First();
 
-	if(strlen(first_parameter)>14 ){
+	if(strlen(first_parameter) > (MAX_DUT_NAME_LENGTH -4) ){
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_PARAM_TOO_LONG);
 		return;
 	}
@@ -543,10 +543,10 @@ void SetChannelDescription(SCPI_C commands, SCPI_P parameters, USART_TypeDef *hu
 	ChNo = (uint8_t)atol(first_parameter)-1;
 
 	if((ChNo < 4) && (ChNo >= 0)){
-		if(strlen(parameters[1])<15){
+		if(strlen(parameters[1])<CHANNEL_NAME_MAX_LENGTH){
 			strcpy(Channels[ChNo].CH_Name ,parameters[1]);
 		}else{
-			strncpy(Channels[ChNo].CH_Name, parameters[1], 14);
+			strncpy(Channels[ChNo].CH_Name, parameters[1], CHANNEL_NAME_MAX_LENGTH);
 		}
 
 		float Param = 0.0;
