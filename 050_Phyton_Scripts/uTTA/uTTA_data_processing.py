@@ -23,6 +23,8 @@ class UttaZthProcessing:
         self.no_of_tsp = 3
         self.MaxDeltaT_StartEnd = 1.0
 
+        self.zero_current_unfeasible = False    # a flag to disable downstream operations in case of a problem in zero current detection
+
         # Parameters for Interpolation
         self.InterpolationTStart = 0.00010
         self.InterpolationTEnd = 0.00020
@@ -132,9 +134,11 @@ class UttaZthProcessing:
             self.cooling_start_index = (np.where(np.isclose(self.adc_cooling[3, :], self.meta_data["DUT_Imin"])))[0][0]
             self.meta_data["Cooling_Start_Index"] = self.cooling_start_index
             print("Index of closest value: " + str(self.cooling_start_index))
-            if self.cooling_start_index > 150:
+            if self.cooling_start_index > 150:      # An Index larger than that is an indicator of an unusual behaviour of the system
+                                                    # The user should review the test setup and the system
                 print("\033[91mERROR: The start index of the cooling curve is far out of the nominal range! \n"
                       "Calculation is not feasible and will be stopped!\033[0m")
+                self.zero_current_unfeasible = True
 
             # Cut the measurement data down to the starting point of the cooling phase
             self.adc_cooling = self.adc_cooling[:, self.cooling_start_index:-1]
@@ -347,11 +351,12 @@ class UttaZthProcessing:
                                               filename,)
 
     def export_t3i_file(self, filename):
-        uTTA_data_export.export_t3i_file(self.adc_timebase_cooling, self.zth,
-                                         headername=str(self.meta_data["TSP0"]["Name"]) + "\t" +
-                                                    str(self.meta_data["TSP1"]["Name"]) + "\t" +
-                                                    str(self.meta_data["TSP2"]["Name"]),
-                                         filename=filename)
+        if not self.zero_current_unfeasible:
+            uTTA_data_export.export_t3i_file(self.adc_timebase_cooling, self.zth,
+                                             headername=str(self.meta_data["TSP0"]["Name"]) + "\t" +
+                                                        str(self.meta_data["TSP1"]["Name"]) + "\t" +
+                                                        str(self.meta_data["TSP2"]["Name"]),
+                                             filename=filename)
 
     def export_tdim_master(self,fname):
         uTTA_data_export.export_tdim_master_file(self.adc_timebase_cooling,
