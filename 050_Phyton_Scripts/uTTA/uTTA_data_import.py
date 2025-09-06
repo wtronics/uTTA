@@ -51,6 +51,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
     temp_idx = 0
     tsamp_fast = (1000000 * 4.0) / TimerClock
     tsamp_slow = (1000000 * 524288.0) / TimerClock
+    adc_samples_in_block = 0
 
     meas_meta_data = {"SamplesPerDecade": 250, "MaxDivider": 17}
 
@@ -160,8 +161,16 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                         block_no = np.zeros((num_lines,), numpy.int16)
                     case '#B':
                         last_block_no = int(cells[1])
+                        if adc_samples_in_block > 0:
+                            print("\033[93mWARNING: Seems like the previous block ({bno}) did not have samples.".format(bno=last_block_no-1) +
+                                  " There were {left} samples not filled!\033[0m".format(left=adc_samples_in_block))
+                        adc_samples_in_block = meas_meta_data["SamplesPerDecade"]
                     case '#BlockNo':
                         last_block_no = int(cells[1])
+                        if adc_samples_in_block > 0:
+                            print("\033[93mWARNING: Seems like the previous block ({bno}) did not have samples.".format(bno=last_block_no-1) +
+                                  " There were {left} samples not filled!\033[0m".format(left=adc_samples_in_block))
+                        adc_samples_in_block = meas_meta_data["SamplesPerDecade"]
                     case '#P':
                         pga_now = int(cells[1])
                     case '#PGA':
@@ -203,6 +212,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
             else:
                 if cells[0].isnumeric():
                     pga[adc_idx] = pga_now
+                    adc_samples_in_block -= 1
                     block_no[adc_idx] = last_block_no
                     if flag_raw_value_mode == 0:
                         ch_pa = "CAL_PA_0{ch}".format(ch=int(pga_now))
