@@ -148,9 +148,9 @@ class CalApp(ttk.Window):
 
         for PlotIdx in range(0, MaxJUT_Channels):
             ch_tsp = "TSP{Ch}".format(Ch=PlotIdx)
-            if ch_tsp in self.utta_data.meta_data:
-                if self.utta_data.meta_data[ch_tsp]["Name"] != "OFF":
-                    line, = G_Plots[0].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label=self.utta_data.meta_data[ch_tsp]["Name"])
+            if ch_tsp in self.utta_data.meta_data.Channels:
+                if self.utta_data.meta_data.Channels[ch_tsp]["Name"] != "OFF":
+                    line, = G_Plots[0].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label=self.utta_data.meta_data.Channels[ch_tsp]["Name"])
                     lines.append(line)
                     ymin = np.min([ymin, np.min(self.utta_data.adc_int[PlotIdx, :])])
                     ymax = np.max([ymax, np.max(self.utta_data.adc_int[PlotIdx, :])])
@@ -285,7 +285,7 @@ class CalApp(ttk.Window):
             self.utta_data.import_data(measfilename)
             #tb_import, adc_import, tc_import, MetaData = uTTA_data_import.read_measurement_file(measfilename, 0)
 
-            if self.utta_data.meta_data["TSP_Calibration_File"]:
+            if self.utta_data.meta_data.FlagTSPCalibrationFile:
                 self.utta_data.interpolate_to_common_timebase()
                 #self.utta_data.timebase_int, self.utta_data.adc_int, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 

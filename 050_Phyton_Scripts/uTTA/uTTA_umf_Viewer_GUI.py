@@ -98,7 +98,7 @@ class umf_viewer_App(ttk.Window):
 
             self.utta_data.add_input_current_measure_curve_plot(G_Plots[0, 1])
 
-            if not self.utta_data.meta_data["TSP_Calibration_File"]:
+            if not self.utta_data.meta_data.FlagTSPCalibrationFile:
                 self.utta_data.calculate_cooling_curve()
 
                 self.utta_data.calculate_diode_heating()
@@ -114,33 +114,33 @@ class umf_viewer_App(ttk.Window):
             self.utta_data.add_thermocouple_plot(G_Plots[2, 1])
 
             MetaString = "File Name: " + DataFile + "\n"
-            MetaString += "Measurement started: " + self.utta_data.meta_data["StartDate"] + " " + self.utta_data.meta_data["StartTime"] + "\n\n"
+            MetaString += "Measurement started: " + self.utta_data.meta_data.Measurement["StartDate"] + " " + self.utta_data.meta_data.Measurement["StartTime"] + "\n\n"
 
-            if self.utta_data.meta_data["TSP_Calibration_File"]:
+            if self.utta_data.meta_data.FlagTSPCalibrationFile:
                 MetaString += "** TSP CALIBRATION MEASUREMENT **\n\n"
-                MetaString += "Measurement Time:\t{preheat:.2f} min\n".format(preheat=self.utta_data.meta_data["T_Preheat"] / 60)
+                MetaString += "Measurement Time:\t{preheat:.2f} min\n".format(preheat=self.utta_data.meta_data.TPreheat / 60)
             else:
-                MetaString += "PreHeating Time:\t{preheat:.2f} min\n".format(preheat=self.utta_data.meta_data["T_Preheat"] / 60)
-                MetaString += "Heating Time:\t{heat:.2f} min\n".format(heat=self.utta_data.meta_data["T_Heat"] / 60)
-                MetaString += "Cooling Time:\t{cool:.2f} min\n\n".format(cool=self.utta_data.meta_data["T_Cool"] / 60)
+                MetaString += "PreHeating Time:\t{preheat:.2f} min\n".format(preheat=self.utta_data.meta_data.TPreheat / 60)
+                MetaString += "Heating Time:\t{heat:.2f} min\n".format(heat=self.utta_data.meta_data.THeating / 60)
+                MetaString += "Cooling Time:\t{cool:.2f} min\n\n".format(cool=self.utta_data.meta_data.TCooling / 60)
 
             MetaString += "No. Name\tOffset\t\tGain\n"
-            MetaString += "00:  {name}\t{offs:.1f}mV\t\t{gain:.2f}mV/K\n".format(name=self.utta_data.meta_data["TSP0"]["Name"],
-                                                                                 offs=self.utta_data.meta_data["TSP0"]["Offset"] * 1000,
-                                                                                 gain=self.utta_data.meta_data["TSP0"]["LinGain"] * 1000)
-            if not "OFF" in self.utta_data.meta_data["TSP1"]["Name"]:
-                MetaString += "01:  {name}\t{offs:.1f}mV\t\t{gain:.2f}mV/K\n".format(name=self.utta_data.meta_data["TSP1"]["Name"],
-                                                                                     offs=self.utta_data.meta_data["TSP1"]["Offset"] * 1000,
-                                                                                     gain=self.utta_data.meta_data["TSP1"]["LinGain"] * 1000)
-            if not "OFF" in self.utta_data.meta_data["TSP2"]["Name"]:
-                MetaString += "02:  {name}\t{offs:.1f}mV\t\t{gain:.2f}mV/K\n".format(name=self.utta_data.meta_data["TSP2"]["Name"],
-                                                                                     offs=self.utta_data.meta_data["TSP2"]["Offset"] * 1000,
-                                                                                     gain=self.utta_data.meta_data["TSP2"]["LinGain"] * 1000)
+            MetaString += "00:  {name:17s}{offs:.1f}mV\t{gain:.2f}mV/K\n".format(name=self.utta_data.meta_data.Channels["TSP0"]["Name"],
+                                                                                 offs=self.utta_data.meta_data.Channels["TSP0"]["Offset"] * 1000,
+                                                                                 gain=self.utta_data.meta_data.Channels["TSP0"]["LinGain"] * 1000)
+            if not "OFF" in self.utta_data.meta_data.Channels["TSP1"]["Name"]:
+                MetaString += "01:  {name:17s}{offs:.1f}mV\t{gain:.2f}mV/K\n".format(name=self.utta_data.meta_data.Channels["TSP1"]["Name"],
+                                                                                     offs=self.utta_data.meta_data.Channels["TSP1"]["Offset"] * 1000,
+                                                                                     gain=self.utta_data.meta_data.Channels["TSP1"]["LinGain"] * 1000)
+            if not "OFF" in self.utta_data.meta_data.Channels["TSP2"]["Name"]:
+                MetaString += "02:  {name:17s}{offs:.1f}mV\t{gain:.2f}mV/K\n".format(name=self.utta_data.meta_data.Channels["TSP2"]["Name"],
+                                                                                     offs=self.utta_data.meta_data.Channels["TSP2"]["Offset"] * 1000,
+                                                                                     gain=self.utta_data.meta_data.Channels["TSP2"]["LinGain"] * 1000)
 
-            MetaString += "\nSense Current:\t{Isen:.2f} mA\n".format(Isen=self.utta_data.meta_data["ISEN"] * 1000)
-            if not self.utta_data.meta_data["TSP_Calibration_File"]:
-                MetaString += "Heating Current:\t{Iheat:.3f} A\n".format(Iheat=self.utta_data.meta_data["I_Heat"])
-                MetaString += "Heating Power:\t{Pheat:.3f} W\n".format(Pheat=self.utta_data.meta_data["P_Heat"])
+            MetaString += "\nSense Current:\t{Isen:.2f} mA\n".format(Isen=self.utta_data.meta_data.Isense * 1000)
+            if not self.utta_data.meta_data.FlagTSPCalibrationFile:
+                MetaString += "Heating Current:\t{Iheat:.3f} A\n".format(Iheat=self.utta_data.i_heat)
+                MetaString += "Heating Power:\t{Pheat:.3f} W\n".format(Pheat=self.utta_data.p_heat)
 
             self.meas_meta_data.configure(text=MetaString)
             self.canvas.draw()

@@ -16,7 +16,7 @@ start = time.time()
 
 NoErrFlag = udp.import_data(FileNam)
 
-if NoErrFlag and udp.meta_data["TSP_Calibration_File"]:
+if NoErrFlag and udp.meta_data.FlagTSPCalibrationFile:
     NoErrFlag = False
     print("\033[91mERROR: Seems like this measurement file contains a calibration measurement instead of a "
           "normal measurement. Analysis will be aborted!\033[0m")
