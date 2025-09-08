@@ -142,3 +142,4 @@ def find_nearest(arr, value):
     # Element in nd array `arr` closest to the scalar value `value`
     idx = np.abs(arr - value).argmin()
     return idx
+
