@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt                 # matplotlib 3.9.2
 from skimage import color, data, restoration    # scikit-image 0.24.0
 import uTTA_data_import
 import uTTA_data_export
+import configparser  # part of python 3.12.5
 
 
 
@@ -47,7 +48,7 @@ class UttaZthProcessing:
 
         # Parameters for the interpolation depth estimation
         self.Cth_Si = 700.0  # Thermal capacity of silicon J*(kg*K)
-        self.rho_Si = 2330  # Density of silicon kg/m3
+        self.rho_Si = 2330.0  # Density of silicon kg/m3
         self.kappa_SI = 148.0  # Heat transmissivity of silicon W/(m*K)
 
         # Interpolation results
@@ -84,6 +85,47 @@ class UttaZthProcessing:
         #general flags
         self.flag_import_successful = False
 
+    def load_settings(self, gui_name):
+        filename = gui_name.replace(".py", ".ini")
+        if os.path.isfile(filename):        # check if the config file exists
+            config = configparser.ConfigParser()
+            config.optionxform = str        # set configparser to Case-Sensitive
+            config.read_file(open(filename))
+
+            self.no_of_tsp = int(config["Settings"]["NoOfTSP"])
+            self.MaxDeltaT_StartEnd = float(config["Settings"]["MaxDeltaT_StartEnd"])
+            self.cooling_start_index_max_trsh = int(config["Settings"]["CoolingStartIndexMaxTrsh"])
+            self.export_zth_samples_decade = int(config["Settings"]["ExportZTHSamplesDecade"])
+
+            self.InterpolationAverageHW = int(config["Interpolation"]["AvgHalfWidth"])
+            self.InterpolationTStart = float(config["Interpolation"]["Tstart"])
+            self.InterpolationTEnd = float(config["Interpolation"]["Tend"])
+
+            self.Cth_Si = float(config["Materials"]["Cth_Si"])
+            self.rho_Si = float(config["Materials"]["rho_Si"])
+            self.kappa_SI = float(config["Materials"]["kappa_SI"])
+
+    def save_settings(self, gui_name):
+        filename = gui_name.replace(".py", ".ini")
+
+        config = configparser.ConfigParser()
+        config.optionxform = str  # set configparser to Case-Sensitive
+        config.add_section("Settings")
+        config.set("Settings", "NoOfTSP", value=str(self.no_of_tsp))
+        config.set("Settings", "MaxDeltaT_StartEnd", value=str(self.MaxDeltaT_StartEnd))
+        config.set("Settings", "CoolingStartIndexMaxTrsh", value=str(self.cooling_start_index_max_trsh))
+        config.set("Settings", "ExportZTHSamplesDecade", value=str(self.export_zth_samples_decade))
+        config.add_section("Interpolation")
+        config.set("Interpolation", "AvgHalfWidth", value=str(self.InterpolationAverageHW))
+        config.set("Interpolation", "Tstart", value=str(self.InterpolationTStart))
+        config.set("Interpolation", "Tend", value=str(self.InterpolationTEnd))
+        config.add_section("Materials")
+        config.set("Materials", "Cth_Si", value=str(self.Cth_Si))
+        config.set("Materials", "rho_Si", value=str(self.rho_Si))
+        config.set("Materials", "kappa_SI", value=str(self.kappa_SI))
+
+        with open(filename, 'w') as configfile:
+            config.write(configfile)
 
 
     def import_data(self, file_nam):
