@@ -42,8 +42,8 @@
 //#define ENABLE_TIMER_DEBUGGING
 
 
-#define UTTA_SW_VERSION "2.5"
-#define UMF_FILEVERSION "3.4"
+#define UTTA_SW_VERSION "2.6"
+#define UMF_FILEVERSION "3.5"
 
 #define MAX_DUT_NAME_LENGTH 24 		// Max length of the Dut name is 20 Characters + 4 characters for .umf
 #define CHANNEL_NAME_MAX_LENGTH 20	// Max Length of the channel Name
