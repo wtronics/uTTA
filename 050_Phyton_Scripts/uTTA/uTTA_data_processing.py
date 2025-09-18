@@ -106,7 +106,9 @@ class UttaZthProcessing:
             self.kappa_SI = float(config["Materials"]["kappa_SI"])
 
     def save_settings(self, gui_name):
-        filename = gui_name.replace(".py", ".ini")
+
+        fileext = gui_name.split(".")[-1]
+        filename = gui_name.replace(fileext, "ini")
 
         config = configparser.ConfigParser()
         config.optionxform = str  # set configparser to Case-Sensitive
