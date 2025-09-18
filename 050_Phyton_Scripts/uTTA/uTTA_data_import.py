@@ -84,6 +84,10 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
         if isinstance(cells, list):
             if not cells[0].isnumeric():
                 match cells[0]:
+                    case 'FileVersion':
+                        meas_meta_data.Measurement["FileVersion"] = str(cells[1])
+                    case 'Device':
+                        meas_meta_data.Measurement["DeviceVersion"] = str(cells[1])
                     case 'StartTime':
                         meas_meta_data.Measurement["StartTime"] = str(cells[1])
                     case 'StartDate':
@@ -109,8 +113,8 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                                                                           }
 
                     case s if s.startswith('#CAL_'):
-                        print(str(cells[0]).replace("#", ""))
-                        print(meas_meta_data.CalData)
+                        # print(str(cells[0]).replace("#", ""))
+                        # print(meas_meta_data.CalData)
                         meas_meta_data.CalData[str(cells[0]).replace("#", "")] = {"Offset": float(cells[1]),
                                                                           "LinGain": float(cells[2]),
                                                                           "QuadGain": float(cells[3])
