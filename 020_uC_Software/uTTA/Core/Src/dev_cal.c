@@ -140,7 +140,7 @@ int8_t WriteFileHeaderToFile(lfs_t *lfs, lfs_file_t *file){
 	RTC_read_time(&Time);
 	sprintf(LogWriteBfr,"FileVersion;" UMF_FILEVERSION "\n");
 	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
-	sprintf(LogWriteBfr,UTTA_OWNER ", SN" UTTA_SERIAL_NO "\n");
+	sprintf(LogWriteBfr,"Device;" UTTA_OWNER ", SN" UTTA_SERIAL_NO "\n");
 	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
 	Write_CalibrationToFile(lfs, file);
