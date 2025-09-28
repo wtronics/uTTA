@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt     # matplotlib 3.9.2
 import time                         # part of python 3.12.5
-import uTTA_data_processing as udpc
+import library.uTTA_data_processing as udpc
+import library.uTTA_data_plotting as ud_plot
 
 ExportDiodeVoltages = 0
 ExportIntermediateFile = 1
@@ -39,24 +40,18 @@ if NoErrFlag:
 
     fig, axs = plt.subplots(nrows=4, ncols=2, layout="constrained")
 
-    udp.add_input_tsp_measure_curve_plot(axs[0, 0])
+    view_plots = ud_plot.UttaPlotData(None, (1090, 810), 3, 2, no_gui=True)
+    view_plots.plot_mapping = [
+        (0, udp.add_input_tsp_measure_curve_plot),
+        (1, udp.add_input_current_measure_curve_plot),
+        (2, udp.add_tsp_measure_cooling_curve_plot),
+        (3, udp.add_cooling_curve_start_plot),
+        (4, udp.add_zth_curve_plot),
+        (5, udp.add_zth_coupling_curve_plot)
+    ]
 
-    udp.add_input_current_measure_curve_plot(axs[0, 1])
-
-    udp.add_tsp_measure_cooling_curve_plot(axs[1, 0])
-
-    udp.add_cooling_curve_start_plot(axs[1, 1])
-    # udp.add_current_measure_cooling_curve_plot(axs[1, 1])
-
-    udp.add_diode_dt_curve_plot(axs[2, 0])
-
-    udp.add_thermocouple_plot(axs[2, 1])
-
-    udp.add_zth_curve_plot(axs[3, 0])
-
-    udp.add_zth_coupling_curve_plot(axs[3, 1])
+    view_plots.update_plots()
 
     end = time.time()
     print("Execution Time: {time:.3f}s".format(time=end - start))
 
-    plt.show()
