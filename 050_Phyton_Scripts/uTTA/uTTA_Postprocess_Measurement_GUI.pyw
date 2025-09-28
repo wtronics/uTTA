@@ -1,0 +1,236 @@
+import  os
+import matplotlib # matplotlib 3.9.2
+import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
+import library.uTTA_data_processing as udProc
+import uTTA_Postprocess_Measurement_Interpol_Widget as uttaInterpolWidget
+import uTTA_Postprocess_Measurement_Widgets as uttaWidgets
+
+
+matplotlib.use("TkAgg")
+
+CalData_FileName = ''
+DataFile = ''
+FilePath = ''
+
+Debug_AutoLoadEnable = False
+Debug_AutoLoadFile = os.path.abspath(r"..\..\060_Example_Measurement_Data\Example_Measurement.umf")
+
+WINDOW_WIDTH = 1480
+WINDOW_HEIGHT = 960
+FIRST_COL_WIDTH = 200
+BTN_HEIGHT = 40
+SEC_COL_WIDTH = (WINDOW_WIDTH - FIRST_COL_WIDTH - 3*10)
+
+
+class UmfViewerApp(ttk.Window):
+    def __init__(self):
+        super().__init__()
+        self.title("uTTA Measurement postprocessing GUI")
+        self.geometry("1480x960")
+        self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
+        screen_dpi = self.winfo_fpixels('1i')
+        geometry = self.winfo_geometry()
+        print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
+
+        self.FileOpened = False
+
+        self.utta_data = udProc.UttaZthProcessing()
+        self.utta_data.load_settings(__file__)
+        self.interp_window = None
+
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        # LEFT GUI COLUMN
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+
+        # Measurement File Button Frame
+        self.frm_file_btns = ttk.LabelFrame(self, text="Import",
+                                            width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
+        self.frm_file_btns.place(x=10, y=10, height=2*20 + BTN_HEIGHT)
+        self.btn_measure_file = ttk.Button(master=self.frm_file_btns,
+                                           text="Import Measurement",
+                                           command=self.read_measurement_file_callback, style="dark")
+        self.btn_measure_file.place(x=10, y=10, height=BTN_HEIGHT, width=180)
+
+
+        self.frm_processing_btns = ttk.LabelFrame(self, text="Processing",
+                                                  width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
+
+        self.frm_processing_btns.place(x=10, y=90, height=2*20 + BTN_HEIGHT)
+        self.btn_interpolation_setup = ttk.Button(master=self.frm_processing_btns,
+                                                  text="Interpolation Setup",
+                                                  command=self.open_interpolation_window_callback,
+                                                  style="dark", state="disabled")
+        self.btn_interpolation_setup.place(x=10, y=10, height=BTN_HEIGHT, width=180)
+
+        self.frm_processing_btns = ttk.LabelFrame(self, text="Export",
+                                                  width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
+        self.frm_processing_btns.place(x=10, y=270, height=3*20 + 2*BTN_HEIGHT)
+        self.btn_export_tdim_master = ttk.Button(master=self.frm_processing_btns,
+                                                 text="Export TDIM Master", command=self.export_to_tdim_master,
+                                                 style="dark", state="disabled")
+        self.btn_export_tdim_master.place(x=10, y=10, height=BTN_HEIGHT, width=180)
+
+        self.btn_export_zth_curve = ttk.Button(master=self.frm_processing_btns,
+                                               text="Export Zth Curve", command=self.export_to_zth_curve,
+                                               style="dark", state="disabled")
+        self.btn_export_zth_curve.place(x=10, y=10+20 + BTN_HEIGHT, height=BTN_HEIGHT, width=180)
+
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        # RIGHT GUI COLUMN
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        # Helper Bar Frame
+        self.frm_help_bar = ttk.Frame(master=self, width=SEC_COL_WIDTH, height=50, style='info.TFrame')
+        self.frm_help_bar.place(x=FIRST_COL_WIDTH+20, y=10)
+
+        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", bootstyle="inverse-info", wraplength=1080)
+        self.lbl_helpbar.place(x=10, y=5)
+        self.lbl_helpbar.configure(text="Welcome to the uTTA measurement postprocessing GUI. \n"
+                                        "Click 'Measurement File' and import a measurement")
+
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        # Tab Control
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+
+        self.tabs = ttk.Notebook(master=self)
+        self.tabs.place(x=FIRST_COL_WIDTH + 2*10, y=70, width=SEC_COL_WIDTH, height=WINDOW_HEIGHT-70-10)
+
+        # 1st Page: Plot Area
+        self.frm_plot_area = ttk.Frame(master=self)
+        self.frm_plot_area.place(x=10, y=10)
+        self.tabs.add(self.frm_plot_area, text="Measurement Data")
+
+        self.meas_plots_widget = uttaWidgets.MeasurementPlotsWidget(self.frm_plot_area, self.utta_data, (SEC_COL_WIDTH - 2 * 10), 810, 96)
+
+        # 2nd Page: Measurement Details
+        self.frm_meas_details = ttk.Frame(master=self)
+        self.frm_meas_details.place(x=10, y=10)
+        self.tabs.add(self.frm_meas_details, text="Measurement Info")
+
+        self.meas_info_widget = uttaWidgets.MeasurementInfoWidget(self.frm_meas_details)
+
+        # 3rd Page: Zth Curves
+        self.frm_zth_curves = ttk.Frame(master=self)
+        self.frm_zth_curves.place(x=10, y=10)
+        self.tabs.add(self.frm_zth_curves, text="Zth Curves      ")
+
+        self.zth_plots_widget = uttaWidgets.ZthPlotsWidget(self.frm_zth_curves, self.utta_data, (SEC_COL_WIDTH - 2 * 10), 810, 96)
+
+        # 4th Page: Deconvolution
+        # self.frm_deconv = ttk.Frame(master=self)
+        # self.frm_deconv.place(x=10, y=10)
+        # self.tabs.add(self.frm_deconv, text="Deconvolution   ")
+
+        # 5th Page: Settings
+        self.frm_settings = ttk.Frame(master=self)
+        self.frm_settings.place(x=10, y=10)
+        self.tabs.add(self.frm_settings, text="Settings        ")
+
+        self.frm_zth_export = ttk.LabelFrame(self.frm_settings, text="Zth Export Settings")
+        self.frm_zth_export.place(x=5, y=5, width=240, height=80)
+
+        self.lbl_interpol_width = ttk.Label(master=self.frm_zth_export, text="Samples/Decade", anchor="w")
+        self.lbl_interpol_width.place(x=5, y=5, width=160)
+        self.spinb_zth_export_samp_dec = ttk.Spinbox(master=self.frm_zth_export, width=40,
+                                                     from_=1, to=50, increment=1, state="readonly")
+        self.spinb_zth_export_samp_dec.place(x=165, y=5, width=60)
+        self.spinb_zth_export_samp_dec.set(value=self.utta_data.export_zth_samples_decade)
+
+        self.update_widgets()
+
+        if Debug_AutoLoadEnable:
+            self.read_measurement_file_callback()
+
+    def update_widgets(self):
+
+        print("\033[94mAttempting to update widgets\033[0m")
+        if self.utta_data.flag_import_successful:
+            print("\033[94mUpdating widgets\033[0m")
+            self.meas_info_widget.update_widget(self.utta_data)
+            self.meas_plots_widget.plots.update_plots()
+            self.zth_plots_widget.plots.update_plots()
+        self.update()
+
+    def read_measurement_file_callback(self):
+        global DataFile, FilePath
+        if not Debug_AutoLoadEnable:
+            measfilename = udProc.select_file("Select the measurement file",
+                                              (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
+        else:
+            measfilename = Debug_AutoLoadFile
+
+        if len(measfilename) > 0:  # check if string is not empty
+            DataFile, data_file_no_ext, FilePath = udProc.split_file_path(measfilename)
+
+            self.FileOpened = self.utta_data.import_data(measfilename)
+
+            if not self.utta_data.meta_data.FlagTSPCalibrationFile:
+
+                self.utta_data.calculate_cooling_curve()
+                self.utta_data.calculate_diode_heating()
+                self.utta_data.calculate_tsp_start_voltages()
+                self.utta_data.interpolate_zth_curve_start()
+                self.update_widgets()
+
+                self.lbl_helpbar.configure(text="File: {fname} was successfully imported.".format(fname=DataFile),
+                                           style="success.Inverse.TLabel")
+                self.frm_help_bar.configure(style="success.TFrame")
+
+                self.btn_interpolation_setup.configure(state="enabled")
+                self.btn_export_tdim_master.configure(state="enabled")
+                self.btn_export_zth_curve.configure(state="enabled")
+
+            else:
+                self.lbl_helpbar.configure(text="File: {fname} is a TSP calibration measurement.\n"
+                                                "Therefore this file can't be processed!".format(fname=DataFile),
+                                           style="danger.Inverse.TLabel")
+                self.frm_help_bar.configure(style="danger.TFrame")
+
+                self.btn_interpolation_setup.configure(state="disabled")
+                self.btn_export_tdim_master.configure(state="disabled")
+                self.btn_export_zth_curve.configure(state="disabled")
+
+        else:
+            self.lbl_helpbar.configure(text="File: {fname} was not imported.".format(fname=DataFile),
+                                       style="danger.Inverse.TLabel")
+            self.frm_help_bar.configure(style="danger.TFrame")
+
+    def open_interpolation_window_callback(self):
+
+        if self.interp_window is None: #  or not self.interp_window.winfo_exists():
+            self.interp_window = uttaInterpolWidget.TSPInterpolationApp(self)
+        else:
+            self.interp_window.lift()
+
+    def recalculate_interpolation(self):
+        print("recalculate called")
+        self.utta_data.interpolate_zth_curve_start()
+        # self.update_widgets()
+
+    def export_to_tdim_master(self):
+        outfilename = FilePath + r'/' + DataFile.replace(".umf", ".txt")
+
+        self.utta_data.export_tdim_master(outfilename)
+
+    def export_to_zth_curve(self):
+
+        self.utta_data.export_zth_samples_decade = int(self.spinb_zth_export_samp_dec.get())
+        outfilename = FilePath + r'/' + DataFile.replace(".umf", "_zth.txt")
+
+        self.utta_data.export_zth_curve(outfilename)
+
+    def interpolation_window_closed(self):
+        self.interp_window = None
+        self.update_widgets()
+
+    def on_closing(self):
+        # if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        self.utta_data.save_settings(__file__)
+        self.destroy()
+
+
+if __name__ == "__main__":
+    print(Debug_AutoLoadFile)
+    app = UmfViewerApp()
+
+    app.mainloop()
