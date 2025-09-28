@@ -4,9 +4,8 @@ import tkinter as tk
 from tkinter import messagebox  # part of python 3.12.5
 from tksheet import (Sheet, float_formatter)
 from quantiphy import Quantity      # quantiphy 2.20
-# import uTTA_data_import
-# import uTTA_data_processing
-import uTTA_data_processing as udpc
+
+import library.uTTA_data_processing as udpc
 import numpy as np                  # numpy 2.1.1
 import matplotlib                   # matplotlib 3.9.2
 import ttkbootstrap as ttk
@@ -15,9 +14,6 @@ matplotlib.use("TkAgg")
 
 CalData_FileName = ''
 Diode_Calibration = []
-#TimeBaseTotal = []
-#ADC = []
-#Temp = []
 TableValues = []
 
 MaxDeltaT_StartEnd = 1.0
@@ -94,7 +90,7 @@ class CalApp(ttk.Window):
         self.t_step_sheet.format("B:E", formatter_options=float_formatter(), decimals=4)
 
         self.t_step_sheet.place(x=10, y=160)
-        self.t_step_sheet.enable_bindings(("single_select", "edit_cell"))
+        self.t_step_sheet.enable_bindings(('single_select', 'edit_cell'))
         self.t_step_sheet.extra_bindings("cell_select", self.on_cell_select)
         self.t_step_sheet.headers(tab_heading)
         self.t_step_sheet.set_all_column_widths(65)
