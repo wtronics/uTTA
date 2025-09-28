@@ -566,3 +566,4 @@
 040_LabVIEW_GUI/uTTA/uTTA_Main_Temperature_Control.vi
 050_Phyton_Scripts/uTTA/poetry.lock
 /060_Example_Measurement_Data/Private
+/050_Phyton_Scripts/uTTA/library/__pycache__
