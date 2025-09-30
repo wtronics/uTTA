@@ -199,6 +199,9 @@ class SettingsWidget(ttk.Frame):
         self.spinb_zth_export_samp_dec.place(x=132, y=5, width=60)
         self.spinb_zth_export_samp_dec.set(value=self.data.export_zth_samples_decade)
 
+        self.frm_tdim_export = ttk.LabelFrame(self.parent, text="TDIM Export Settings")
+        self.frm_tdim_export.place(x=640, y=100, width=200, height=80)
+
         self.btn_apply_settings = ttk.Button(master=self.parent,
                                                text="Apply Settings", command=self.apply_settings,
                                                style="dark")
