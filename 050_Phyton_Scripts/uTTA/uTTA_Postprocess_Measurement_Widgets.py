@@ -154,7 +154,7 @@ class SettingsWidget(ttk.Frame):
         self.spinb_zero_curr_ratio.set(value=self.data.zero_current_detection_ratio)
 
         self.frm_zth_export = ttk.LabelFrame(self.parent, text="Zth Export Settings")
-        self.frm_zth_export.place(x=10, y=3*20 + 3*BTN_HEIGHT, width=200, height=80)
+        self.frm_zth_export.place(x=640, y=10, width=200, height=80)
 
         self.lbl_interpol_width = ttk.Label(master=self.frm_zth_export, text="Samples/Decade", anchor="w")
         self.lbl_interpol_width.place(x=10, y=10, width=160)
