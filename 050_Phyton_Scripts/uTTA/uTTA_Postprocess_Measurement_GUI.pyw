@@ -1,4 +1,5 @@
 import  os
+import tkinter
 import matplotlib # matplotlib 3.9.2
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
 import library.uTTA_data_processing as udProc
@@ -100,7 +101,9 @@ class UmfViewerApp(ttk.Window):
         self.frm_plot_area.place(x=10, y=10)
         self.tabs.add(self.frm_plot_area, text="Measurement Data")
 
-        self.meas_plots_widget = uttaWidgets.MeasurementPlotsWidget(self.frm_plot_area, self.utta_data, (SEC_COL_WIDTH - 2 * 10), 810, 96)
+        self.meas_plots_widget = uttaWidgets.MeasurementPlotsWidget(self.frm_plot_area, self.utta_data,
+                                                                    (SEC_COL_WIDTH - 2 * 10), 810,
+                                                                    screen_dpi)
 
         # 2nd Page: Measurement Details
         self.frm_meas_details = ttk.Frame(master=self)
@@ -114,7 +117,9 @@ class UmfViewerApp(ttk.Window):
         self.frm_zth_curves.place(x=10, y=10)
         self.tabs.add(self.frm_zth_curves, text="Zth Curves      ")
 
-        self.zth_plots_widget = uttaWidgets.ZthPlotsWidget(self.frm_zth_curves, self.utta_data, (SEC_COL_WIDTH - 2 * 10), 810, 96)
+        self.zth_plots_widget = uttaWidgets.ZthPlotsWidget(self.frm_zth_curves, self.utta_data,
+                                                           (SEC_COL_WIDTH - 2 * 10), 810,
+                                                           screen_dpi)
 
         # 4th Page: Deconvolution
         # self.frm_deconv = ttk.Frame(master=self)
@@ -126,15 +131,45 @@ class UmfViewerApp(ttk.Window):
         self.frm_settings.place(x=10, y=10)
         self.tabs.add(self.frm_settings, text="Settings        ")
 
+        self.frm_zero_curr = ttk.LabelFrame(self.frm_settings, text="Zero Current Detection")
+        self.frm_zero_curr.place(x=10, y=10, width=200, height=160)
+
+        self.frm_zero_curr_method = ttk.LabelFrame(self.frm_zero_curr, text="Detection Method")
+        self.frm_zero_curr_method.place(x=5, y=5, width=188, height=80)
+
+        self.ctrl_zero_curr_method_set = tkinter.StringVar(self)
+        self.ctrl_zero_curr_method_set.set(self.utta_data.zero_current_detection_mode)
+
+        self.ctrl_zero_curr_method_min = ttk.Radiobutton(master=self.frm_zero_curr_method,
+                                                  text="Minimum Current", variable=self.ctrl_zero_curr_method_set,
+                                                  value="Minimum")
+        self.ctrl_zero_curr_method_min.place(x=10, y=10)
+        self.ctrl_zero_curr_method_rat = ttk.Radiobutton(master=self.frm_zero_curr_method,
+                                                   text="Current Ratio", variable=self.ctrl_zero_curr_method_set,
+                                                   value="Ratio")
+        self.ctrl_zero_curr_method_rat.place(x=10, y=35)
+
+        self.lbl_zero_curr_ratio = ttk.Label(master=self.frm_zero_curr, text="Current Ratio", anchor="w")
+        self.lbl_zero_curr_ratio.place(x=10, y=110, width=160)
+        self.spinb_zero_curr_ratio = ttk.Spinbox(master=self.frm_zero_curr, width=40,
+                                                 from_=0.0, to=1.00, increment=0.01, state="readonly")
+        self.spinb_zero_curr_ratio.place(x=112, y=105, width=80)
+        self.spinb_zero_curr_ratio.set(value=self.utta_data.zero_current_detection_ratio)
+
         self.frm_zth_export = ttk.LabelFrame(self.frm_settings, text="Zth Export Settings")
-        self.frm_zth_export.place(x=5, y=5, width=240, height=80)
+        self.frm_zth_export.place(x=10, y=3*20 + 3*BTN_HEIGHT, width=200, height=80)
 
         self.lbl_interpol_width = ttk.Label(master=self.frm_zth_export, text="Samples/Decade", anchor="w")
-        self.lbl_interpol_width.place(x=5, y=5, width=160)
+        self.lbl_interpol_width.place(x=10, y=10, width=160)
         self.spinb_zth_export_samp_dec = ttk.Spinbox(master=self.frm_zth_export, width=40,
                                                      from_=1, to=50, increment=1, state="readonly")
-        self.spinb_zth_export_samp_dec.place(x=165, y=5, width=60)
+        self.spinb_zth_export_samp_dec.place(x=132, y=5, width=60)
         self.spinb_zth_export_samp_dec.set(value=self.utta_data.export_zth_samples_decade)
+
+        self.btn_apply_settings = ttk.Button(master=self.frm_settings,
+                                               text="Apply Settings", command=self.settings_changed,
+                                               style="dark")
+        self.btn_apply_settings.place(x=1050, y=750 + BTN_HEIGHT, height=BTN_HEIGHT, width=180)
 
         self.update_widgets()
 
@@ -143,6 +178,8 @@ class UmfViewerApp(ttk.Window):
 
     def update_widgets(self):
 
+        self.utta_data.zero_current_detection_mode = self.ctrl_zero_curr_method_set.get()
+
         print("\033[94mAttempting to update widgets\033[0m")
         if self.utta_data.flag_import_successful:
             print("\033[94mUpdating widgets\033[0m")
@@ -150,6 +187,15 @@ class UmfViewerApp(ttk.Window):
             self.meas_plots_widget.plots.update_plots()
             self.zth_plots_widget.plots.update_plots()
         self.update()
+
+
+    def settings_changed(self):
+
+        print("\033[94mSettings changed\033[0m")
+        self.utta_data.zero_current_detection_mode = self.ctrl_zero_curr_method_set.get()
+        self.utta_data.zero_current_detection_ratio = self.spinb_zero_curr_ratio.get()
+
+
 
     def read_measurement_file_callback(self):
         global DataFile, FilePath
@@ -166,9 +212,12 @@ class UmfViewerApp(ttk.Window):
 
             if not self.utta_data.meta_data.FlagTSPCalibrationFile:
 
+                self.utta_data.zero_current_detection_mode = "Ratio"
+
                 self.utta_data.calculate_cooling_curve()
                 self.utta_data.calculate_diode_heating()
                 self.utta_data.calculate_tsp_start_voltages()
+
                 self.utta_data.interpolate_zth_curve_start()
                 self.update_widgets()
 
