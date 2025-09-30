@@ -1,4 +1,5 @@
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
+from ttkbootstrap.tooltip import ToolTip
 import library.uTTA_data_plotting as ud_plot
 import tkinter
 
@@ -146,18 +147,53 @@ class SettingsWidget(ttk.Frame):
                                                    value="Ratio")
         self.ctrl_zero_curr_method_rat.place(x=10, y=35)
 
-        self.lbl_zero_curr_ratio = ttk.Label(master=self.frm_zero_curr, text="Current Ratio", anchor="w")
-        self.lbl_zero_curr_ratio.place(x=10, y=110, width=160)
+        ttk.Label(master=self.frm_zero_curr, text="Current Ratio", anchor="w").place(x=10, y=110, width=160)
+
         self.spinb_zero_curr_ratio = ttk.Spinbox(master=self.frm_zero_curr, width=40,
                                                  from_=0.0, to=1.00, increment=0.01, state="readonly")
         self.spinb_zero_curr_ratio.place(x=112, y=105, width=80)
         self.spinb_zero_curr_ratio.set(value=self.data.zero_current_detection_ratio)
+        ToolTip(self.spinb_zero_curr_ratio, text="Defines the ratio of the current step\n"
+                                                 "(heating current - no current) where the\n"
+                                                 "postprocessing algorithm considers the\n"
+                                                 "heating current as switched off.\n"
+                                                 "e.g. 0.3 = 30% of the heating current.")
+
+        self.frm_material_const = ttk.LabelFrame(self.parent, text="Semiconductor Parameters")
+        self.frm_material_const.place(x=220, y=10, width=200, height=160)
+
+        ttk.Label(self.frm_material_const, text='C_th').place(x=10, y=15)
+        ttk.Label(self.frm_material_const, text='J/(kg\u2219K)').place(x=135, y=15)
+        ttk.Label(self.frm_material_const, text=u'\u03C1').place(x=10, y=55)
+        ttk.Label(self.frm_material_const, text='kg/\u33A5').place(x=135, y=55)
+        ttk.Label(self.frm_material_const, text=u'\u03BA').place(x=10, y=95)
+        ttk.Label(self.frm_material_const, text=u'W/(m\u2219K)').place(x=135, y=95)
+
+        self.spinb_material_cth = ttk.Spinbox(master=self.frm_material_const,width=70,
+                                              from_=0.0, to=10000.00, increment=0.01, state="readonly")
+        self.spinb_material_cth.place(x=45, y=10, width=85)
+        self.spinb_material_cth.set(value=self.data.Cth_Si)
+        ToolTip(self.spinb_material_cth, text="Thermal specific heat capacitance\n"
+                                              "of the semiconductor in the active area.")
+
+        self.spinb_material_rho = ttk.Spinbox(master=self.frm_material_const,width=70,
+                                              from_=0.0, to=10000.00, increment=0.01, state="readonly")
+        self.spinb_material_rho.place(x=45, y=50, width=85)
+        self.spinb_material_rho.set(value=self.data.rho_Si)
+        ToolTip(self.spinb_material_rho, text="Specific density of the semiconductor")
+
+        self.spinb_material_kappa = ttk.Spinbox(master=self.frm_material_const,width=70,
+                                              from_=0.0, to=10000.00, increment=0.01, state="readonly")
+        self.spinb_material_kappa.place(x=45, y=90, width=85)
+        self.spinb_material_kappa.set(value=self.data.kappa_SI)
+        ToolTip(self.spinb_material_kappa, text="Specific heat transmissivity"
+                                                " of the semiconductor")
 
         self.frm_zth_export = ttk.LabelFrame(self.parent, text="Zth Export Settings")
         self.frm_zth_export.place(x=640, y=10, width=200, height=80)
 
-        self.lbl_interpol_width = ttk.Label(master=self.frm_zth_export, text="Samples/Decade", anchor="w")
-        self.lbl_interpol_width.place(x=10, y=10, width=160)
+        ttk.Label(master=self.frm_zth_export, text="Samples/Decade", anchor="w").place(x=10, y=10, width=160)
+
         self.spinb_zth_export_samp_dec = ttk.Spinbox(master=self.frm_zth_export, width=40,
                                                      from_=1, to=50, increment=1, state="readonly")
         self.spinb_zth_export_samp_dec.place(x=132, y=5, width=60)
@@ -174,3 +210,7 @@ class SettingsWidget(ttk.Frame):
         self.data.zero_current_detection_mode = self.ctrl_zero_curr_method_set.get()
         self.data.zero_current_detection_ratio = self.spinb_zero_curr_ratio.get()
         self.data.export_zth_samples_decade = int(self.spinb_zth_export_samp_dec.get())
+
+        self.data.Cth_Si = self.spinb_material_kappa.get()
+        self.data.rho_Si = self.spinb_material_rho.get()
+        self.data.kappa_SI = self.spinb_material_kappa.get()
