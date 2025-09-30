@@ -135,7 +135,6 @@ class UmfViewerApp(ttk.Window):
 
         self.update_widgets()
 
-
         if Debug_AutoLoadEnable:
             self.read_measurement_file_callback()
 
@@ -148,15 +147,6 @@ class UmfViewerApp(ttk.Window):
             self.meas_plots_widget.plots.update_plots()
             self.zth_plots_widget.plots.update_plots()
         self.update()
-
-
-    def settings_changed(self):
-
-        print("\033[94mSettings changed\033[0m")
-        self.utta_data.zero_current_detection_mode = self.ctrl_zero_curr_method_set.get()
-        self.utta_data.zero_current_detection_ratio = self.spinb_zero_curr_ratio.get()
-        self.utta_data.export_zth_samples_decade = int(self.spinb_zth_export_samp_dec.get())
-
 
     def read_measurement_file_callback(self):
         global DataFile, FilePath
