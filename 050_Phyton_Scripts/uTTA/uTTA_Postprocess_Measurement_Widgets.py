@@ -214,6 +214,6 @@ class SettingsWidget(ttk.Frame):
         self.data.zero_current_detection_ratio = self.spinb_zero_curr_ratio.get()
         self.data.export_zth_samples_decade = int(self.spinb_zth_export_samp_dec.get())
 
-        self.data.Cth_Si = self.spinb_material_kappa.get()
+        self.data.Cth_Si = self.spinb_material_cth.get()
         self.data.rho_Si = self.spinb_material_rho.get()
         self.data.kappa_SI = self.spinb_material_kappa.get()
