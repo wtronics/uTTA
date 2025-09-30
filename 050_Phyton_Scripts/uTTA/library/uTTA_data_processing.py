@@ -93,7 +93,10 @@ class UttaZthProcessing:
 
 
     def load_settings(self, gui_name):
-        filename = gui_name.replace(".py", ".ini")
+        
+        fileext = gui_name.split(".")[-1]
+        filename = gui_name.replace(fileext, "ini")
+
         if os.path.isfile(filename):        # check if the config file exists
             config = configparser.ConfigParser()
             config.optionxform = str        # set configparser to Case-Sensitive
