@@ -80,6 +80,10 @@ class UttaZthProcessing:
         # Zth curve export settings
         self.export_zth_samples_decade = 10     # Samples/Decade when exporting the Zth curve
 
+        # TDIM Master export settings
+        self.export_tdim_reduce_time = 100
+        self.export_tdim_max_points = 49999
+
         # general flags
         self.flag_import_successful = False
         self.flag_heating_calculated = False
@@ -99,7 +103,7 @@ class UttaZthProcessing:
             self.no_of_tsp = int(config["Settings"]["NoOfTSP"])
             self.MaxDeltaT_StartEnd = float(config["Settings"]["MaxDeltaT_StartEnd"])
             self.cooling_start_index_max_trsh = int(config["Settings"]["CoolingStartIndexMaxTrsh"])
-            self.export_zth_samples_decade = int(config["Settings"]["ExportZTHSamplesDecade"])
+
             self.zero_current_detection_mode = config["Settings"]["ZeroCurrentDetectionMode"]
             self.zero_current_detection_ratio = float(config["Settings"]["ZeroCurrentDetectionRatio"])
 
@@ -110,6 +114,10 @@ class UttaZthProcessing:
             self.Cth_Si = float(config["Materials"]["Cth_Si"])
             self.rho_Si = float(config["Materials"]["rho_Si"])
             self.kappa_SI = float(config["Materials"]["kappa_SI"])
+
+            self.export_zth_samples_decade = int(config["Export"]["Zth_SamplesDecade"])
+            self.export_tdim_max_points = int(config["Export"]["TDIM_MaxSamples"])
+            self.export_tdim_reduce_time = float(config["Export"]["TDIM_ReduceTime"])
 
     def save_settings(self, gui_name):
 
@@ -122,7 +130,7 @@ class UttaZthProcessing:
         config.set("Settings", "NoOfTSP", value=str(self.no_of_tsp))
         config.set("Settings", "MaxDeltaT_StartEnd", value=str(self.MaxDeltaT_StartEnd))
         config.set("Settings", "CoolingStartIndexMaxTrsh", value=str(self.cooling_start_index_max_trsh))
-        config.set("Settings", "ExportZTHSamplesDecade", value=str(self.export_zth_samples_decade))
+
         config.set("Settings", "ZeroCurrentDetectionMode", value=str(self.zero_current_detection_mode))
         config.set("Settings", "ZeroCurrentDetectionRatio", value=str(self.zero_current_detection_ratio))
         config.add_section("Interpolation")
@@ -133,6 +141,12 @@ class UttaZthProcessing:
         config.set("Materials", "Cth_Si", value=str(self.Cth_Si))
         config.set("Materials", "rho_Si", value=str(self.rho_Si))
         config.set("Materials", "kappa_SI", value=str(self.kappa_SI))
+
+        config.add_section("Export")
+        config.set("Export", "Zth_SamplesDecade", value=str(self.export_zth_samples_decade))
+        config.set("Export", "TDIM_MaxSamples", value=str(self.export_tdim_max_points))
+        config.set("Export", "TDIM_ReduceTime", value=str(self.export_tdim_reduce_time))
+
 
         with open(filename, 'w') as configfile:
             config.write(configfile)
@@ -416,7 +430,8 @@ class UttaZthProcessing:
                                                  self.adc_cooling,
                                                  self.meta_data,
                                                  self.p_heat,
-                                                 fname)
+                                                 fname, tdim_data_limit= self.export_tdim_max_points,
+                                                 t_reduce_data=self.export_tdim_reduce_time)
 
     def export_zth_curve(self,fname):
         uTTA_data_export.export_zth_curve(self.adc_timebase_cooling,
