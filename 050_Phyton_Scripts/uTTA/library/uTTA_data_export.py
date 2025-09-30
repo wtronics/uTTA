@@ -32,7 +32,9 @@ def export_t3i_file(timebase, zth, headername, filename):
                header="Time\t" + str(headername))
     del zth_output
 
-def export_tdim_master_file(timebase, zth, meta_data, p_heat, filename):
+def export_tdim_master_file(timebase, zth, meta_data,
+                            p_heat, filename, tdim_data_limit = 49999,
+                            t_reduce_data = 100, ):
 
     if meta_data is not None:
         header = "# Transient Dual Interface Measurement: {dutname}\n".format(dutname=meta_data.Channels["TSP0"]["Name"])
@@ -46,12 +48,10 @@ def export_tdim_master_file(timebase, zth, meta_data, p_heat, filename):
         header += "DATA\n"
         header += "#Time [s]        Usens [V]"
 
-        tdim_data_limit = 49999
-        t_reduce_data = 100     # above 100s data will be reduced to fit into the 49999 samples TDIM Master can handle
-        reduce_data = 1
+        # t_reduce_data = 100     # above 100s data will be reduced to fit into the 49999 samples TDIM Master can handle
         reduce_above_idx = int(find_nearest(timebase, t_reduce_data))
 
-        if reduce_data:
+        if t_reduce_data > 0:
             zth_output = np.zeros(shape=(2, tdim_data_limit))
             zth_output[0, 0:reduce_above_idx-1] = timebase[0:reduce_above_idx-1]
             zth_output[1, 0:reduce_above_idx-1] = zth[0, 0:reduce_above_idx-1]
