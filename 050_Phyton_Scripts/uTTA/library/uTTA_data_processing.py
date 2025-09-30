@@ -31,7 +31,7 @@ class UttaZthProcessing:
         self.cooling_start_index = 0        # Index of the sample within the cooling section where zero current is reached
         self.cooling_start_index_max_trsh = 150
         self.zero_current_detection_mode = "Minimum"        # select the mode of detecting were zero current is flowing
-        self.zero_current_detection_ratio = 0.63
+        self.zero_current_detection_ratio = 0.312            # Percentag of the current (Max-Min)*Ratio where zero current is considered
 
         # Heating parameter calculation results
         self.i_heat = 0.0
@@ -103,6 +103,8 @@ class UttaZthProcessing:
             self.MaxDeltaT_StartEnd = float(config["Settings"]["MaxDeltaT_StartEnd"])
             self.cooling_start_index_max_trsh = int(config["Settings"]["CoolingStartIndexMaxTrsh"])
             self.export_zth_samples_decade = int(config["Settings"]["ExportZTHSamplesDecade"])
+            self.zero_current_detection_mode = config["Settings"]["ZeroCurrentDetectionMode"]
+            self.zero_current_detection_ratio = float(config["Settings"]["ZeroCurrentDetectionRatio"])
 
             self.InterpolationAverageHW = int(config["Interpolation"]["AvgHalfWidth"])
             self.InterpolationTStart = float(config["Interpolation"]["Tstart"])
@@ -124,6 +126,8 @@ class UttaZthProcessing:
         config.set("Settings", "MaxDeltaT_StartEnd", value=str(self.MaxDeltaT_StartEnd))
         config.set("Settings", "CoolingStartIndexMaxTrsh", value=str(self.cooling_start_index_max_trsh))
         config.set("Settings", "ExportZTHSamplesDecade", value=str(self.export_zth_samples_decade))
+        config.set("Settings", "ZeroCurrentDetectionMode", value=str(self.zero_current_detection_mode))
+        config.set("Settings", "ZeroCurrentDetectionRatio", value=str(self.zero_current_detection_ratio))
         config.add_section("Interpolation")
         config.set("Interpolation", "AvgHalfWidth", value=str(self.InterpolationAverageHW))
         config.set("Interpolation", "Tstart", value=str(self.InterpolationTStart))
@@ -195,10 +199,17 @@ class UttaZthProcessing:
             # Get Min and Max Values of the Full Cooling Curve
             self.jut_imin = min(self.adc_cooling[3, :])
             self.jut_imax = max(self.adc_cooling[3, :])
+            zero_current_trsh = self.jut_imin
 
             print("Min Diode Current:  {min:.2f}A; Max Diode current: {max:.2f}A".format(min=self.jut_imin,
                                                                                          max=self.jut_imax))
-            self.cooling_start_index = (np.where(np.isclose(self.adc_cooling[3, :], self.jut_imin)))[0][0]
+            print("Zero Current Detection Mode: {mode}.".format(mode=self.zero_current_detection_mode))
+            if self.zero_current_detection_mode == "Ratio":
+                zero_current_trsh = (self.jut_imax - self.jut_imin) * self.zero_current_detection_ratio
+                print("Zero Current Detection Ratio: {ratio}. Threshold: {trsh:.2f}A".format(ratio=self.zero_current_detection_ratio, trsh=zero_current_trsh))
+                self.cooling_start_index = find_nearest(self.adc_cooling[3, :], zero_current_trsh)
+            else:
+                self.cooling_start_index = (np.where(np.isclose(self.adc_cooling[3, :], zero_current_trsh)))[0][0]
             print("Index of closest value: " + str(self.cooling_start_index))
             if self.cooling_start_index > self.cooling_start_index_max_trsh:      # An Index larger than that is an indicator of an unusual behaviour of the system
                                                     # The user should review the test setup and the system
@@ -290,40 +301,54 @@ class UttaZthProcessing:
         return
 
     def interpolate_zth_curve_start(self):
-        interp_points_idx_start = find_nearest(self.adc_timebase_cooling, self.InterpolationTStart)
-        interp_points_idx_end = find_nearest(self.adc_timebase_cooling, self.InterpolationTEnd)
+        interp_idx_start = find_nearest(self.adc_timebase_cooling, self.InterpolationTStart)
+        interp_idx_end = find_nearest(self.adc_timebase_cooling, self.InterpolationTEnd)
 
         print(
             "INTERPOLATION: Start: {IntStart: .6f}s; Index: {IdxStart:3d}; End: {IntEnd: .6f}s; Index: {IdxEnd:3d}".format(
                 IntStart=self.InterpolationTStart,
                 IntEnd=self.InterpolationTEnd,
-                IdxStart=interp_points_idx_start,
-                IdxEnd=interp_points_idx_end))
+                IdxStart=interp_idx_start,
+                IdxEnd=interp_idx_end))
 
         interpol_sq_t_start = np.sqrt(self.InterpolationTStart)
         interpol_sq_t_end = np.sqrt(self.InterpolationTEnd)
 
         # Get the measured temperatures at the interpolation points
         interpol_y_start = float(np.mean(
-            self.t_dio_raw[0, interp_points_idx_start - self.InterpolationAverageHW:interp_points_idx_start + self.InterpolationAverageHW]))
+            self.t_dio_raw[0, interp_idx_start - self.InterpolationAverageHW:interp_idx_start + self.InterpolationAverageHW]))
         interpol_y_end = float(np.mean(
-            self.t_dio_raw[0, interp_points_idx_end - self.InterpolationAverageHW:interp_points_idx_end + self.InterpolationAverageHW]))
+            self.t_dio_raw[0, interp_idx_end - self.InterpolationAverageHW:interp_idx_end + self.InterpolationAverageHW]))
 
         # Calculation of the interpolation parameters
         # ToDo: Review calculation of k_therm, EstimatedDieSize and DieMaxThickness
-        #self.InterpolationFactorM = (interpol_y_end - interpol_y_start) / (interpol_sq_t_end - interpol_sq_t_start)
         #         dT_J(t_cut)
         #    m = --------------
         #         sqrt(t_cut)
-        self.InterpolationFactorM = (interpol_y_end - interpol_y_start) / interpol_sq_t_start
+        self.InterpolationFactorM = (interpol_y_end - interpol_y_start) / (interpol_sq_t_end - interpol_sq_t_start)
         self.InterpolationOffset = interpol_y_start - (self.InterpolationFactorM * interpol_sq_t_start)
-        self.k_therm = (2 / np.sqrt(np.pi * self.Cth_Si * self.rho_Si * self.kappa_SI))
+
+        # k_therm is calculated from the silicon material constants
+        #                       2                    C_th:  Thermal capacity of silicon J*(kg*K)
+        #  k_therm = -----------------------------   rho:   Density of silicon kg/m3
+        #             +------------------------+     kappa: Heat transmissivity of silicon W/(m*K)
+        #         \  / pi * C_th * rho * kappa
+        #          \/
+        self.k_therm = 2 / np.sqrt(np.pi * self.Cth_Si * self.rho_Si * self.kappa_SI)
+
+        # Approximate area of the active silicon area
+        #            P_Heating                  P_Heating: The steady state power of the heating current
+        #   A_Chip = ----------- * k_therm
+        #                m
         self.EstimatedDieSize = 1000000 * (self.k_therm * (-self.p_heat / self.InterpolationFactorM))
         self.TDie_Start = self.InterpolationOffset  # Starting temperature of the Die at the moment of switch off
 
         # Calculate the maximum thickness the Die can have until the calculation method becomes unusable
-        # dchip = sqrt(t_valid * 2*lambda/(cth*rho))
-        self.DieMaxThickness = np.sqrt((self.adc_timebase_cooling[interp_points_idx_start] * 2 * self.kappa_SI) /
+        #                +--------------------+
+        #          _    /          2*lambda
+        # dchip =   \  /t_valid * ----------
+        #            \/            cth*rho
+        self.DieMaxThickness = np.sqrt((self.adc_timebase_cooling[interp_idx_start] * 2 * self.kappa_SI) /
                                        (self.Cth_Si * self.rho_Si))  # Die thickness in METER
 
 
@@ -332,7 +357,7 @@ class UttaZthProcessing:
               format(MaxThick=self.DieMaxThickness*1000*1000))
 
         # Interpolated curve of the temperature.
-        self.t_dio_start_interpolation = (np.sqrt(self.adc_timebase_cooling[0:interp_points_idx_end]) * self.InterpolationFactorM +
+        self.t_dio_start_interpolation = (np.sqrt(self.adc_timebase_cooling[0:interp_idx_end]) * self.InterpolationFactorM +
                                           self.InterpolationOffset)
 
         # Build the final Zth-curve with interpolated start
@@ -340,7 +365,7 @@ class UttaZthProcessing:
 
         #overwrite the beginning with the interpolated curve
         # the curves are stitched together at the LEFT interpolation marker
-        self.t_dio_interpolated[0, 0:interp_points_idx_start] = self.t_dio_start_interpolation[0:interp_points_idx_start]
+        self.t_dio_interpolated[0, 0:interp_idx_start] = self.t_dio_start_interpolation[0:interp_idx_start]
         print("INTERPOLATION: Start: {StartY: .3f}K; End: {EndY: .3f}K; Factor M: {IntFactM: .4f}; "
               "Offset: {IntOffs: .4f}; Estimated Die Size: {DieSize: .2f}mm²".format(StartY=interpol_y_start,
                                                                                      EndY=interpol_y_end,
@@ -351,7 +376,7 @@ class UttaZthProcessing:
         self.zth = np.zeros(shape=self.adc_cooling.shape)
         self.r_th_static = np.zeros(self.no_of_tsp)
         self.dT_diode = np.zeros(shape=(self.no_of_tsp, len(self.t_dio_interpolated[3, :])))
-        # self.dT_diode = np.zeros(shape=(self.no_of_tsp, len(self.t_dio_interpolated[3, interp_points_idx_start:-1])))
+        # self.dT_diode = np.zeros(shape=(self.no_of_tsp, len(self.t_dio_interpolated[3, interp_idx_start:-1])))
         for Ch in range(0, self.no_of_tsp):
             ch_tsp = "TSP{Ch}".format(Ch=Ch)
             if self.meta_data.Channels[ch_tsp]["Name"] != "OFF":
