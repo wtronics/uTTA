@@ -1,5 +1,8 @@
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
 import library.uTTA_data_plotting as ud_plot
+import tkinter
+
+BTN_HEIGHT = 40
 
 class MeasurementPlotsWidget(ttk.Frame):
     def __init__(self, parent, data, figwidth, figheight, screen_dpi):
@@ -119,3 +122,55 @@ class ZthPlotsWidget(ttk.Frame):
             (2, self.data.add_zth_coupling_curve_plot),
         ]
 
+class SettingsWidget(ttk.Frame):
+    def __init__(self, parent, data):
+        super().__init__(parent)
+        self.parent = parent
+        self.data = data
+
+        self.frm_zero_curr = ttk.LabelFrame(self.parent, text="Zero Current Detection")
+        self.frm_zero_curr.place(x=10, y=10, width=200, height=160)
+
+        self.frm_zero_curr_method = ttk.LabelFrame(self.frm_zero_curr, text="Detection Method")
+        self.frm_zero_curr_method.place(x=5, y=5, width=188, height=80)
+
+        self.ctrl_zero_curr_method_set = tkinter.StringVar(self)
+        self.ctrl_zero_curr_method_set.set(self.data.zero_current_detection_mode)
+
+        self.ctrl_zero_curr_method_min = ttk.Radiobutton(master=self.frm_zero_curr_method,
+                                                  text="Minimum Current", variable=self.ctrl_zero_curr_method_set,
+                                                  value="Minimum")
+        self.ctrl_zero_curr_method_min.place(x=10, y=10)
+        self.ctrl_zero_curr_method_rat = ttk.Radiobutton(master=self.frm_zero_curr_method,
+                                                   text="Current Ratio", variable=self.ctrl_zero_curr_method_set,
+                                                   value="Ratio")
+        self.ctrl_zero_curr_method_rat.place(x=10, y=35)
+
+        self.lbl_zero_curr_ratio = ttk.Label(master=self.frm_zero_curr, text="Current Ratio", anchor="w")
+        self.lbl_zero_curr_ratio.place(x=10, y=110, width=160)
+        self.spinb_zero_curr_ratio = ttk.Spinbox(master=self.frm_zero_curr, width=40,
+                                                 from_=0.0, to=1.00, increment=0.01, state="readonly")
+        self.spinb_zero_curr_ratio.place(x=112, y=105, width=80)
+        self.spinb_zero_curr_ratio.set(value=self.data.zero_current_detection_ratio)
+
+        self.frm_zth_export = ttk.LabelFrame(self.parent, text="Zth Export Settings")
+        self.frm_zth_export.place(x=10, y=3*20 + 3*BTN_HEIGHT, width=200, height=80)
+
+        self.lbl_interpol_width = ttk.Label(master=self.frm_zth_export, text="Samples/Decade", anchor="w")
+        self.lbl_interpol_width.place(x=10, y=10, width=160)
+        self.spinb_zth_export_samp_dec = ttk.Spinbox(master=self.frm_zth_export, width=40,
+                                                     from_=1, to=50, increment=1, state="readonly")
+        self.spinb_zth_export_samp_dec.place(x=132, y=5, width=60)
+        self.spinb_zth_export_samp_dec.set(value=self.data.export_zth_samples_decade)
+
+        self.btn_apply_settings = ttk.Button(master=self.parent,
+                                               text="Apply Settings", command=self.apply_settings,
+                                               style="dark")
+        self.btn_apply_settings.place(x=1050, y=750 + BTN_HEIGHT, height=BTN_HEIGHT, width=180)
+
+    def apply_settings(self):
+        print("\033[94mSettings changed\033[0m")
+
+        self.data.zero_current_detection_mode = self.ctrl_zero_curr_method_set.get()
+        self.data.zero_current_detection_ratio = self.spinb_zero_curr_ratio.get()
+        self.data.export_zth_samples_decade = int(self.spinb_zth_export_samp_dec.get())
