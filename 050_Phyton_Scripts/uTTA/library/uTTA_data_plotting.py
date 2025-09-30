@@ -36,7 +36,8 @@ class UttaPlotData:
 
         self.plot_mapping = []
 
-        self.figure, self.axes = Figure(figsize=(size[0] / dpi, (size[1]-10) / dpi), dpi=dpi), []
+        self.figure, self.axes = Figure(figsize=(size[0] / dpi, (size[1]-10) / dpi)), []
+        # self.figure, self.axes = Figure(figsize=(size[0] / dpi, (size[1] - 10) / dpi), dpi=dpi), []
 
         for i in range(rows):
             for j in range(cols):
