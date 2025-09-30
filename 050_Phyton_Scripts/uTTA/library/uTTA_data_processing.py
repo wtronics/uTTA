@@ -15,7 +15,7 @@ import configparser  # part of python 3.12.5
 class UttaZthProcessing:
     def __init__(self):
         self.print_to_console = True            # Variable for future use to switch off all the print statements
-        self.data_imported = False
+
         self.adc_timebase = np.array([])        # full measurement timebase
         self.adc = np.array([])                 # full measurement ADC values scaled according to the calibration
         self.cooling_start_index = 0            # first array index where the cooling curve starts
@@ -37,10 +37,6 @@ class UttaZthProcessing:
         self.i_heat = 0.0
         self.u_heat = 0.0
         self.p_heat = 0.0
-        self.flag_heating_calculated = False
-
-        self.flag_zero_current_unfeasible = False  # a flag to disable downstream operations in case of a problem in zero current detection
-        self.flag_cooling_curve_calculated = False # a flag to indicate that the cooling curve was extracted
 
         # Parameters for Interpolation
         self.InterpolationTStart = 0.00010
@@ -86,11 +82,9 @@ class UttaZthProcessing:
 
         # general flags
         self.flag_import_successful = False
-
-        self.cc_start_pdata = {}  # plot data for add_cooling_curve_start_plot
-        self.inp_tsp_meas_pdata = {}    # plot data for add_input_tsp_measure_curve_plot
-        self.tc_curve_pdata = {}  # plot data for add_thermocouple_plot
-
+        self.flag_heating_calculated = False
+        self.flag_zero_current_unfeasible = False  # a flag to disable downstream operations in case of a problem in zero current detection
+        self.flag_cooling_curve_calculated = False # a flag to indicate that the cooling curve was extracted
 
     def load_settings(self, gui_name):
 
@@ -148,7 +142,6 @@ class UttaZthProcessing:
         if len(file_nam) > 1:
             self.adc_timebase, self.adc, self.tc, self.meta_data = uTTA_data_import.read_measurement_file(file_nam, 0)
             if len(self.adc_timebase) > 0:
-                self.data_imported = True
                 self.flag_import_successful = True
                 print("\033[92mSUCCESS: File import completed\033[0m")
                 retval = True
@@ -160,7 +153,7 @@ class UttaZthProcessing:
         return retval
 
     def interpolate_to_common_timebase(self):
-        if self.data_imported:
+        if self.flag_import_successful:
             print("Number of temperature samples: {TCsamp}, Duration of measurement: {tmeas} = {TCsS} Samples/Second".
                   format(TCsamp=len(self.tc[0]),
                          tmeas=self.adc_timebase[-1],
