@@ -18,7 +18,7 @@ class TSPInterpolationApp(ttk.Window):
         self.timebase_scale_set.set("Log")
 
         self.mainwindow = mainwindow
-        self.mainwindow.utta_data.InterpolationAverageHW = 4
+        #self.mainwindow.utta_data.InterpolationAverageHW = 4
         self.InterpolationAveragingHW = tkinter.IntVar()
 
         self.interp_points_idx_start = udpc.find_nearest(self.mainwindow.utta_data.adc_timebase_cooling, self.mainwindow.utta_data.InterpolationTStart)
@@ -153,10 +153,8 @@ class TSPInterpolationApp(ttk.Window):
         self.update_displays()
         self.update()
 
-
     def create_si_string(self,value, unit):
         return '{val}'.format(val=Quantity(value, unit))
-
 
     def update_displays(self):
         # update the displayed time
