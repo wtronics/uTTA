@@ -81,8 +81,8 @@
       <sequence value="a[SYST:MODE NORMAL] h[0A]"/>
       <description></description>
     </SequenceItem>
-    <SequenceItem name="Set CALIBRATION Mode">
-      <sequence value="a[SYST:MODE CAL] h[0A]"/>
+    <SequenceItem name="Set Test Mode">
+      <sequence value="a[SYST:MODE TEST] h[0A]"/>
       <description></description>
     </SequenceItem>
     <SequenceItem name="Set Cal. SampleRate">
