@@ -93,7 +93,7 @@ class UttaZthProcessing:
 
 
     def load_settings(self, gui_name):
-        
+
         fileext = gui_name.split(".")[-1]
         filename = gui_name.replace(fileext, "ini")
 
