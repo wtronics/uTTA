@@ -163,8 +163,6 @@ class UmfViewerApp(ttk.Window):
 
             if not self.utta_data.meta_data.FlagTSPCalibrationFile:
 
-                self.utta_data.zero_current_detection_mode = "Ratio"
-
                 self.utta_data.calculate_cooling_curve()
                 self.utta_data.calculate_diode_heating()
                 self.utta_data.calculate_tsp_start_voltages()
