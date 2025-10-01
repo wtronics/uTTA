@@ -190,7 +190,7 @@ class SettingsWidget(ttk.Frame):
                                                 " of the semiconductor")
 
         self.frm_zth_export = ttk.LabelFrame(self.parent, text="Zth Export Settings")
-        self.frm_zth_export.place(x=640, y=10, width=200, height=80)
+        self.frm_zth_export.place(x=640, y=10, width=200, height=60)
 
         ttk.Label(master=self.frm_zth_export, text="Samples/Decade", anchor="w").place(x=10, y=10, width=160)
 
@@ -200,7 +200,25 @@ class SettingsWidget(ttk.Frame):
         self.spinb_zth_export_samp_dec.set(value=self.data.export_zth_samples_decade)
 
         self.frm_tdim_export = ttk.LabelFrame(self.parent, text="TDIM Export Settings")
-        self.frm_tdim_export.place(x=640, y=100, width=200, height=80)
+        self.frm_tdim_export.place(x=640, y=80, width=200, height=105)
+
+        ttk.Label(master=self.frm_tdim_export, text="Max. Points", anchor="w").place(x=10, y=15, width=160)
+        self.spinb_max_points = ttk.Spinbox(master=self.frm_tdim_export, width = 80,
+                                            from_=10000, to=1000000, increment=1)
+        self.spinb_max_points.place(x=102, y=10, width=80)
+        self.spinb_max_points.set(value=self.data.export_tdim_max_points)
+        ToolTip(self.spinb_max_points, text="The maximum number of samples the\n"
+                                            "TDIM-Export file shall contain.")
+
+        ttk.Label(master=self.frm_tdim_export, text="Reduce above", anchor="w").place(x=10, y=55, width=160)
+        ttk.Label(master=self.frm_tdim_export, text="s", anchor="w").place(x=185, y=55, width=12)
+        self.spinb_reduce = ttk.Spinbox(master=self.frm_tdim_export, width=80,
+                                        from_=10.0, to=1000.0, increment=1)
+        self.spinb_reduce.set(value=self.data.export_tdim_reduce_time)
+        self.spinb_reduce.place(x=102, y=50, width=80)
+
+        ToolTip(self.spinb_reduce, text="Time above which the sample rate is reduced\n"
+                                        "to fit into the set maximum number of points.")
 
         self.btn_apply_settings = ttk.Button(master=self.parent,
                                                text="Apply Settings", command=self.apply_settings,
@@ -217,3 +235,6 @@ class SettingsWidget(ttk.Frame):
         self.data.Cth_Si = float(self.spinb_material_cth.get())
         self.data.rho_Si = float(self.spinb_material_rho.get())
         self.data.kappa_SI = float(self.spinb_material_kappa.get())
+
+        self.data.export_tdim_max_points = int(self.spinb_max_points.get())
+        self.data.export_tdim_reduce_time = float(self.spinb_reduce.get())
