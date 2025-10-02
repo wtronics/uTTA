@@ -76,7 +76,7 @@ Sadly I don't have a real world application test setup. Therefore I built a litt
 # ToDo
 - [x] Build calibration GUI for uTTA.
 - [x] Build calibration GUI for DUT scaling factors.
-- [ ] Document jumper settings of the Nucleo-Board.
+- [x] Document jumper settings of the Nucleo-Board.
 - [ ] Get the deconvolution to work.
 - [ ] Calculate RC-Models from the time constant spectrum.
 - [ ] Build a nice (non LabVIEW) GUI.
