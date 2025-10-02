@@ -1,7 +1,7 @@
 import numpy as np                              # numpy 2.1.0
 import matplotlib.pyplot as plt                 # matplotlib 3.9.2
-import scipy.signal as scip                     # scipy 1.14.1
-from skimage import restoration                 # scikit-image 0.24.0
+import scipy.signal as scip                     # scipy 1.16.2
+from skimage import restoration                 # scikit-image 0.25.2
 import time                                     # part of python 3.12.5
 
 tStart = 1e-6
