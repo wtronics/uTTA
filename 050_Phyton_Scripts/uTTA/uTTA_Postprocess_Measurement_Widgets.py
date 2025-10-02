@@ -1,4 +1,4 @@
-import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
+import ttkbootstrap as ttk  # ttkbootstrap 1.14.2
 from ttkbootstrap.tooltip import ToolTip
 import library.uTTA_data_plotting as ud_plot
 import tkinter
