@@ -1,11 +1,8 @@
 import numpy as np                      # numpy 2.1.0
 from numpy import genfromtxt            # numpy 2.1.0
 import matplotlib.pyplot as plt         # matplotlib 3.9.2
-import library.uTTA_data_import as uTTA_data_import
 import library.uTTA_data_processing as udpc
 
-#ExportDiodeVoltages = 0
-#ExportIntermediateFile = 1
 LogLogPlot = 1
 
 NumCurves = int(input("Please enter the number of Curves you want to compare: "))
