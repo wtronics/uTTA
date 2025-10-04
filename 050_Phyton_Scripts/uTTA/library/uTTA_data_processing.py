@@ -98,7 +98,7 @@ class UttaZthProcessing:
 
         if os.path.isfile(filename):        # check if the config file exists
             config = configparser.ConfigParser()
-            config.optionxform(str())  # set configparser to Case-Sensitive
+            config.optionxform = str  # type: ignore # set configparser to Case-Sensitive
             config.read_file(open(filename))
 
             self.no_of_tsp = int(config["Settings"]["NoOfTSP"])
@@ -126,7 +126,7 @@ class UttaZthProcessing:
         filename = gui_name.replace(fileext, "ini")
 
         config = configparser.ConfigParser()
-        config.optionxform(str())  # set configparser to Case-Sensitive
+        config.optionxform = str  # type: ignore # set configparser to Case-Sensitive
         config.add_section("Settings")
         config.set("Settings", "NoOfTSP", value=str(self.no_of_tsp))
         config.set("Settings", "MaxDeltaT_StartEnd", value=str(self.MaxDeltaT_StartEnd))

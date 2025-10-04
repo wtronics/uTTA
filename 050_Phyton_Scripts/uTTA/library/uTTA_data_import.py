@@ -276,7 +276,7 @@ def get_channel_data(tsp_no, cells):
 def read_calfile2dict(filename):
     print("Reading calibration values from file: " + filename)
     config = configparser.ConfigParser()
-    config.optionxform(str())  # set configparser to Case-Sensitive
+    config.optionxform =str  # type: ignore # set configparser to Case-Sensitive
     config.read_file(open(filename))
 
     utta_cal_data = {}  # dictionary for device calibration data
@@ -326,7 +326,7 @@ def write_tsp_cal_to_file(filename, tsp_cal):
     print("Writing calibration values to file: " + filename)
 
     config = configparser.ConfigParser()
-    config.optionxform(str())  # set configparser to Case-Sensitive
+    config.optionxform = str  # type: ignore # set configparser to Case-Sensitive
     config.read_file(open(filename))
 
     for tsp_name, tsp in tsp_cal.items():
