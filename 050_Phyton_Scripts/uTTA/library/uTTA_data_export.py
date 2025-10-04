@@ -34,7 +34,7 @@ def export_t3i_file(timebase, zth, headername, filename):
 
 def export_tdim_master_file(timebase, zth, meta_data,
                             p_heat, filename, tdim_data_limit = 49999,
-                            t_reduce_data = 100, ):
+                            t_reduce_data = 100.0, ):
 
     if meta_data is not None:
         header = "# Transient Dual Interface Measurement: {dutname}\n".format(dutname=meta_data.Channels["TSP0"]["Name"])
@@ -55,13 +55,12 @@ def export_tdim_master_file(timebase, zth, meta_data,
             zth_output = np.zeros(shape=(2, tdim_data_limit))
             zth_output[0, 0:reduce_above_idx-1] = timebase[0:reduce_above_idx-1]
             zth_output[1, 0:reduce_above_idx-1] = zth[0, 0:reduce_above_idx-1]
-            print("Input Samples {nsamp}, Reduction Index {red_idx}".format(nsamp=len(zth[0]), red_idx=reduce_above_idx))
+            # print("Input Samples {nsamp}, Reduction Index {red_idx}".format(nsamp=len(zth[0]), red_idx=reduce_above_idx))
 
             zth_output[0, reduce_above_idx:] = compress_array(timebase[reduce_above_idx:-1], tdim_data_limit - reduce_above_idx)
             zth_output[1, reduce_above_idx:] = compress_array(zth[0, reduce_above_idx:-1], tdim_data_limit - reduce_above_idx)
         else:
-            meas_len = min(len(zth[0]),
-                           tdim_data_limit)  # limit the export length to 49999 because TDIM Master doesn't work with more lines
+            meas_len = min(len(zth[0]), tdim_data_limit)  # limit the export length to 49999 because TDIM Master doesn't work with more lines
             zth_output = np.zeros(shape=(2, meas_len))
             zth_output[0, 0:meas_len] = timebase[0:meas_len]
             zth_output[1, 0:meas_len] = zth[0, 0:meas_len]
@@ -132,7 +131,7 @@ def compress_array(arr, length):
         end_index = min(end_index, len(arr))
 
         segment = arr[start_index:end_index]
-        pprint.pprint(segment)
+        # pprint.pprint(segment)
         if len(segment) == 0:
             # In case segment is empty (should be impossible due to ratio calculation),
             # 0 is returned as a standard value
