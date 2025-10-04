@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox  # part of python 3.12.5
 from dataclasses import dataclass, field
 from collections import defaultdict
-from typing import List
+from typing import List, Dict, Any
 import configparser  # part of python 3.12.5
 
 MCU_Clock = 72000000
@@ -23,17 +23,17 @@ class DevCalibration:
 class UTTAMetaData:
     SamplesPerDecade: int = 250
     MaxDivider: int = 17
-    Channels: defaultdict[dict] = field(default_factory=lambda: defaultdict(dict))
-    Measurement: defaultdict[dict] = field(default_factory=lambda: defaultdict(dict))
-    Isense: float = None
+    Channels: Dict[str, Any] = field(default_factory=dict)
+    Measurement: Dict[str, Any] = field(default_factory=dict)
+    Isense: float = 0.0
     Voffs: List = field(default_factory=lambda: [0.00, 0.00])
-    CalData: defaultdict[dict] = field(default_factory=lambda: defaultdict(dict))
-    TPreheat: int = None
-    THeating: int = None
-    TCooling: int = None
+    CalData: Dict[str, Any] = field(default_factory=dict)
+    TPreheat: int = 0
+    THeating: int = 0
+    TCooling: int = 0
 
-    CoolingStartBlock: int = None
-    TotalBlocks: int = None
+    CoolingStartBlock: int = 0
+    TotalBlocks: int = 0
 
     FlagTSPCalibrationFile: bool = False
 
@@ -56,16 +56,16 @@ def read_measurement_file(filename, flag_raw_value_mode):
                                                                               t3r_file_vers)
 
             return timebase_total, adc, temp, meta_data
-    return 0, 0, 0, {}
+    return np.empty((1, 1)), np.empty((4, 1)), np.empty((4, 1)), UTTAMetaData()
 
 
 def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
     num_lines = len(lines)
-    adc = np.zeros((4, num_lines), numpy.float32)
+    adc = np.zeros((4, int(num_lines)), numpy.float32)
 
     adc_idx = 0
     temp_idx = 0
-    temp = []
+    temp = np.zeros((4, int(num_lines)), numpy.float32)
     pga_now = 0
     pga = []
     last_block_no = 0
@@ -76,6 +76,13 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
     adc_samples_in_block = 0
 
     meas_meta_data = UTTAMetaData()
+    if umf_fileversion >= 3.3:
+        temp_divider = 1.0
+    elif umf_fileversion >= 3.2:
+        temp_divider = 4.0
+    else:
+        temp_divider = 8.0
+    
 
     for line in lines:
         line = line.replace("\r", "").replace("\n", "")
@@ -85,7 +92,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
             if not cells[0].isnumeric():
                 match cells[0]:
                     case 'FileVersion':
-                        meas_meta_data.Measurement["FileVersion"] = str(cells[1])
+                        meas_meta_data.Measurement['FileVersion'] = str(cells[1])
                     case 'Device':
                         meas_meta_data.Measurement["DeviceVersion"] = str(cells[1])
                     case 'StartTime':
@@ -161,21 +168,11 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                         pga_now = int(cells[1])
                     case '#T':
                         for CellIdx in range(1, 5):  # copy the cells to the new array
-                            if umf_fileversion >= 3.3:
-                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx])
-                            elif umf_fileversion >= 3.2:
-                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 4.0
-                            else:
-                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 8.0
+                            temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / temp_divider
                         temp_idx += 1
                     case '#TEMP':
                         for CellIdx in range(1, 5):  # copy the cells to the new array
-                            if umf_fileversion >= 3.3:
-                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx])
-                            elif umf_fileversion >= 3.2:
-                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 4.0
-                            else:
-                                temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / 8.0
+                            temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / temp_divider
                         temp_idx += 1
                     case 'Cooling Start Block':
                         meas_meta_data.CoolingStartBlock = int(cells[1]) + 1
@@ -220,8 +217,6 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                     adc_idx += 1
 
     del lines
-    del line
-    del cells
 
     # print("Channel Names: " + str(ch_names))
 
@@ -281,7 +276,7 @@ def get_channel_data(tsp_no, cells):
 def read_calfile2dict(filename):
     print("Reading calibration values from file: " + filename)
     config = configparser.ConfigParser()
-    config.optionxform = str  # set configparser to Case-Sensitive
+    config.optionxform(str())  # set configparser to Case-Sensitive
     config.read_file(open(filename))
 
     utta_cal_data = {}  # dictionary for device calibration data
@@ -331,7 +326,7 @@ def write_tsp_cal_to_file(filename, tsp_cal):
     print("Writing calibration values to file: " + filename)
 
     config = configparser.ConfigParser()
-    config.optionxform = str  # set configparser to Case-Sensitive
+    config.optionxform(str())  # set configparser to Case-Sensitive
     config.read_file(open(filename))
 
     for tsp_name, tsp in tsp_cal.items():
@@ -343,7 +338,8 @@ def write_tsp_cal_to_file(filename, tsp_cal):
               format(nam=tsp_name, Offs=tsp_offs, Gain=tsp_lin, QGain=tsp_quad, CS=tsp["CalStatus"]))
 
         if config.has_section(tsp_name):
-            msgbox_ret = tk.messagebox.askquestion("Existing Calibration",
+
+            msgbox_ret = messagebox.askquestion("Existing Calibration",
                                                    "The channel '" + tsp_name.replace("$CHAN_", "") + "' already exists.\n" +
                                                    "Do you wish to overwrite existing values?", icon="warning", )
             if msgbox_ret == "yes":
