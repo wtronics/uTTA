@@ -9,6 +9,7 @@ import matplotlib.ticker as ticker
 import library.uTTA_data_import as uTTA_data_import
 import library.uTTA_data_export as uTTA_data_export
 import library.uTTA_data_plotting as ud_plot
+import library.uTTA_Reporting as utta_report
 import configparser  # part of python 3.12.5
 
 
@@ -97,7 +98,7 @@ class UttaZthProcessing:
 
         if os.path.isfile(filename):        # check if the config file exists
             config = configparser.ConfigParser()
-            config.optionxform = str        # set configparser to Case-Sensitive
+            config.optionxform(str())  # set configparser to Case-Sensitive
             config.read_file(open(filename))
 
             self.no_of_tsp = int(config["Settings"]["NoOfTSP"])
@@ -125,7 +126,7 @@ class UttaZthProcessing:
         filename = gui_name.replace(fileext, "ini")
 
         config = configparser.ConfigParser()
-        config.optionxform = str  # set configparser to Case-Sensitive
+        config.optionxform(str())  # set configparser to Case-Sensitive
         config.add_section("Settings")
         config.set("Settings", "NoOfTSP", value=str(self.no_of_tsp))
         config.set("Settings", "MaxDeltaT_StartEnd", value=str(self.MaxDeltaT_StartEnd))
@@ -424,6 +425,9 @@ class UttaZthProcessing:
                                                         str(self.meta_data.Channels[str("TSP1")]["Name"]) + "\t" +
                                                         str(self.meta_data.Channels[str("TSP2")]["Name"]),
                                              filename=filename)
+            
+    def report_html(self, outfilename):
+        utta_report.export(self, outfilename)
 
     def export_tdim_master(self,fname):
         uTTA_data_export.export_tdim_master_file(self.adc_timebase_cooling,
@@ -644,10 +648,10 @@ def find_static_states(indata, threshold=0.01, min_length=5):
     """
 
     ranges = []
-    start = None
+    start = -1
 
     for i in range(len(indata)):
-        if start is None:
+        if start is -1:
             start = i
         elif abs(indata[i] - indata[start]) > threshold:
             if i - start >= min_length:
