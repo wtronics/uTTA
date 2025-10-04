@@ -76,6 +76,15 @@ class UmfViewerApp(ttk.Window):
                                                style="dark", state="disabled")
         self.btn_export_zth_curve.place(x=10, y=10+20 + BTN_HEIGHT, height=BTN_HEIGHT, width=180)
 
+        self.frm_report_btns = ttk.LabelFrame(self, text="Report",
+                                                  width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
+        self.frm_report_btns.place(x=10, y=420, height=3*20 + 2*BTN_HEIGHT)
+
+        self.btn_report_html = ttk.Button(master=self.frm_report_btns,
+                                                 text="Create HTML Report", command=self.report_html,
+                                                 style="dark", state="disabled")
+        self.btn_report_html.place(x=10, y=10, height=BTN_HEIGHT, width=180)
+
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
         # RIGHT GUI COLUMN
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
@@ -83,7 +92,7 @@ class UmfViewerApp(ttk.Window):
         self.frm_help_bar = ttk.Frame(master=self, width=SEC_COL_WIDTH, height=50, style='info.TFrame')
         self.frm_help_bar.place(x=FIRST_COL_WIDTH+20, y=10)
 
-        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", bootstyle="inverse-info", wraplength=1080)
+        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", style="inverse-info", wraplength=1080)
         self.lbl_helpbar.place(x=10, y=5)
         self.lbl_helpbar.configure(text="Welcome to the uTTA measurement postprocessing GUI. \n"
                                         "Click 'Measurement File' and import a measurement")
@@ -176,6 +185,7 @@ class UmfViewerApp(ttk.Window):
                 self.btn_interpolation_setup.configure(state="enabled")
                 self.btn_export_tdim_master.configure(state="enabled")
                 self.btn_export_zth_curve.configure(state="enabled")
+                self.btn_report_html.configure(state="enabled")
 
             else:
                 self.lbl_helpbar.configure(text="File: {fname} is a TSP calibration measurement.\n"
@@ -186,6 +196,8 @@ class UmfViewerApp(ttk.Window):
                 self.btn_interpolation_setup.configure(state="disabled")
                 self.btn_export_tdim_master.configure(state="disabled")
                 self.btn_export_zth_curve.configure(state="disabled")
+                self.btn_report_html.configure(state="disabled")
+
 
         else:
             self.lbl_helpbar.configure(text="File: {fname} was not imported.".format(fname=DataFile),
@@ -204,8 +216,13 @@ class UmfViewerApp(ttk.Window):
         self.utta_data.interpolate_zth_curve_start()
         # self.update_widgets()
 
+    def report_html(self):
+        outfilename = FilePath + r'/' + DataFile.replace(".umf", ".html")
+
+        self.utta_data.report_html(outfilename)
+
     def export_to_tdim_master(self):
-        outfilename = FilePath + r'/' + DataFile.replace(".umf", ".txt")
+        outfilename = FilePath + r'/' + DataFile.replace(".umf", ".html")
 
         self.utta_data.export_tdim_master(outfilename)
 
