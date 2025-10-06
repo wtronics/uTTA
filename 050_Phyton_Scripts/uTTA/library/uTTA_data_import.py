@@ -261,7 +261,7 @@ def get_channel_data(tsp_no, cells):
                        "Offset": float(cells[2]) / 1000000,
                        "LinGain": float(cells[3]) / 1000000,
                        "QuadGain": float(cells[4]) / 1000000,
-                       "CalStatus": 0
+                       "CalStatus": 0       # CAL Stati: 0 = Uncalibrated, 1 = Calibrated, 2 = Dummy Channel
                        }
         print("CH{no} Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Quadratic: {Cub:.3f}".format(
             no=tsp_no-1,
