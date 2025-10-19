@@ -1,0 +1,9 @@
+Jinja2==3.1.6
+matplotlib==3.10.3
+matplotlib-inline==0.1.7
+numpy==2.3.0
+pandas==2.3.3
+plotly==6.3.1
+quantiphy==2.20
+ttkbootstrap==1.13.11
+
