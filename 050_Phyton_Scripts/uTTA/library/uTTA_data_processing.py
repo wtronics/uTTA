@@ -368,6 +368,8 @@ class UttaZthProcessing:
               format(MaxThick=self.DieMaxThickness*1000*1000))
 
         # Interpolated curve of the temperature.
+        # self.t_dio_start_interpolation = (np.sqrt(self.adc_timebase_cooling) * self.InterpolationFactorM +
+        #                                  self.InterpolationOffset)
         self.t_dio_start_interpolation = (np.sqrt(self.adc_timebase_cooling[0:interp_idx_end]) * self.InterpolationFactorM +
                                           self.InterpolationOffset)
 
@@ -686,6 +688,8 @@ def split_file_path(file_path):
 
     data_file_no_ext = data_file.replace('.' + file_extension, '')
     file_path = os.path.dirname(file_path)
+
+    # return the FileName with FileExtension, the bare filename and the directory to the file
     return data_file, data_file_no_ext, file_path
 
 def write_tsp_cal_to_file(filename, tsp_cal):
