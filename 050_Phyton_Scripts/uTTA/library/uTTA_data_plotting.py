@@ -2,8 +2,9 @@ from matplotlib.figure import Figure
 import matplotlib as mpl
 import matplotlib.pyplot as plt     # matplotlib 3.9.2
 import matplotlib.ticker as ticker
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # matplotlib 3.9.2
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore # matplotlib 3.9.2
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
+import numpy as np
 import pprint as pprint
 
 class UttaPlotConfiguration:
@@ -67,7 +68,7 @@ class UttaPlotData:
 
     def update_plots(self):
 
-        for i, ax in enumerate(self.axes):
+        for i, ax in enumerate(self.axes): # type: ignore
             ax.clear()
 
             mapping_item = next((item for item in self.plot_mapping if item[0] == i), None)
@@ -118,6 +119,10 @@ class UttaPlotData:
                     for curve in config.data:
                         ax.plot(curve['x_data'], curve['y_data'], label=curve['label'], **curve.get('style', {}))
                         num_plots += 1
+                        if config.y_scale == 'log' and np.min(curve['y_data']) < 0.0:
+                            config.y_scale = 'linear'
+
+                   
 
                     ax.set_xscale(config.x_scale)
                     ax.set_yscale(config.y_scale)
