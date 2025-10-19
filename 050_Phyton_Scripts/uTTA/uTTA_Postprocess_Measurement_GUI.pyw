@@ -1,5 +1,6 @@
-import  os
+import os
 import matplotlib # matplotlib 3.9.2
+from tkinter import filedialog as fd
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
 import library.uTTA_data_processing as udProc
 import uTTA_Postprocess_Measurement_Interpol_Widget as uttaInterpolWidget
@@ -8,11 +9,9 @@ import uTTA_Postprocess_Measurement_Widgets as uttaWidgets
 
 matplotlib.use("TkAgg")
 
-CalData_FileName = ''
-DataFile = ''
-FilePath = ''
 
 Debug_AutoLoadEnable = False
+Debug_AutoExportHTML = False
 Debug_AutoLoadFile = os.path.abspath(r"..\..\060_Example_Measurement_Data\Example_Measurement.umf")
 
 WINDOW_WIDTH = 1480
@@ -34,6 +33,9 @@ class UmfViewerApp(ttk.Window):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
         self.FileOpened = False
+        self.FileNameWExt = ""
+        self.FileName = ""
+        self.DirName = ""
 
         self.utta_data = udProc.UttaZthProcessing()
         self.utta_data.load_settings(__file__)
@@ -157,7 +159,7 @@ class UmfViewerApp(ttk.Window):
         self.update()
 
     def read_measurement_file_callback(self):
-        global DataFile, FilePath
+
         if not Debug_AutoLoadEnable:
             measfilename = udProc.select_file("Select the measurement file",
                                               (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
@@ -165,7 +167,7 @@ class UmfViewerApp(ttk.Window):
             measfilename = Debug_AutoLoadFile
 
         if len(measfilename) > 0:  # check if string is not empty
-            DataFile, data_file_no_ext, FilePath = udProc.split_file_path(measfilename)
+            self.FileNameWExt, self.FileName, self.DirName = udProc.split_file_path(measfilename)
 
             self.FileOpened = self.utta_data.import_data(measfilename)
 
@@ -178,7 +180,7 @@ class UmfViewerApp(ttk.Window):
                 self.utta_data.interpolate_zth_curve_start()
                 self.update_widgets()
 
-                self.lbl_helpbar.configure(text="File: {fname} was successfully imported.".format(fname=DataFile),
+                self.lbl_helpbar.configure(text="File: {fname} was successfully imported.".format(fname=self.FileNameWExt),
                                            style="success.Inverse.TLabel")
                 self.frm_help_bar.configure(style="success.TFrame")
 
@@ -187,9 +189,12 @@ class UmfViewerApp(ttk.Window):
                 self.btn_export_zth_curve.configure(state="enabled")
                 self.btn_report_html.configure(state="enabled")
 
+                if Debug_AutoExportHTML:
+                    self.report_html()
+
             else:
                 self.lbl_helpbar.configure(text="File: {fname} is a TSP calibration measurement.\n"
-                                                "Therefore this file can't be processed!".format(fname=DataFile),
+                                                "Therefore this file can't be processed!".format(fname=self.FileNameWExt),
                                            style="danger.Inverse.TLabel")
                 self.frm_help_bar.configure(style="danger.TFrame")
 
@@ -200,7 +205,7 @@ class UmfViewerApp(ttk.Window):
 
 
         else:
-            self.lbl_helpbar.configure(text="File: {fname} was not imported.".format(fname=DataFile),
+            self.lbl_helpbar.configure(text="File: {fname} was not imported.".format(fname=self.FileNameWExt),
                                        style="danger.Inverse.TLabel")
             self.frm_help_bar.configure(style="danger.TFrame")
 
@@ -214,23 +219,40 @@ class UmfViewerApp(ttk.Window):
     def recalculate_interpolation(self):
         print("recalculate called")
         self.utta_data.interpolate_zth_curve_start()
-        # self.update_widgets()
 
     def report_html(self):
-        outfilename = FilePath + r'/' + DataFile.replace(".umf", ".html")
 
-        self.utta_data.report_html(outfilename)
+        report_folder = fd.askdirectory(parent=self,
+                                        title="Select the directory where the report shall be stored.",
+                                        mustexist=True)
+        
+        if report_folder:
+            outfilename = report_folder + r'/' + self.FileName + "_Measurement_Report.html"
+
+            self.utta_data.report_html(outfilename)
+
+            if Debug_AutoExportHTML:
+                self.on_closing()
 
     def export_to_tdim_master(self):
-        outfilename = FilePath + r'/' + DataFile.replace(".umf", ".html")
 
-        self.utta_data.export_tdim_master(outfilename)
+        output_folder = fd.askdirectory(parent=self,
+                                        title="Select the directory where the TDIM Master File shall be stored.",
+                                        mustexist=True)
+        
+        if output_folder:
+            outfilename = output_folder + r'/' + self.FileName + ".tdim"
+            self.utta_data.export_tdim_master(outfilename)
 
     def export_to_zth_curve(self):
 
-        outfilename = FilePath + r'/' + DataFile.replace(".umf", "_zth.txt")
-
-        self.utta_data.export_zth_curve(outfilename)
+        output_folder = fd.askdirectory(parent=self,
+                                        title="Select the directory where the Zth raw data shall be stored.",
+                                        mustexist=True)
+        
+        if output_folder:
+            outfilename = output_folder + r'/' + self.FileName + "_zth.txt"
+            self.utta_data.export_zth_curve(outfilename)
 
     def interpolation_window_closed(self):
         self.interp_window = None
@@ -243,7 +265,7 @@ class UmfViewerApp(ttk.Window):
 
 
 if __name__ == "__main__":
-    print(Debug_AutoLoadFile)
+
     app = UmfViewerApp()
 
     app.mainloop()
