@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdn.plot.ly/plotly-3.1.1.min.js" charset="utf-8"></script>
+	<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"></script>
+	<script>
+	    // Find out which decimal separator the system uses
+        function getDecimalSeparator() {
+            try {
+                // Generates a formatted string with decimals tho see which output the system creates
+                // The empty parameter on NumberFormat lets the system use the standard locale of the browser
+                const number = 1.1;
+                // 'formatToParts' splits the string and allows the read out the decimal separator
+                const parts = new Intl.NumberFormat().formatToParts(number);
+                const decimalPart = parts.find(part => part.type === 'decimal');
+                return decimalPart ? decimalPart.value : '.'; // Fallback to colon
+            } catch (e) {
+                console.warn('Intl.NumberFormat not available. Will use the standard colon as decimal separator.', e);
+                return '.'; 
+            }
+        }
+        
+        const LOCAL_DECIMAL_SEPARATOR = getDecimalSeparator();
+		const delimiter = ";"  // Field delimiter is semicolon
+		
+		// RegEx to detect numbers including numbers in exponential notation
+        const NUMERIC_REGEX = /^-?\d+([.,]\d+)?([Ee][+-]?\d+)?$/;
+		
+		
+        /**
+         * Converts the content of an HTML-table into a csv-formatted string and copies it to clipboard
+         * @param {string} tableId --> ID of the table
+         */
+        function copyTableToClipboard(tableId) {
+            const table = document.getElementById(tableId);
+            if (!table) {
+                console.error('Table ID ' + tableId + ' not found!');
+                return;
+            }
+			
+			
+            let csv = '';
+            const rows = table.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('th, td');
+                const rowData = Array.from(cells).map(cell => {
+                    // get the content of the field and remove spaces
+                    let text = cell.innerText.trim();
+					
+					
+                    // Test if the field value is a number
+                    // just a simple test to check if it is a number with decimal separator
+                    const isNumeric = NUMERIC_REGEX.test(text);
+					
+					if (isNumeric) {
+                        // Convert to JavaScript standard format (. as decimal separator)
+                        let valueAsNumber = parseFloat(text.replace(',', '.')); 
+                        
+						// check if the conversion to float was successful
+						if (!isNaN(valueAsNumber)) {
+                            // Convert the number to the standard string format without exponential notation with a fixed length of 20 to make sure there are enough decimal digits.
+							// and remove trailing zeros
+                            let valueAsString = valueAsNumber.toFixed(20).replace(/\.?0+$/, '');
+
+                            // replace the standard decimal separator with the locale separator
+                            return valueAsString.replace('.', LOCAL_DECIMAL_SEPARATOR);
+                        } else {
+                            // Conversion failed. Treat number as text
+                            console.warn(`Fehler beim Parsen der Zahl: ${text}`);
+                        }
+                    }
+					
+                    // Padding of quotes with additional ones (if needed)
+                    text = text.replace(/"/g, '""');
+                    // When text contains commas or line breaks it will be set in quotes
+                    if (text.includes(delimiter) || text.includes('\n') || text.includes('"')) {
+                        return `"${text}"`;
+                    }
+                    return text;
+                });
+                csv += rowData.join(delimiter) + '\n'; // join the field in this row by using the delimiter
+            });
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(csv)
+                .then(() => {
+                    alert('Copied data to clipboard.');
+                })
+                .catch(err => {
+                    console.error('Failed to copy table "' + tableId + '"', err);
+                    alert('Failed to copy table "' + tableId + '"');
+                });
+        }
+    </script>
+    <title>µTTA Measurement Report - {{ report_id }}</title>
+    <style>
+        /* Allgemeine Stile und Layout-Optimierung für große Bildschirme (bis 1600px) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            /* Zentriert den Inhalt und setzt die maximale Breite auf 1600px */
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Kopfzeile */
+        .header {
+            display: flex;
+			background-color: #404040;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .logo-placeholder {
+            width: 180px;
+            height: 80px;
+            line-height: 80px; /* Vertikale Zentrierung des Platzhaltertextes */
+            text-align: center;
+            background-color: #404040;
+            color: #666;
+            border: 0px solid #ccc;
+            font-size: 0.8em;
+        }
+        
+        .header-title {
+            text-align: center;
+            font-size: 2em;
+            color: #ffffff;
+            flex-grow: 1; /* Nimmt den verbleibenden Platz ein */
+        }
+        
+        /* Kapitel (Collapsible Elemente) */
+        details {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        summary {
+            font-size: 1.25em;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 0;
+            outline: none; /* Entfernt den Fokusrahmen in einigen Browsern */
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        /* Bilder über die gesamte Breite des Containers */
+        .full-width-image {
+            width: 100%;
+            height: auto;
+            display: block; /* Entfernt möglichen zusätzlichen Platz unter dem Bild */
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            box-sizing: border-box; /* Stellt sicher, dass border innerhalb der 100% Breite liegt */
+        }
+        
+        .report-content p {
+            line-height: 1.6;
+            color: #444;
+        }
+
+        /* Tabelle-Stile */
+        .data-table {
+            /*width: 70%;*/
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+		.zth-table {
+            width: 40%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+		.zth-table th, .zth-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+		.zth-table th {
+            background-color: #404040;
+            color: #FFFFFF;
+        }
+		.zth-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+		.copy-button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            vertical-align: middle;
+        }
+        .copy-button:hover {
+            background-color: #45a049;
+        }
+		
+		.table-wrapper {
+            display: flex;
+            align-items: flex-start; /* Elemente oben ausrichten */
+            gap: 20px; /* Abstand zwischen Tabelle und Button */
+        }
+        .table-container {
+            margin-bottom: 40px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            /* Flex-Eigenschaft, damit die Tabelle den verfügbaren Platz einnimmt */
+            flex-grow: 1; 
+            min-width: 0; /* to avoid overflow */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="header">
+        <div class="logo-placeholder">{{TitleImageLeft}}</div>
+        <h1 class="header-title">µTTA Measurement Report</h1>
+        <div class="logo-placeholder">{{TitleImageRight}}</img></div>
+    </div>
+    
+    <div class="report-content">
+		{% set chapter_no = 1 %}
+        <details open>
+            <summary>{{chapter_no}}. Z<sub>th</sub>-Curve {{Channels['TSP0']['Name']}}</summary>
+            {{PlotFullMeasurement | safe}}		<!-- Here is the Zth Plot -->
+        </details>
+		
+		{% if Channels['TSP1']['Name']!="OFF" or Channels['TSP2']['Name']!="OFF"%}
+        <details open>
+			{% set chapter_no = chapter_no + 1 %}
+            <summary>{{chapter_no}}. Z<sub>th</sub> Coupling of {{Channels['TSP0']['Name']}} to {{Channels['TSP1']['Name']}}{% if Channels['TSP2']['Name']!="OFF" %} and {{Channels['TSP2']['Name']}}{% endif %}</summary>
+
+            {{PlotZthCouplingCurves | safe}}
+        </details>
+		{% endif %}
+
+        <details open>
+			{% set chapter_no = chapter_no + 1 %}
+            <summary>{{chapter_no}}. Details of the Z<sub>th</sub> Calculation</summary>	
+			<details open>
+				<summary>{{chapter_no}}.1. Diode voltage of the cooling phase</summary>
+				{{PlotCoolingMeasDiode}}
+			</details>
+			
+			<details open>
+				<summary>{{chapter_no}}.2. Cooling phase start interpolation</summary>
+				{{PlotStartInterpolation}}			
+				<div class="table-wrapper">
+					<div class="table-container">
+						<h3>Interpolation Results</h3>
+						<table class="zth-table" id="interpolation_table" >
+							<thead>
+								<tr><th>Parameter</th><th>Value</th></tr>
+							</thead>
+							<tbody>
+								<tr><td><strong>Interpolation Start:</strong></td><td>{{InterpolTStart}}</td></tr>
+								<tr><td><strong>Interpolation End:  </strong></td><td>{{InterpolTEnd}}</td></tr>	
+								<tr><td><strong>Iterpolation Factor:</strong></td><td>{{'%.3f' | format(InterpolFactor|float)}}</td></tr>	
+								<tr><td><strong>Iterpolation Offset:</strong></td><td>{{'%.3f °C' | format(InterpolOffset|float)}}</td></tr>	
+								<tr><td><strong>Estimated Active Die Area:</strong></td><td>{{'%.3f mm²' | format(InterpolDieSize|float)}}</td></tr>		
+							</tbody>
+						</table>
+					</div>
+					{% if not PDF_Printable_Report%}
+					<button class="copy-button" onclick="copyTableToClipboard('interpolation_table')">Copy as CSV</button>
+					{% endif %}
+				</div>	
+			</details>
+        </details>
+		
+		<details open>
+			{% set chapter_no = chapter_no + 1 %}
+            <summary>{{chapter_no}}. Z<sub>th</sub> Measurement Data in Table View</summary>
+			<div class="table-wrapper">
+				<div class="table-container">
+					<table class="zth-table" id="zth_table" >
+						<thead>
+							<tr>
+								<th style="width:100px">Time / [s]</th>
+								<th style="width:100px">{{Channels['TSP0']['Name']}} (CH0)</th>
+								{% if Channels['TSP1']['Name']!="OFF"%}<th style="width:100px">{{Channels['TSP1']['Name']}} (CH1)</th>{% endif %}
+								{% if Channels['TSP2']['Name']!="OFF"%}<th style="width:100px">{{Channels['TSP2']['Name']}} (CH2)</th>{% endif %}
+							</tr>
+						</thead>
+						<tbody>
+							{% for row in Zth_Table %}
+							<tr>
+								<td>{{'%.3E' | format(row[0]|float)}}</td>
+								<td>{{'%.3E' | format(row[1]|float)}}</td>
+								{% if Channels['TSP1']['Name']!="OFF"%}<td>{{'%.3e' | format(row[2]|float)}}</td>{% endif %}
+								{% if Channels['TSP2']['Name']!="OFF"%}<td>{{'%.3e' | format(row[3]|float)}}</td>{% endif %}
+							</tr>
+							{% endfor %}					
+						</tbody>
+					</table>
+				</div>
+				{% if not PDF_Printable_Report%}
+				<button class="copy-button" onclick="copyTableToClipboard('zth_table')">Copy as CSV</button>
+				{% endif %}
+			</div>	
+        </details>
+
+        <details open>
+			{% set chapter_no = chapter_no + 1 %}
+            <summary>{{chapter_no}}. TSP Calibration</summary>
+            <h3>TSP Calibration Values</h3>
+			<div class="table-wrapper">
+				<div class="table-container">
+					<table class="data-table" id="tsp_calibration_values">
+						<thead>
+							<tr><th>Channel</th><th>Offset</th><th>Linear</th><th>Quadratic</th><th>Cal. Status</th></tr>
+						</thead>
+						<tbody>
+							{% for row in Channels %}
+							{% if Channels[row]['Name']!="OFF"%}
+							<tr>
+								<td>{{ Channels[row]['Name'] }}</td>
+								<td>{{ Channels[row]['Offset']*1000 }} mV</td>
+								<td>{{ Channels[row]['LinGain']*1000}} mV/K</td>
+								<td>{{ Channels[row]['QuadGain']*1000 }} mV²/K</td>
+								<td>{% if Channels[row]['CalStatus']==0%}Uncalibrated{% elif Channels[row]['CalStatus']==1%}Calibrated{% else %}Dummy Channel{% endif %}</td>
+							</tr>
+							{% endif %}
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				{% if not PDF_Printable_Report%}
+				<button class="copy-button" onclick="copyTableToClipboard('tsp_calibration_values')">Copy as CSV</button>
+				{% endif %}
+			</div>	
+        </details>
+		
+		<details open>
+			{% set chapter_no = chapter_no + 1 %}
+            <summary>{{chapter_no}}. Measurement Information</summary>
+            <h3>{{chapter_no}}.1 Setup Information</h3>
+			<div class="table-wrapper">
+				<div class="table-container">
+					<table class="data-table" id="setup_info">
+						<thead>
+							<tr><th>Parameter</th><th>Value</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>Device Name</td><td>{{ Measurement_Info['DeviceVersion'] }}</td></tr>
+							<tr><td>File Version</td><td>{{ Measurement_Info['FileVersion'] }}</td></tr>
+							<tr><td>Heating Current</td><td>{{'%.3f' | format(I_Heat|float)}} A</td></tr>
+							<tr><td>Sense Current</td><td>{{'%.3f' | format(I_Sense*1000|float) }} mA</td></tr>
+							<tr><td>Heating Power</td><td>{{'%.3f' | format(P_Heat|float)}} W</td></tr>
+						</tbody>
+					</table>
+				</div>
+				{% if not PDF_Printable_Report%}
+				<button class="copy-button" onclick="copyTableToClipboard('setup_info')">Copy as CSV</button>
+				{% endif %}
+			</div>		
+			<h3>{{chapter_no}}.2 Timing Information</h3>
+			<div class="table-wrapper">
+				<div class="table-container">
+					<table class="data-table" id="timing_info">
+						<thead>
+							<tr><th>Parameter</th><th>Value</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>Start Date</td><td>{{ Measurement_Info['StartDate'] }}</td></tr>
+							<tr><td>Start Time</td><td>{{ Measurement_Info['StartTime'] }}</td></tr>
+							<tr><td>PreHeating Time</td><td>{{ T_Preheat }} s</td></tr>
+							<tr><td>Heating Time</td><td>{{ T_Heating }} s</td></tr>
+							<tr><td>Cooling Time</td><td>{{ T_Cooling }} s</td></tr>
+						</tbody>
+					</table>
+				</div>
+				{% if not PDF_Printable_Report%}
+				<button class="copy-button" onclick="copyTableToClipboard('timing_info')">Copy as CSV</button>
+				{% endif %}
+			</div>	
+        </details>
+		
+    </div>
+</div>
+</body>
+</html>
