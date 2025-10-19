@@ -61,7 +61,8 @@ def export(utta_data, outfilename):
             fig.add_trace(go.Scatter(x=utta_data.adc_timebase_cooling, y=utta_data.zth[2,:], name=utta_dict["Channels"]['TSP2']['Name']))
 
         fig.update_xaxes(type="log", exponentformat="SI")
-        fig.update_yaxes(type="log")
+        if np.min(utta_data.zth[1:2,:]) > 0.0:
+            fig.update_yaxes(type="log")
         fig.update_layout(width=1100, height=600, xaxis_title=r'Time / [s]', yaxis_title=r'Z<sub>th</sub> / [K/W]')
         utta_dict["PlotZthCouplingCurves"] = fig.to_html(full_html=False, include_plotlyjs=False)
     
