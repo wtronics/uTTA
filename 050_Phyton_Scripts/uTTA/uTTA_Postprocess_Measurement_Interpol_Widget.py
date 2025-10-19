@@ -15,7 +15,7 @@ class TSPInterpolationApp(ttk.Window):
     def __init__(self, mainwindow):
         super().__init__()
         self.timebase_scale_set = tkinter.StringVar(self)
-        self.timebase_scale_set.set("Log")
+        self.timebase_scale_set.set("Sqrt")
 
         self.mainwindow = mainwindow
         self.InterpolationAveragingHW = tkinter.IntVar()
