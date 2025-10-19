@@ -1,6 +1,6 @@
 import tkinter
 import numpy as np
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # matplotlib 3.9.2
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore # matplotlib 3.9.2
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import matplotlib # matplotlib 3.9.2
@@ -18,8 +18,9 @@ class TSPInterpolationApp(ttk.Window):
         self.timebase_scale_set.set("Log")
 
         self.mainwindow = mainwindow
-        #self.mainwindow.utta_data.InterpolationAverageHW = 4
         self.InterpolationAveragingHW = tkinter.IntVar()
+
+        self.show_tangent = True
 
         self.interp_points_idx_start = udpc.find_nearest(self.mainwindow.utta_data.adc_timebase_cooling, self.mainwindow.utta_data.InterpolationTStart)
         self.interp_points_idx_end = udpc.find_nearest(self.mainwindow.utta_data.adc_timebase_cooling, self.mainwindow.utta_data.InterpolationTEnd)
@@ -39,7 +40,7 @@ class TSPInterpolationApp(ttk.Window):
         self.frm_help_bar = ttk.Frame(master=self, width=990, height=40, style='info.TFrame')
         self.frm_help_bar.place(x=5, y=5)
 
-        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", bootstyle="inverse-info", wraplength=980)
+        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", style="inverse-info", wraplength=980)
         self.lbl_helpbar.place(x=5, y=5, width=980)
         self.lbl_helpbar.configure(text="Welcome to the uTTA interpolation tool.")
 
@@ -47,7 +48,7 @@ class TSPInterpolationApp(ttk.Window):
         self.frm_plot_area.place(x=5, y=50, width=990, height=760)
 
         self.interpol_fig = None
-        self.interpol_plot = None
+        # self.interpol_plot = None
 
         self.interpol_fig = Figure(figsize=(980 / screen_dpi, 700 / screen_dpi), dpi=96)
         self.interpol_plot = self.interpol_fig.add_subplot(111)
@@ -178,11 +179,26 @@ class TSPInterpolationApp(ttk.Window):
 
         self.plotdata["raw_data"].set_data(tb_show,
                                            self.diode_temp_values[0:self.interpol_plot_cutoff_idx])
-
+        
         interp_len = len(self.mainwindow.utta_data.t_dio_start_interpolation)
 
-        self.plotdata["interp"].set_data(tb_show[0:interp_len],
-                                         self.mainwindow.utta_data.t_dio_start_interpolation[0:interp_len])
+        if self.show_tangent:
+            interp_len = len(self.mainwindow.utta_data.t_dio_start_interpolation)
+
+            min_y = np.min(self.diode_temp_values[0:self.interpol_plot_cutoff_idx])
+
+            interp_start = (np.sqrt(self.mainwindow.utta_data.adc_timebase_cooling[0:self.interpol_plot_cutoff_idx]) * self.mainwindow.utta_data.InterpolationFactorM +
+                            self.mainwindow.utta_data.InterpolationOffset)
+            
+            interp_cutoff_idx = udpc.find_nearest(interp_start, min_y)
+
+            interp_cutoff_idx = np.min([interp_cutoff_idx, self.interpol_plot_cutoff_idx])
+
+            self.plotdata["interp"].set_data(tb_show[0:interp_cutoff_idx], interp_start[0:interp_cutoff_idx])
+        
+        else:
+            self.plotdata["interp"].set_data(tb_show[0:interp_len],
+                                            self.mainwindow.utta_data.t_dio_start_interpolation[0:interp_len])
 
         if self.timebase_scale_set.get() == "Log":
             self.plot_markerlines["start"].set_xdata([self.mainwindow.utta_data.InterpolationTStart, self.mainwindow.utta_data.InterpolationTStart])
@@ -191,7 +207,7 @@ class TSPInterpolationApp(ttk.Window):
             self.plot_markerlines["start"].set_xdata(np.sqrt([self.mainwindow.utta_data.InterpolationTStart, self.mainwindow.utta_data.InterpolationTStart]))
             self.plot_markerlines["end"].set_xdata(np.sqrt([self.mainwindow.utta_data.InterpolationTEnd, self.mainwindow.utta_data.InterpolationTEnd]))
 
-        self.canvas.draw()
+        self.canvas.draw() # type: ignore
 
 
     def on_closing(self):
