@@ -16,19 +16,19 @@ for CurveIdx in range(0, int(NumCurves)):
 
     Zth_Import = genfromtxt(FileNam, delimiter='\t', dtype=float, names=True)
     Cols = Zth_Import.dtype.names
-    FirstValIdx = np.argmax(Zth_Import[Cols[2]] > 0)
-    Timebase = Zth_Import[Cols[0]]
-    Driver = Zth_Import[Cols[1]]
-    Monitor1 = Zth_Import[Cols[2]]
-    Monitor2 = Zth_Import[Cols[3]]
+    FirstValIdx = np.argmax(Zth_Import[Cols[2]] > 0) # type: ignore
+    Timebase = Zth_Import[Cols[0]] # type: ignore
+    Driver = Zth_Import[Cols[1]] # type: ignore
+    Monitor1 = Zth_Import[Cols[2]] # type: ignore
+    Monitor2 = Zth_Import[Cols[3]] # type: ignore
     if LogLogPlot == 1:
-        axs[0].loglog(Timebase, Driver, label=DataFileNoExt + " " + Cols[1])  # Plot some data on the axes.
-        axs[1].loglog(Timebase[FirstValIdx:-1], Monitor1[FirstValIdx:-1], label=DataFileNoExt + " " + Cols[2])  # Plot some data on the axes.
-        axs[2].loglog(Timebase[FirstValIdx:-1], Monitor2[FirstValIdx:-1], label=DataFileNoExt + " " + Cols[3])  # Plot some data on the axes.
+        axs[0].loglog(Timebase, Driver, label=DataFileNoExt + " " + Cols[1])  # type: ignore # Plot some data on the axes.
+        axs[1].loglog(Timebase[FirstValIdx:-1], Monitor1[FirstValIdx:-1], label=DataFileNoExt + " " + Cols[2])  # type: ignore # Plot some data on the axes.
+        axs[2].loglog(Timebase[FirstValIdx:-1], Monitor2[FirstValIdx:-1], label=DataFileNoExt + " " + Cols[3])  # type: ignore # Plot some data on the axes.
     else:
-        axs[0].semilogx(Timebase, Driver, label=DataFileNoExt + " " + Cols[1])  # Plot some data on the axes.
-        axs[1].semilogx(Timebase[FirstValIdx:-1], Monitor1[FirstValIdx:-1], label=DataFileNoExt + " " + Cols[2])  # Plot some data on the axes.
-        axs[2].semilogx(Timebase[FirstValIdx:-1], Monitor2[FirstValIdx:-1], label=DataFileNoExt + " " + Cols[3])  # Plot some data on the axes.
+        axs[0].semilogx(Timebase, Driver, label=DataFileNoExt + " " + Cols[1])  # type: ignore # Plot some data on the axes.
+        axs[1].semilogx(Timebase[FirstValIdx:-1], Monitor1[FirstValIdx:-1], label=DataFileNoExt + " " + Cols[2])  # type: ignore # Plot some data on the axes.
+        axs[2].semilogx(Timebase[FirstValIdx:-1], Monitor2[FirstValIdx:-1], label=DataFileNoExt + " " + Cols[3])  # type: ignore # Plot some data on the axes.
 
 axs[0].set_title("Zth Curve of driver element")
 axs[0].set_ylabel('Zth / [K/W]')
