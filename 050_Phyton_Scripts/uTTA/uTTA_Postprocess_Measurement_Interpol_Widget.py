@@ -78,7 +78,7 @@ class TSPInterpolationApp(ttk.Window):
         self.frm_controls.place(x=5, y=815)
 
         # Time scale selection with radio buttons
-        self.frm_timescale = ttk.LabelFrame(self.frm_controls, text="Timescale")
+        self.frm_timescale = ttk.Labelframe(self.frm_controls, text="Timescale")
         self.frm_timescale.place(x=5, y=5, width=120, height=80)
 
         self.ctrl_timescale_log = ttk.Radiobutton(master=self.frm_timescale,
@@ -92,7 +92,7 @@ class TSPInterpolationApp(ttk.Window):
 
         self.interpol_marker_ctrl = Interpol_Controls_Widget(self.frm_controls, self)
 
-        self.frm_interpol_results = ttk.LabelFrame(master=self.frm_controls, text="Interpolation Results")
+        self.frm_interpol_results = ttk.Labelframe(master=self.frm_controls, text="Interpolation Results")
         self.frm_interpol_results.place(x=425, y=5, width=290, height=80)
 
         self.lbl_interpol_depth = ttk.Label(master=self.frm_interpol_results, text="Max. Interpolation Depth", anchor="w")
@@ -109,7 +109,7 @@ class TSPInterpolationApp(ttk.Window):
         self.lbl_est_die_size.configure(text="")
         self.lbl_est_die_size.place(x=180, y=30, width=90)
 
-        self.frm_interpol_settings = ttk.LabelFrame(master=self.frm_controls, text="Interpolation Settings")
+        self.frm_interpol_settings = ttk.Labelframe(master=self.frm_controls, text="Interpolation Settings")
         self.frm_interpol_settings.place(x=425+290+10, y=5, width=290, height=80)
 
         self.lbl_interpol_width = ttk.Label(master=self.frm_interpol_settings, text="Averaging Half Width", anchor="w")
@@ -243,7 +243,7 @@ class Interpol_Controls_Widget(ttk.Frame):
         self.interpolation_plot_end_time = 0.1      # the plot goes up to 0.1s
 
         # Interpolation Marker Controls
-        self.frm_interpol_markers = ttk.LabelFrame(master=self.parent)
+        self.frm_interpol_markers = ttk.Labelframe(master=self.parent)
         self.frm_interpol_markers.place(x=130, y=5, width=290, height=80)
 
         self.btn_interpol_start_left_fast = ttk.Button(master=self.frm_interpol_markers, text="<--",

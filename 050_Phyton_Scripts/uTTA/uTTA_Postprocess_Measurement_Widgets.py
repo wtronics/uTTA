@@ -32,7 +32,7 @@ class MeasurementInfoWidget(ttk.Frame):
         super().__init__(parent)
         self.parent = parent
 
-        self.frm_timing = ttk.LabelFrame(self.parent, text="Measurement Timing")
+        self.frm_timing = ttk.Labelframe(self.parent, text="Measurement Timing")
         self.frm_timing.place(x=10, y=10, width=200, height=215)
         self.lbl_tpreheat = ttk.Label(master=self.frm_timing, anchor="w", text="Preheating").place(x=10, y=10)
         self.out_tpreheat = ttk.Label(master=self.frm_timing, anchor="w", text="")
@@ -54,7 +54,7 @@ class MeasurementInfoWidget(ttk.Frame):
         self.out_tstart = ttk.Label(master=self.frm_timing, anchor="w", text="")
         self.out_tstart.place(x=105, y=160)
 
-        self.frm_device = ttk.LabelFrame(self.parent, text="Device Information")
+        self.frm_device = ttk.Labelframe(self.parent, text="Device Information")
         self.frm_device.place(x=10, y=235, width=200, height=115)
         self.lbl_device = ttk.Label(master=self.frm_device, anchor="w", text="Device").place(x=10, y=10)
         self.out_device = ttk.Label(master=self.frm_device, anchor="w", text="")
@@ -64,21 +64,21 @@ class MeasurementInfoWidget(ttk.Frame):
         self.out_fileversion = ttk.Label(master=self.frm_device, anchor="w", text="")
         self.out_fileversion.place(x=105, y=40)
 
-        self.frm_ch0set = ttk.LabelFrame(self.parent, text="CH0 Settings")
+        self.frm_ch0set = ttk.Labelframe(self.parent, text="CH0 Settings")
         self.frm_ch0set.place(x=220, y=10, width=200, height=65)
 
         self.lbl_ch0offset = ttk.Label(master=self.frm_ch0set, anchor="w", text="Offset").place(x=10, y=10)
         self.out_ch0offset = ttk.Label(master=self.frm_ch0set, anchor="w", text="")
         self.out_ch0offset.place(x=80, y=10)
 
-        self.frm_ch13set = ttk.LabelFrame(self.parent, text="CH1-3 Settings")
+        self.frm_ch13set = ttk.Labelframe(self.parent, text="CH1-3 Settings")
         self.frm_ch13set.place(x=220, y=85, width=200, height=65)
 
         self.lbl_ch13offset = ttk.Label(master=self.frm_ch13set, anchor="w", text="Offset").place(x=10, y=10)
         self.out_ch13offset = ttk.Label(master=self.frm_ch13set, anchor="w", text="")
         self.out_ch13offset.place(x=80, y=10)
 
-        self.frm_sense = ttk.LabelFrame(self.parent, text="Sense Current")
+        self.frm_sense = ttk.Labelframe(self.parent, text="Sense Current")
         self.frm_sense.place(x=220, y=160, width=200, height=65)
 
         self.lbl_isense = ttk.Label(master=self.frm_sense, anchor="w", text="I_Sense").place(x=10, y=10)
@@ -129,10 +129,10 @@ class SettingsWidget(ttk.Frame):
         self.parent = parent
         self.data = data
 
-        self.frm_zero_curr = ttk.LabelFrame(self.parent, text="Zero Current Detection")
+        self.frm_zero_curr = ttk.Labelframe(self.parent, text="Zero Current Detection")
         self.frm_zero_curr.place(x=10, y=10, width=200, height=160)
 
-        self.frm_zero_curr_method = ttk.LabelFrame(self.frm_zero_curr, text="Detection Method")
+        self.frm_zero_curr_method = ttk.Labelframe(self.frm_zero_curr, text="Detection Method")
         self.frm_zero_curr_method.place(x=5, y=5, width=188, height=80)
 
         self.ctrl_zero_curr_method_set = tkinter.StringVar(self)
@@ -159,7 +159,7 @@ class SettingsWidget(ttk.Frame):
                                                  "heating current as switched off.\n"
                                                  "e.g. 0.3 = 30% of the heating current.")
 
-        self.frm_material_const = ttk.LabelFrame(self.parent, text="Semiconductor Parameters")
+        self.frm_material_const = ttk.Labelframe(self.parent, text="Semiconductor Parameters")
         self.frm_material_const.place(x=220, y=10, width=200, height=160)
 
         ttk.Label(self.frm_material_const, text='C_th').place(x=10, y=15)
@@ -189,7 +189,7 @@ class SettingsWidget(ttk.Frame):
         ToolTip(self.spinb_material_kappa, text="Specific heat transmissivity"
                                                 " of the semiconductor")
 
-        self.frm_zth_export = ttk.LabelFrame(self.parent, text="Zth Export Settings")
+        self.frm_zth_export = ttk.Labelframe(self.parent, text="Zth Export Settings")
         self.frm_zth_export.place(x=640, y=10, width=200, height=60)
 
         ttk.Label(master=self.frm_zth_export, text="Samples/Decade", anchor="w").place(x=10, y=10, width=160)
@@ -199,7 +199,7 @@ class SettingsWidget(ttk.Frame):
         self.spinb_zth_export_samp_dec.place(x=132, y=5, width=60)
         self.spinb_zth_export_samp_dec.set(value=self.data.export_zth_samples_decade)
 
-        self.frm_tdim_export = ttk.LabelFrame(self.parent, text="TDIM Export Settings")
+        self.frm_tdim_export = ttk.Labelframe(self.parent, text="TDIM Export Settings")
         self.frm_tdim_export.place(x=640, y=80, width=200, height=105)
 
         ttk.Label(master=self.frm_tdim_export, text="Max. Points", anchor="w").place(x=10, y=15, width=160)

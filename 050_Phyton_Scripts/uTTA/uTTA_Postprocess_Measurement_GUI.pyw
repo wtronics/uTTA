@@ -46,7 +46,7 @@ class UmfViewerApp(ttk.Window):
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
 
         # Measurement File Button Frame
-        self.frm_file_btns = ttk.LabelFrame(self, text="Import",
+        self.frm_file_btns = ttk.Labelframe(self, text="Import",
                                             width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
         self.frm_file_btns.place(x=10, y=10, height=2*20 + BTN_HEIGHT)
         self.btn_measure_file = ttk.Button(master=self.frm_file_btns,
@@ -55,7 +55,7 @@ class UmfViewerApp(ttk.Window):
         self.btn_measure_file.place(x=10, y=10, height=BTN_HEIGHT, width=180)
 
 
-        self.frm_processing_btns = ttk.LabelFrame(self, text="Processing",
+        self.frm_processing_btns = ttk.Labelframe(self, text="Processing",
                                                   width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
 
         self.frm_processing_btns.place(x=10, y=90, height=2*20 + BTN_HEIGHT)
@@ -65,7 +65,7 @@ class UmfViewerApp(ttk.Window):
                                                   style="dark", state="disabled")
         self.btn_interpolation_setup.place(x=10, y=10, height=BTN_HEIGHT, width=180)
 
-        self.frm_processing_btns = ttk.LabelFrame(self, text="Export",
+        self.frm_processing_btns = ttk.Labelframe(self, text="Export",
                                                   width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
         self.frm_processing_btns.place(x=10, y=270, height=3*20 + 2*BTN_HEIGHT)
         self.btn_export_tdim_master = ttk.Button(master=self.frm_processing_btns,
@@ -78,7 +78,7 @@ class UmfViewerApp(ttk.Window):
                                                style="dark", state="disabled")
         self.btn_export_zth_curve.place(x=10, y=10+20 + BTN_HEIGHT, height=BTN_HEIGHT, width=180)
 
-        self.frm_report_btns = ttk.LabelFrame(self, text="Report",
+        self.frm_report_btns = ttk.Labelframe(self, text="Report",
                                                   width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
         self.frm_report_btns.place(x=10, y=420, height=3*20 + 2*BTN_HEIGHT)
 
