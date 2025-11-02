@@ -26,7 +26,7 @@ class UmfViewerApp(ttk.Window):
         self.frm_file_btns.place(x=10, y=10)
 
         self.btn_measure_file = ttk.Button(master=self.frm_file_btns, text="Measurement File",
-                                           command=self.read_measurement_file_callback, bootstyle="dark")
+                                           command=self.read_measurement_file_callback, style="dark")
         self.btn_measure_file.place(x=10, y=10)
 
         # Measurement Meta Data Frame
@@ -35,7 +35,7 @@ class UmfViewerApp(ttk.Window):
 
         self.meas_meta_dummy = ttk.Frame(master=self.frm_meas_data, width=336, height=846, style="info.TFrame")
         self.meas_meta_dummy.place(x=7, y=7)
-        self.meas_meta_data = ttk.Label(master=self.frm_meas_data, anchor="w", bootstyle="inverse-info", width=41, wraplength=330)
+        self.meas_meta_data = ttk.Label(master=self.frm_meas_data, anchor="w", style="inverse-info", width=41, wraplength=330)
         self.meas_meta_data.configure(text="")
         self.meas_meta_data.place(x=10, y=10)
 
@@ -43,7 +43,7 @@ class UmfViewerApp(ttk.Window):
         self.frm_help_bar = ttk.Frame(master=self, width=1100, height=60, style='info.TFrame')
         self.frm_help_bar.place(x=370, y=10)
 
-        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", bootstyle="inverse-info", wraplength=1080)
+        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", style="inverse-info", wraplength=1080)
         self.lbl_helpbar.place(x=10, y=10)
         self.lbl_helpbar.configure(text="Welcome to the umf-Viewer GUI. Click 'Measurement File' and import a measurement")
 
@@ -126,8 +126,8 @@ class UmfViewerApp(ttk.Window):
             self.utta_data.import_data(measfilename)
             if self.utta_data.flag_import_successful:
 
-                self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported.", bootstyle="inverse-success")
-                self.frm_help_bar.configure(bootstyle="success")
+                self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported.", style="inverse-success")
+                self.frm_help_bar.configure(style="success")
 
                 if not self.utta_data.meta_data.FlagTSPCalibrationFile:
                     self.utta_data.calculate_cooling_curve()
@@ -140,8 +140,8 @@ class UmfViewerApp(ttk.Window):
 
                 self.update_all_plots()
         else:
-            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.", bootstyle="inverse-danger")
-            self.frm_help_bar.configure(bootstyle="danger")
+            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.", style="inverse-danger")
+            self.frm_help_bar.configure(style="danger")
 
     def on_closing(self):
         # if messagebox.askokcancel("Quit", "Do you want to quit?"):
