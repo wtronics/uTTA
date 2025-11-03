@@ -83,7 +83,7 @@ def export_zth_curve(timebase, zth, meta_data,samples_decade,p_heat, filename):
         header += "# Measurement Date: {datemeas}\n".format(datemeas=meta_data.Measurement["StartDate"])
         header += "# Measurement Time: {tmeas}\n".format(tmeas=meta_data.Measurement["StartTime"])
         header += "# POWERSTEP    = {pheat:.3f}       # Power Dissipation [W].\n".format(pheat=p_heat)
-        header += "#Time [s]        Zth [K/W]"
+        header += "# Time [s]\tZth [K/W]"
 
         # build the basic timebase for one decade. This will be reused and multiplied by the corresponding decade
         sub_timebase = np.power(10.0, np.linspace(0, 1/samples_decade * (samples_decade-1), samples_decade))
@@ -107,7 +107,7 @@ def export_zth_curve(timebase, zth, meta_data,samples_decade,p_heat, filename):
         # print("Export Timebase:")
         # print(zth_output[0, :])
         zth_output = np.transpose(zth_output)
-        np.savetxt(filename, zth_output,delimiter="  ", newline='\n',fmt='%1.4e',header=header, comments='')
+        np.savetxt(filename, zth_output,delimiter="\t", newline='\n',fmt='%1.4e',header=header, comments='')
         del zth_output
 
 def compress_array(arr, length):
