@@ -441,7 +441,7 @@ class UttaZthProcessing:
 
     def export_zth_curve(self,fname):
         uTTA_data_export.export_zth_curve(self.adc_timebase_cooling,
-                                          self.adc_cooling,
+                                          self.zth,
                                           self.meta_data,
                                           self.export_zth_samples_decade,
                                           self.p_heat,
