@@ -29,6 +29,8 @@ class UmfViewerApp(ttk.Window):
         self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
         screen_dpi = self.winfo_fpixels('1i')
         geometry = self.winfo_geometry()
+
+        self.iconbitmap(r'library/uTTA_Icon.ico')
         print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
@@ -132,9 +134,9 @@ class UmfViewerApp(ttk.Window):
                                                            screen_dpi)
 
         # 4th Page: Deconvolution
-        # self.frm_deconv = ttk.Frame(master=self)
-        # self.frm_deconv.place(x=10, y=10)
-        # self.tabs.add(self.frm_deconv, text="Deconvolution   ")
+        self.frm_deconv = ttk.Frame(master=self)
+        self.frm_deconv.place(x=10, y=10)
+        self.tabs.add(self.frm_deconv, text="Deconvolution   ")
 
         # 5th Page: Settings
         self.frm_settings = ttk.Frame(master=self)
