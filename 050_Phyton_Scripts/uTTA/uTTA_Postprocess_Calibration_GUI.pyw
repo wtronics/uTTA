@@ -1,6 +1,5 @@
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # matplotlib 3.9.2
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore # matplotlib 3.9.2
 from matplotlib.figure import Figure
-import tkinter as tk
 from tkinter import messagebox  # part of python 3.12.5
 from tksheet import (Sheet, float_formatter)
 from quantiphy import Quantity      # quantiphy 2.20
@@ -90,7 +89,7 @@ class CalApp(ttk.Window):
         self.t_step_sheet.format("B:E", formatter_options=float_formatter(), decimals=4)
 
         self.t_step_sheet.place(x=10, y=160)
-        self.t_step_sheet.enable_bindings(('single_select', 'edit_cell'))
+        self.t_step_sheet.enable_bindings(('single_select', 'edit_cell')) # type: ignore
         self.t_step_sheet.extra_bindings("cell_select", self.on_cell_select)
         self.t_step_sheet.headers(tab_heading)
         self.t_step_sheet.set_all_column_widths(65)
@@ -146,10 +145,10 @@ class CalApp(ttk.Window):
             ch_tsp = "TSP{Ch}".format(Ch=PlotIdx)
             if ch_tsp in self.utta_data.meta_data.Channels:
                 if self.utta_data.meta_data.Channels[ch_tsp]["Name"] != "OFF":
-                    line, = G_Plots[0].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label=self.utta_data.meta_data.Channels[ch_tsp]["Name"])
+                    line, = G_Plots[0].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label=self.utta_data.meta_data.Channels[ch_tsp]["Name"]) # type: ignore
                     lines.append(line)
-                    ymin = np.min([ymin, np.min(self.utta_data.adc_int[PlotIdx, :])])
-                    ymax = np.max([ymax, np.max(self.utta_data.adc_int[PlotIdx, :])])
+                    ymin = np.min([ymin, np.min(self.utta_data.adc_int[PlotIdx, :])]) # type: ignore
+                    ymax = np.max([ymax, np.max(self.utta_data.adc_int[PlotIdx, :])]) # type: ignore
 
         G_Plots[0].set_xlabel("Time / [s]")
         G_Plots[0].set_ylabel("Diode Voltage / [V]")
@@ -168,10 +167,10 @@ class CalApp(ttk.Window):
 
         if len(self.utta_data.adc_int) > 0:
             for PlotIdx in range(1):
-                G_Plots[1].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label="TC " + str(PlotIdx))
+                G_Plots[1].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label="TC " + str(PlotIdx)) # type: ignore
 
-                ymin = np.min([ymin, np.min(self.utta_data.adc_int[PlotIdx, :])])
-                ymax = np.max([ymax, np.max(self.utta_data.adc_int[PlotIdx, :])])
+                ymin = np.min([ymin, np.min(self.utta_data.adc_int[PlotIdx, :])]) # type: ignore
+                ymax = np.max([ymax, np.max(self.utta_data.adc_int[PlotIdx, :])]) # type: ignore
 
             G_Plots[1].set_xlim(left=0)
             G_Plots[1].legend(loc="lower left")
@@ -238,7 +237,7 @@ class CalApp(ttk.Window):
                     tsp_quad = self.t_result_sheet.get_cell_data(ChIdx, 3)
                     r_sq = self.t_result_sheet.get_cell_data(ChIdx, 4)
                     if r_sq < 0.98:
-                        msg_box = tk.messagebox.askquestion("Low confidence results",
+                        msg_box = messagebox.askquestion("Low confidence results",
                                                             "The R² of channel '"+ tsp_name +"'only {Rsqmin:.3f}".format(Rsqmin=np.min(r_sq)) +
                                                             ", this seems to low to provide a good calibration.\n" +
                                                             "Do you wish to continue anyway?", icon="warning", )
@@ -287,12 +286,12 @@ class CalApp(ttk.Window):
 
                 # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.7°C
                 # Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.7, 200)
-                Static_States = udpc.find_static_states(self.utta_data.adc_int[0, :], 0.0008, 500)
+                Static_States = udpc.find_static_states(self.utta_data.adc_int[0, :], 0.0008, 500) # type: ignore
 
                 if Static_States:
                     for stat_state in Static_States:
                         # for the temperature average take only the last 60 samples (1Minute) for the average
-                        t_avg = np.mean(self.utta_data.tc_int[0, (stat_state[1]-60):stat_state[1]])
+                        t_avg = np.mean(self.utta_data.tc_int[0, (stat_state[1]-60):stat_state[1]]) # type: ignore
                         self.add_cal_step_entry(stat_state[1]-60, stat_state[1], t_avg)
 
                 self.update_plots()
@@ -336,20 +335,21 @@ class CalApp(ttk.Window):
     def add_cal_step_entry(self, starttime, endtime, temp_step):
         self.t_step_sheet.insert_row(idx=0)
         self.t_step_sheet["A1"].data = float(temp_step)
-        self.t_step_sheet["B1"].data = np.mean(self.utta_data.adc_int[0, starttime:endtime])
-        self.t_step_sheet["C1"].data = np.mean(self.utta_data.adc_int[1, starttime:endtime])
-        self.t_step_sheet["D1"].data = np.mean(self.utta_data.adc_int[2, starttime:endtime])
-        self.t_step_sheet["E1"].data = np.mean(self.utta_data.adc_int[0, starttime:endtime])
+        self.t_step_sheet["B1"].data = np.mean(self.utta_data.adc_int[0, starttime:endtime]) # type: ignore
+        self.t_step_sheet["C1"].data = np.mean(self.utta_data.adc_int[1, starttime:endtime]) # type: ignore
+        self.t_step_sheet["D1"].data = np.mean(self.utta_data.adc_int[2, starttime:endtime]) # type: ignore
+        self.t_step_sheet["E1"].data = np.mean(self.utta_data.adc_int[0, starttime:endtime]) # type: ignore
         self.t_step_sheet["F1"].data = starttime
         self.t_step_sheet["G1"].data = endtime
 
     def remove_calibration_step(self):
-
+        row_number = None
         tbl = self.t_step_sheet
         for box in tbl.get_all_selection_boxes():
-            row_number = tbl.datarn(box.from_r)
+            row_number = tbl.datarn(box.from_r) # type: ignore
 
-        tbl.delete_row(row_number)
+        if row_number:
+            tbl.delete_row(row_number)
         self.update_plots()
 
     def on_cell_select(self, event):
@@ -411,16 +411,16 @@ class CalApp(ttk.Window):
         xlim_max = int(x_limits[1])
         # print("updated xlims: ", event_ax.get_xlim())
         G_Plots[1].set_xlim(left=x_limits[0], right=x_limits[1])
-        ymin = np.min(self.utta_data.adc_int[0, xlim_min:xlim_max])
-        ymax = np.max(self.utta_data.adc_int[0, xlim_min:xlim_max])
+        ymin = np.min(self.utta_data.adc_int[0, xlim_min:xlim_max]) # type: ignore
+        ymax = np.max(self.utta_data.adc_int[0, xlim_min:xlim_max]) # type: ignore
         G_Plots[1].set_ylim(bottom=ymin, top=ymax)
 
-        tsp_min = np.min(self.utta_data.adc_int[0, xlim_min:xlim_max])
-        tsp_max = np.max(self.utta_data.adc_int[0, xlim_min:xlim_max])
+        tsp_min = float(np.min(self.utta_data.adc_int[0, xlim_min:xlim_max])) # type: ignore
+        tsp_max = float(np.max(self.utta_data.adc_int[0, xlim_min:xlim_max])) # type: ignore
         tsp_pp = Quantity(tsp_max-tsp_min, "V")
 
         self.ent_step_temp.delete(0, 'end')
-        self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(self.utta_data.adc_int[0, xlim_min:xlim_max])))
+        self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(self.utta_data.adc_int[0, xlim_min:xlim_max]))) # type: ignore
 
         self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state.\n" +
                                    "Peak-to-peak spread of " + MetaData["TSP0"]["Name"] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
