@@ -195,7 +195,7 @@ class SettingsWidget(ttk.Frame):
         ttk.Label(master=self.frm_zth_export, text="Samples/Decade", anchor="w").place(x=10, y=10, width=160)
 
         self.spinb_zth_export_samp_dec = ttk.Spinbox(master=self.frm_zth_export, width=40,
-                                                     from_=1, to=50, increment=1, state="readonly")
+                                                     from_=1, to=100, increment=1, state="readonly")
         self.spinb_zth_export_samp_dec.place(x=132, y=5, width=60)
         self.spinb_zth_export_samp_dec.set(value=self.data.export_zth_samples_decade)
 
@@ -238,3 +238,21 @@ class SettingsWidget(ttk.Frame):
 
         self.data.export_tdim_max_points = int(self.spinb_max_points.get())
         self.data.export_tdim_reduce_time = float(self.spinb_reduce.get())
+
+
+class DeconvPlotsWidget(ttk.Frame):
+    def __init__(self, parent, data, figwidth, figheight, screen_dpi):
+        super().__init__(parent)
+        self.parent = parent
+        self.data = data
+
+        self.plots = ud_plot.UttaPlotData(self.parent, (figwidth, figheight), 3, 1, dpi=screen_dpi)
+        self._setup_plot_mapping()
+
+    def _setup_plot_mapping(self):
+
+        self.plots.plot_mapping=[
+            (0, self.data.add_diode_dt_curve_plot),
+            (1, self.data.add_zth_curve_plot),
+            (2, self.data.add_zth_coupling_curve_plot),
+        ]
