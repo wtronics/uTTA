@@ -211,7 +211,7 @@ class TSPInterpolationApp(ttk.Window):
 
 
     def on_closing(self):
-        print("closing")
+        # print("closing")
 
         self.mainwindow.recalculate_interpolation()
         self.mainwindow.interpolation_window_closed()
