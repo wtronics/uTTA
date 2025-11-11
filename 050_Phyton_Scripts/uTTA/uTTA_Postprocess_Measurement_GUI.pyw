@@ -3,8 +3,8 @@ import matplotlib # matplotlib 3.9.2
 from tkinter import filedialog as fd
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
 import library.uTTA_data_processing as udProc
-import uTTA_Postprocess_Measurement_Interpol_Widget as uttaInterpolWidget
-import uTTA_Postprocess_Measurement_Widgets as uttaWidgets
+import library.uTTA_Postprocess_Measurement_Interpol_Widget as uttaInterpolWidget
+import library.uTTA_Postprocess_Measurement_Widgets as uttaWidgets
 
 
 matplotlib.use("TkAgg")
