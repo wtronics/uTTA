@@ -69,7 +69,7 @@ class UmfViewerApp(ttk.Window):
 
         self.frm_processing_btns = ttk.Labelframe(self, text="Export",
                                                   width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
-        self.frm_processing_btns.place(x=10, y=270, height=3*20 + 2*BTN_HEIGHT)
+        self.frm_processing_btns.place(x=10, y=270, height=4*20 + 3*BTN_HEIGHT)
         self.btn_export_tdim_master = ttk.Button(master=self.frm_processing_btns,
                                                  text="Export TDIM Master", command=self.export_to_tdim_master,
                                                  style="dark", state="disabled")
@@ -80,9 +80,14 @@ class UmfViewerApp(ttk.Window):
                                                style="dark", state="disabled")
         self.btn_export_zth_curve.place(x=10, y=10+20 + BTN_HEIGHT, height=BTN_HEIGHT, width=180)
 
+        self.btn_export_t3i_curve = ttk.Button(master=self.frm_processing_btns,
+                                               text="Export t3i-Curve", command=self.export_to_t3i_file,
+                                               style="dark", state="disabled")
+        self.btn_export_t3i_curve.place(x=10, y=10+2*20 + 2*BTN_HEIGHT, height=BTN_HEIGHT, width=180)
+
         self.frm_report_btns = ttk.Labelframe(self, text="Report",
                                                   width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
-        self.frm_report_btns.place(x=10, y=420, height=3*20 + 2*BTN_HEIGHT)
+        self.frm_report_btns.place(x=10, y=480, height=3*20 + 2*BTN_HEIGHT)
 
         self.btn_report_html = ttk.Button(master=self.frm_report_btns,
                                                  text="Create HTML Report", command=self.report_html,
@@ -190,6 +195,7 @@ class UmfViewerApp(ttk.Window):
                 self.btn_export_tdim_master.configure(state="enabled")
                 self.btn_export_zth_curve.configure(state="enabled")
                 self.btn_report_html.configure(state="enabled")
+                self.btn_export_t3i_curve.configure(state="enabled")
 
                 if Debug_AutoExportHTML:
                     self.report_html()
@@ -204,6 +210,7 @@ class UmfViewerApp(ttk.Window):
                 self.btn_export_tdim_master.configure(state="disabled")
                 self.btn_export_zth_curve.configure(state="disabled")
                 self.btn_report_html.configure(state="disabled")
+                self.btn_export_t3i_curve.configure(state="disabled")
 
 
         else:
@@ -255,6 +262,16 @@ class UmfViewerApp(ttk.Window):
         if output_folder:
             outfilename = output_folder + r'/' + self.FileName + "_zth.txt"
             self.utta_data.export_zth_curve(outfilename)
+    
+    def export_to_t3i_file(self):
+
+        output_folder = fd.askdirectory(parent=self,
+                                        title="Select the directory where the t3i-file shall be stored.",
+                                        mustexist=True)
+        
+        if output_folder:
+            outfilename = output_folder + r'/' + self.FileName + ".t3i"
+            self.utta_data.export_t3i_file(outfilename)
 
     def interpolation_window_closed(self):
         self.interp_window = None
