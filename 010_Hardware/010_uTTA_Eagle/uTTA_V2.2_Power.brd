@@ -8,20 +8,20 @@
 </settings>
 <grid distance="6.25" unitdist="mil" unit="mm" style="lines" multiple="1" display="no" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="no" active="yes"/>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="22" fill="1" visible="no" active="yes"/>
 <layer number="15" name="Route15" color="18" fill="1" visible="no" active="yes"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="yes"/>
 <layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
-<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="no" active="yes"/>
 <layer number="20" name="Dimension" color="15" fill="1" visible="yes" active="yes"/>
-<layer number="21" name="tPlace" color="7" fill="1" visible="no" active="yes"/>
-<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="no" active="yes"/>
 <layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="yes"/>
-<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
-<layer number="25" name="tNames" color="7" fill="1" visible="no" active="yes"/>
-<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="no" active="yes"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="no" active="yes"/>
 <layer number="27" name="tValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="28" name="bValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="yes"/>
@@ -33,7 +33,7 @@
 <layer number="35" name="tGlue" color="7" fill="4" visible="no" active="yes"/>
 <layer number="36" name="bGlue" color="7" fill="5" visible="no" active="yes"/>
 <layer number="37" name="tTest" color="7" fill="1" visible="no" active="yes"/>
-<layer number="38" name="bTest" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="no" active="yes"/>
 <layer number="39" name="tKeepout" color="4" fill="11" visible="no" active="yes"/>
 <layer number="40" name="bKeepout" color="1" fill="11" visible="no" active="yes"/>
 <layer number="41" name="tRestrict" color="4" fill="10" visible="no" active="yes"/>
@@ -44,10 +44,10 @@
 <layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
 <layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="50" name="dxf" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="51" name="tDocu" color="7" fill="1" visible="no" active="yes"/>
-<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
+<layer number="50" name="dxf" color="7" fill="1" visible="no" active="yes"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="no" active="yes"/>
 <layer number="91" name="Nets" color="2" fill="1" visible="no" active="no"/>
 <layer number="92" name="Busses" color="1" fill="1" visible="no" active="no"/>
 <layer number="93" name="Pins" color="2" fill="1" visible="no" active="no"/>
@@ -90,10 +90,10 @@
 <layer number="111" name="LPC17xx" color="7" fill="1" visible="no" active="no"/>
 <layer number="112" name="tSilk" color="7" fill="1" visible="no" active="no"/>
 <layer number="113" name="ReferenceLS" color="7" fill="1" visible="no" active="no"/>
-<layer number="114" name="PLUS" color="28" fill="1" visible="no" active="yes"/>
-<layer number="115" name="MINUS" color="25" fill="1" visible="no" active="yes"/>
+<layer number="114" name="PLUS" color="28" fill="1" visible="no" active="no"/>
+<layer number="115" name="MINUS" color="25" fill="1" visible="no" active="no"/>
 <layer number="116" name="Patch_BOT" color="7" fill="1" visible="no" active="no"/>
-<layer number="117" name="GROUND" color="16" fill="1" visible="no" active="yes"/>
+<layer number="117" name="GROUND" color="16" fill="1" visible="no" active="no"/>
 <layer number="118" name="Rect_Pads" color="7" fill="1" visible="no" active="no"/>
 <layer number="121" name="_tsilk" color="7" fill="1" visible="no" active="no"/>
 <layer number="122" name="_bsilk" color="7" fill="1" visible="no" active="no"/>
@@ -233,7 +233,7 @@ ENABLE</text>
 <circle x="52.705" y="79.6925" radius="0.22450625" width="0.4064" layer="25"/>
 <circle x="59.69" y="86.51875" radius="0.22450625" width="0.4064" layer="25"/>
 <circle x="68.10375" y="86.51875" radius="0.22450625" width="0.4064" layer="25"/>
-<text x="45.70375" y="40.5275" size="2.5" layer="25" font="vector" ratio="18" rot="R90" align="center-left">µTTA V2.2</text>
+<text x="45.8625" y="38.305" size="2.5" layer="25" font="vector" ratio="18" rot="R90" align="center-left">µTTA</text>
 <wire x1="42.37" y1="37.51125" x2="43.9575" y2="37.51125" width="0.254" layer="25"/>
 <circle x="41.1" y="37.51125" radius="1.2" width="0.254" layer="21"/>
 <wire x1="38.2425" y1="37.51125" x2="39.83" y2="37.51125" width="0.254" layer="25"/>
@@ -1233,6 +1233,7 @@ ENABLE</text>
 <text x="3.6325" y="54.81" size="1.778" layer="2" font="vector" ratio="20" rot="R90" align="bottom-center">2</text>
 <text x="3.6325" y="57.04" size="1.778" layer="15" font="vector" ratio="20" rot="R90" align="bottom-center">3</text>
 <text x="3.6325" y="59.42875" size="1.778" layer="16" font="vector" ratio="15" rot="R90" align="bottom-center">4</text>
+<text x="45.8625" y="48.465" size="2.5" layer="25" font="vector" ratio="18" rot="R90" align="center-left">&gt;VERSION</text>
 </plain>
 <libraries>
 <library name="A_Transistoren">
@@ -3472,7 +3473,7 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="2.2"/>
+<attribute name="VERSION" value="2.5.3"/>
 </attributes>
 <variantdefs>
 </variantdefs>
@@ -3893,12 +3894,12 @@ einem neuen Namen ab.</description>
 <attribute name="VALUE" x="79.0575" y="82.07375" size="1.27" layer="27" rot="R270"/>
 <attribute name="PACKAGE" value="R0603" x="81.5975" y="81.43875" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
-<element name="R101" library="A_Resistor" package="R0805" value="10" x="14.12875" y="70.485" smashed="yes" rot="MR270">
+<element name="R101" library="A_Resistor" package="R0805" value="0" x="14.12875" y="70.485" smashed="yes" rot="MR270">
 <attribute name="NAME" x="13.0175" y="72.54875" size="1.27" layer="38" rot="MR270"/>
 <attribute name="VALUE" x="16.66875" y="71.12" size="1.27" layer="28" rot="MR270"/>
 <attribute name="PACKAGE" value="R0805" x="14.12875" y="70.485" size="1.778" layer="28" rot="MR270" display="off"/>
 </element>
-<element name="R102" library="A_Resistor" package="R0805" value="10" x="11.90625" y="70.485" smashed="yes" rot="MR270">
+<element name="R102" library="A_Resistor" package="R0805" value="0" x="11.90625" y="70.485" smashed="yes" rot="MR270">
 <attribute name="NAME" x="13.0175" y="68.42125" size="1.27" layer="38" rot="MR90"/>
 <attribute name="VALUE" x="14.44625" y="71.12" size="1.27" layer="28" rot="MR270"/>
 <attribute name="PACKAGE" value="R0805" x="11.90625" y="70.485" size="1.778" layer="28" rot="MR270" display="off"/>
@@ -3954,7 +3955,7 @@ einem neuen Namen ab.</description>
 <attribute name="VALUE" x="33.49625" y="21.59" size="1.27" layer="27" rot="R90"/>
 <attribute name="PACKAGE" value="R0603" x="31.59125" y="22.225" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="R108" library="A_Resistor" package="R0603" value="100R" x="35.71875" y="26.51125" smashed="yes">
+<element name="R108" library="A_Resistor" package="R0603" value="240R" x="35.71875" y="26.51125" smashed="yes">
 <attribute name="NAME" x="37.62375" y="26.035" size="1.27" layer="37"/>
 <attribute name="VALUE" x="35.08375" y="24.60625" size="1.27" layer="27"/>
 <attribute name="PACKAGE" value="R0603" x="35.71875" y="26.51125" size="1.778" layer="27" display="off"/>
@@ -3967,7 +3968,7 @@ einem neuen Namen ab.</description>
 <attribute name="VALUE" x="23.8125" y="42.8625" size="1.27" layer="27"/>
 <attribute name="PACKAGE" value="SOT-23" x="25.7175" y="46.0375" size="1.778" layer="27" display="off"/>
 </element>
-<element name="R110" library="A_Resistor" package="R0603" value="270R" x="22.5425" y="46.355" smashed="yes" rot="R90">
+<element name="R110" library="A_Resistor" package="R0603" value="470R" x="22.5425" y="46.355" smashed="yes" rot="R90">
 <attribute name="NAME" x="21.59" y="44.45" size="1.27" layer="37" rot="R270"/>
 <attribute name="VALUE" x="24.4475" y="45.72" size="1.27" layer="27" rot="R90"/>
 <attribute name="PACKAGE" value="R0603" x="22.5425" y="46.355" size="1.778" layer="27" rot="R90" display="off"/>

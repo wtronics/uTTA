@@ -13871,7 +13871,7 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="2.2"/>
+<attribute name="VERSION" value="2.5.3"/>
 </attributes>
 <variantdefs>
 </variantdefs>
@@ -13963,8 +13963,8 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <part name="R121" library="A_Resistor" deviceset="R-EU_" device="R0603" value="100R">
 <attribute name="PACKAGE" value="R0603"/>
 </part>
-<part name="R101" library="A_Resistor" deviceset="R-EU_" device="R0805" value="10"/>
-<part name="R102" library="A_Resistor" deviceset="R-EU_" device="R0805" value="10"/>
+<part name="R101" library="A_Resistor" deviceset="R-EU_" device="R0805" value="0"/>
+<part name="R102" library="A_Resistor" deviceset="R-EU_" device="R0805" value="0"/>
 <part name="V40" library="supply" deviceset="+15V" device=""/>
 <part name="V41" library="supply" deviceset="-15V" device=""/>
 <part name="C103" library="A_Kondensatoren" deviceset="CPOL-EU" device="D" value="47u/35V"/>
@@ -13994,11 +13994,11 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <part name="9VS2" library="supply" deviceset="+12V" device="" value="+9VS"/>
 <part name="R104" library="A_Resistor" deviceset="R-EU_" device="R0603" value="22k"/>
 <part name="AGND22" library="supply" deviceset="AGND_" device=""/>
-<part name="R108" library="A_Resistor" deviceset="R-EU_" device="R0603" value="100R"/>
+<part name="R108" library="A_Resistor" deviceset="R-EU_" device="R0603" value="240R"/>
 <part name="V2" library="supply" deviceset="GND_ISO" device=""/>
 <part name="AGND23" library="supply" deviceset="AGND_" device=""/>
 <part name="T102" library="A_Transistoren" deviceset="PDTC*" device="" technology="143E"/>
-<part name="R110" library="A_Resistor" deviceset="R-EU_" device="R0603" value="270R"/>
+<part name="R110" library="A_Resistor" deviceset="R-EU_" device="R0603" value="470R"/>
 <part name="TP101" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="TP104" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="TP102" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
