@@ -4,7 +4,7 @@
 "C3";"1000uF/16V";"CPOL-EUE5-10.5";"E5-10,5";"POLARIZED CAPACITOR, European symbol";"";"";"";"";"";"";"";"";
 "C4";"1000uF/16V";"CPOL-EUE5-10.5";"E5-10,5";"POLARIZED CAPACITOR, European symbol";"";"";"";"";"";"";"";"";
 "C5";"1n/25V";"C-EUC0603";"C0603";"CAPACITOR, European symbol";"";"";"";"";"";"C0603";"";"";
-"C101";"47µF/25V";"CPOL-EUD";"PANASONIC_D";"POLARIZED CAPACITOR, European symbol";"";"";"";"";"";"";"";"";
+"C101";"47ÂµF/25V";"CPOL-EUD";"PANASONIC_D";"POLARIZED CAPACITOR, European symbol";"";"";"";"";"";"";"";"";
 "C102";"100n/50V";"C-EUC0805";"C0805";"CAPACITOR, European symbol";"";"";"";"";"";"C0805";"";"";
 "C103";"47u/35V";"CPOL-EUD";"PANASONIC_D";"POLARIZED CAPACITOR, European symbol";"";"";"";"";"";"";"";"";
 "C104";"47u/35V";"CPOL-EUD";"PANASONIC_D";"POLARIZED CAPACITOR, European symbol";"";"";"";"";"";"";"";"";
@@ -121,5 +121,5 @@
 "TP117";"TPC90H30";"TPC90H30";"C90H30";"";"";"";"";"";"";"";"";"";
 "TP118";"TPC90H30";"TPC90H30";"C90H30";"";"";"";"";"";"";"";"";"";
 "U201";"NUCLEO_F103_BOT";"NUCLEO_F103_BOT";"NUCLEO_BRD64_LOWER";"";"";"";"";"";"";"";"";"";
-"X1";"AST_02_3,5MM_45°";"AST_02_3,5MM_45°";"AST_452_3,5";"";"";"";"";"";"";"";"";"";
-"X101";"AST_03_3,5MM";"AST_03_3,5MM_45°";"AST_453_3,5";"";"";"";"";"";"";"";"";"";
+"X1";"AST_02_3,5MM_45Â°";"AST_02_3,5MM_45Â°";"AST_452_3,5";"";"";"";"";"";"";"";"";"";
+"X101";"AST_03_3,5MM";"AST_03_3,5MM_45Â°";"AST_453_3,5";"";"";"";"";"";"";"";"";"";
