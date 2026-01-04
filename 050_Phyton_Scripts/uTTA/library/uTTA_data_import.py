@@ -279,10 +279,10 @@ def read_calfile2dict(filename):
     config.optionxform =str  # type: ignore # set configparser to Case-Sensitive
     config.read_file(open(filename))
 
-    utta_cal_data = {}  # dictionary for device calibration data
-    utta_dev_meta_data = {}  # dictionary for device meta data
-    utta_tc_cal = {}  # dictionary for thermocouple calibration data
-    utta_tsp_cal = {}  # dictionary for TSP (temperature sensitive parameter)
+    utta_cal_data:dict = {}  # dictionary for device calibration data
+    utta_dev_meta_data:dict = {}  # dictionary for device meta data
+    utta_tc_cal:dict = {}  # dictionary for thermocouple calibration data
+    utta_tsp_cal:dict = {}  # dictionary for TSP (temperature sensitive parameter)
 
     # look for Diode channel calibration values
     for sect in config.sections():
