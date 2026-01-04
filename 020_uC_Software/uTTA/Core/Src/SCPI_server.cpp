@@ -402,7 +402,7 @@ void GetTiming(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 	char *last_header;
 
 	if (parameters.Size() < 1) {
-		UART_printf("%u;%u;%u\n", SamplingTiming.PreHeatingTime,SamplingTiming.HeatingTime, SamplingTiming.CoolingTime);
+		UART_printf("MEAS:TIM %u;%u;%u\n", SamplingTiming.PreHeatingTime,SamplingTiming.HeatingTime, SamplingTiming.CoolingTime);
 		return;
 	}
 
@@ -447,7 +447,7 @@ void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 			UART_printf("OK\n");
 		}
 		else{
-			ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING+FlagMeasurementState);
+			ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING + FlagMeasurementState);
 		}
 	}
 	else if((strcmp(last_header,"STOP")==0)){
@@ -461,7 +461,7 @@ void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 			}
 		}
 		else{
-			ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING+FlagMeasurementState);
+			ErrorResponse(ERRC_ACCESS_ERROR, ERST_MEAS_RUNNING + FlagMeasurementState);
 		}
 	}
 	else{
@@ -473,7 +473,7 @@ void SetMeasure(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 /**
   * @brief Sets the name of the DUT which is also used as file name.
   * This can ONLY be done while the system is in IDLE mode (no measurement running)
-  * Syntax: MEASure:DUT [aaaaaaaaaaa]		String of maximum 14 characters. Please don't use special characters
+  * Syntax: MEASure:DUT [aaaaaaaaaaa]		String of maximum 14 characters. Please don't use special characters and white spaces
   * @param None
   * @retval None
   */
@@ -494,7 +494,7 @@ void SetDUT(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart){
 
 	first_parameter = parameters.First();
 
-	if(strlen(first_parameter) > (MAX_DUT_NAME_LENGTH -4) ){
+	if(strlen(first_parameter) > (MAX_DUT_NAME_LENGTH - 4) ){
 		ErrorResponse(ERRC_COMMAND_ERROR, ERST_PARAM_TOO_LONG);
 		return;
 	}
