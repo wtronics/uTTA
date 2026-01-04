@@ -21,7 +21,7 @@
 <layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="no" active="yes"/>
 <layer number="27" name="tValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="28" name="bValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="yes"/>
@@ -32,8 +32,8 @@
 <layer number="34" name="bFinish" color="6" fill="6" visible="no" active="yes"/>
 <layer number="35" name="tGlue" color="7" fill="4" visible="no" active="yes"/>
 <layer number="36" name="bGlue" color="7" fill="5" visible="no" active="yes"/>
-<layer number="37" name="tTest" color="16" fill="1" visible="yes" active="yes"/>
-<layer number="38" name="bTest" color="16" fill="1" visible="yes" active="yes"/>
+<layer number="37" name="tTest" color="16" fill="1" visible="no" active="yes"/>
+<layer number="38" name="bTest" color="16" fill="1" visible="no" active="yes"/>
 <layer number="39" name="tKeepout" color="4" fill="11" visible="no" active="yes"/>
 <layer number="40" name="bKeepout" color="1" fill="11" visible="no" active="yes"/>
 <layer number="41" name="tRestrict" color="4" fill="10" visible="no" active="yes"/>
@@ -42,12 +42,12 @@
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
 <layer number="45" name="Holes" color="7" fill="1" visible="no" active="yes"/>
 <layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
-<layer number="47" name="Measures" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="50" name="dxf" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
+<layer number="50" name="dxf" color="7" fill="1" visible="no" active="yes"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="no" active="yes"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="no" active="yes"/>
 <layer number="91" name="Nets" color="2" fill="1" visible="no" active="no"/>
 <layer number="92" name="Busses" color="1" fill="1" visible="no" active="no"/>
 <layer number="93" name="Pins" color="2" fill="1" visible="no" active="no"/>
@@ -166,7 +166,7 @@
 <text x="-111.49925" y="72.92975" size="1.778" layer="15" font="vector" ratio="20" rot="R90" align="bottom-center">3</text>
 <text x="-111.49925" y="75.3185" size="1.778" layer="16" font="vector" ratio="15" rot="R90" align="bottom-center">4</text>
 <text x="-169.32275" y="8.73125" size="1.4224" layer="21" rot="R90">JLCJLCJLCJLC</text>
-<text x="-150.65375" y="46.95825" size="1.9304" layer="25" font="vector" ratio="18" rot="R90" align="center-left">µTTA V2.2</text>
+<text x="-150.65375" y="46.95825" size="1.9304" layer="25" font="vector" ratio="18" rot="R90" align="center-left">µTTA</text>
 <wire x1="-153.82875" y1="46.482" x2="-152.24125" y2="46.482" width="0.254" layer="25"/>
 <circle x="-150.14575" y="35.7505" radius="0.22450625" width="0.4064" layer="21"/>
 <circle x="-165.89375" y="21.2725" radius="0.22450625" width="0.4064" layer="21"/>
@@ -1252,6 +1252,9 @@ SENSE</text>
 <wire x1="-98.96475" y1="71.21525" x2="-108.2675" y2="71.247" width="0.4064" layer="49"/>
 <wire x1="-99.06" y1="68.73875" x2="-108.204" y2="68.67525" width="0.4064" layer="49"/>
 <wire x1="-99.09175" y1="66.38925" x2="-108.2675" y2="66.19875" width="0.4064" layer="49"/>
+<wire x1="-102.26675" y1="83.947" x2="-100.23475" y2="83.947" width="0.1" layer="20"/>
+<wire x1="-101.25075" y1="84.99475" x2="-101.25075" y2="82.89925" width="0.1" layer="20"/>
+<text x="-150.65375" y="54.883" size="1.9304" layer="25" font="vector" ratio="18" rot="R90" align="center-left">&gt;VERSION</text>
 </plain>
 <libraries>
 <library name="A_Transistoren">
@@ -3457,11 +3460,10 @@ Source: http://www.ledtronics.com/ds/smd-0603/Dstr0093.pdf</description>
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="2.2"/>
+<attribute name="VERSION" value="2.5.4"/>
 </attributes>
 <variantdefs>
-<variantdef name="Manual_Adjust"/>
-<variantdef name="Controller Adjust"/>
+<variantdef name="Base_Variant"/>
 <variantdef name="Optional_content"/>
 </variantdefs>
 <classes>
@@ -4062,65 +4064,56 @@ einem neuen Namen ab.</description>
 <attribute name="PACKAGE" value="SO-8" x="-174.40275" y="-142.39875" size="1.778" layer="27" display="off"/>
 <attribute name="VALUE" x="-112.8395" y="21.9075" size="1.27" layer="27" font="vector" rot="R90" align="center"/>
 <attribute name="NAME" x="-116.1415" y="21.9075" size="0.6096" layer="37" font="vector" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R101.4" library="A_Resistor" package="R0805" value="49k9" x="-119.9515" y="21.9075" smashed="yes" rot="R90">
 <attribute name="PACKAGE" value="R0805" x="44.35475" y="-62.23" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="NAME" x="-119.9515" y="21.9075" size="0.4064" layer="37" font="vector" rot="R90" align="center"/>
 <attribute name="VALUE" x="-118.5545" y="21.9075" size="1.27" layer="27" font="vector" rot="R90" align="center"/>
 <attribute name="TOLERANCE" value="0.1%" x="-119.9515" y="21.9075" size="1.778" layer="27" rot="R90" display="off"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R103.4" library="A_Resistor" package="R0603" value="0R" x="-113.76025" y="27.94" smashed="yes" rot="R270">
 <attribute name="PACKAGE" value="R0603" x="-256.159" y="78.26375" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="NAME" x="-113.76025" y="27.94" size="0.4064" layer="37" font="vector" rot="R270" align="center"/>
 <attribute name="VALUE" x="-115.15725" y="27.94" size="1.27" layer="27" font="vector" rot="R270" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
 </element>
 <element name="L101.4" library="A_Ferrite" package="FB2012" value="FBMMZ2012S" x="-116.1415" y="8.66775" smashed="yes" rot="MR270">
 <attribute name="PACKAGE" value="2012" x="31.01975" y="63.91275" size="1.778" layer="28" rot="MR270" display="off"/>
 <attribute name="VALUE" x="-114.7445" y="8.66775" size="1.27" layer="28" font="vector" rot="MR270" align="center"/>
 <attribute name="NAME" x="-116.1415" y="8.66775" size="0.6096" layer="38" font="vector" rot="MR270" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="L102.4" library="A_Ferrite" package="FB2012" value="FBMMZ2012S" x="-113.6015" y="8.66775" smashed="yes" rot="MR270">
 <attribute name="PACKAGE" value="2012" x="38.32225" y="68.834" size="1.778" layer="28" rot="MR270" display="off"/>
 <attribute name="VALUE" x="-112.2045" y="8.66775" size="1.27" layer="28" font="vector" rot="MR270" align="center"/>
 <attribute name="NAME" x="-113.6015" y="8.66775" size="0.6096" layer="38" font="vector" rot="MR270" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C105.4" library="A_Kondensatoren" package="C0603" value="10p" x="-116.1415" y="17.018" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0603" x="-203.1365" y="183.54675" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-116.1415" y="17.018" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-116.1415" y="18.415" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R153.4" library="A_Resistor" package="R0603" value="120" x="-157.988" y="63.627" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="R0603" x="-223.0755" y="225.39325" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-157.988" y="63.627" size="0.4064" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-157.988" y="65.024" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C107.4" library="A_Kondensatoren" package="C0603" value="DNP" x="-114.71275" y="27.14625" smashed="yes" rot="MR0">
 <attribute name="PACKAGE" value="C0603" x="-63.754" y="-149.225" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="NAME" x="-114.71275" y="27.14625" size="0.6096" layer="38" font="vector" rot="MR0" align="center"/>
 <attribute name="VALUE" x="-114.71275" y="25.74925" size="1.27" layer="28" font="vector" rot="MR0" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R151.4" library="A_Resistor" package="R0603" value="24k9" x="-124.587" y="33.68675" smashed="yes" rot="R90">
 <attribute name="PACKAGE" value="R0603" x="51.78425" y="-30.2895" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="NAME" x="-124.587" y="33.68675" size="0.4064" layer="37" font="vector" rot="R90" align="center"/>
 <attribute name="VALUE" x="-123.19" y="33.68675" size="1.27" layer="27" font="vector" rot="R90" align="center"/>
 <attribute name="TOLERANCE" value="0.1%" x="-124.587" y="33.68675" size="1.778" layer="27" rot="R90" display="off"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="TP152.4" library="A_Testpoint" package="C90H30" value="TPC90H30" x="-121.031" y="32.8295" smashed="yes" rot="R90">
 <attribute name="NAME" x="-121.031" y="32.8295" size="0.4064" layer="37" font="vector" ratio="10" rot="R90" align="center"/>
@@ -4148,8 +4141,7 @@ einem neuen Namen ab.</description>
 <attribute name="NAME" x="-122.52325" y="33.68675" size="0.4064" layer="37" font="vector" rot="R270" align="center"/>
 <attribute name="VALUE" x="-123.92025" y="33.68675" size="1.27" layer="27" font="vector" rot="R270" align="center"/>
 <attribute name="TOLERANCE" value="0.1%" x="-122.52325" y="33.68675" size="1.778" layer="27" rot="R270" display="off"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="X101.3" library="A_Steckverbinder" package="BU_SMA_3P" value="BU-SMA-GSPECIAL" x="-130.8735" y="1.7145" smashed="yes" rot="R270">
 <attribute name="VALUE" x="-138.4935" y="9.3345" size="1.27" layer="27" rot="R270"/>
@@ -4166,8 +4158,7 @@ einem neuen Namen ab.</description>
 <attribute name="VALUE" x="-111.60125" y="6.858" size="1.27" layer="27" font="vector" align="center"/>
 <attribute name="NAME" x="-111.60125" y="8.382" size="0.6096" layer="37" font="vector" align="center"/>
 <attribute name="PACKAGE" value="SOD-323" x="-111.60125" y="8.382" size="1.778" layer="27" display="off"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C123.1" library="A_Kondensatoren" package="C0603" value="100n/50V" x="-113.6015" y="50.38725" smashed="yes" rot="R180">
 <attribute name="PACKAGE" value="C0603" x="-113.6015" y="50.38725" size="1.778" layer="27" rot="R180" display="off"/>
@@ -4190,8 +4181,7 @@ einem neuen Namen ab.</description>
 <attribute name="NAME" x="-161.544" y="64.897" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-161.544" y="66.294" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
 <attribute name="NAME" x="-156.845" y="64.897" size="1.27" layer="26" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C153.2" library="A_Kondensatoren" package="C0603" value="10n/25V" x="-161.544" y="59.817" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0603" x="-161.544" y="59.817" size="1.778" layer="28" rot="MR180" display="off"/>
@@ -4393,8 +4383,7 @@ einem neuen Namen ab.</description>
 <attribute name="PACKAGE" value="R0603" x="-105.63225" y="29.68625" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="NAME" x="-116.1415" y="29.68625" size="0.4064" layer="37" font="vector" rot="R270" align="center"/>
 <attribute name="VALUE" x="-117.5385" y="29.68625" size="1.27" layer="27" font="vector" rot="R270" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="TP106.4" library="A_Testpoint" package="C90H30" value="TPC90H30" x="-115.79225" y="32.09925" smashed="yes">
 <attribute name="NAME" x="-115.79225" y="32.09925" size="0.4064" layer="37" font="vector" ratio="10" align="center"/>
@@ -4403,15 +4392,13 @@ einem neuen Namen ab.</description>
 <attribute name="PACKAGE" value="C0603" x="-116.6495" y="28.3845" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="NAME" x="-116.6495" y="30.988" size="0.6096" layer="38" font="vector" rot="MR0" align="center"/>
 <attribute name="VALUE" x="-116.6495" y="29.591" size="1.27" layer="28" font="vector" rot="MR0" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="D101.4" library="A_Dioden" package="SOD323-R" value="SD101" x="-116.6495" y="29.11475" smashed="yes" rot="MR0">
 <attribute name="PACKAGE" value="SOD-323" x="-116.6495" y="16.002" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="VALUE" x="-116.6495" y="27.59075" size="1.27" layer="28" font="vector" rot="MR0" align="center"/>
 <attribute name="NAME" x="-116.6495" y="29.11475" size="0.6096" layer="38" font="vector" rot="MR0" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R102.1" library="A_Resistor" package="R0603" value="1k" x="-154.08275" y="29.68625" smashed="yes" rot="R270">
 <attribute name="PACKAGE" value="R0603" x="-143.5735" y="29.68625" size="1.778" layer="27" rot="R270" display="off"/>
@@ -4452,27 +4439,23 @@ einem neuen Namen ab.</description>
 <element name="IC301" library="A_Analog_Devices" package="MSOP10" value="AD5664" x="-145.2245" y="49.784" smashed="yes" rot="R180">
 <attribute name="NAME" x="-146.939" y="47.4345" size="1.016" layer="25" ratio="10" rot="R90"/>
 <attribute name="VALUE" x="-148.5265" y="52.324" size="1.27" layer="27" ratio="10" rot="R270"/>
-<variant name="Manual_Adjust" populate="no"/>
 </element>
 <element name="C305" library="A_Kondensatoren" package="C0603" value="100n/50V" x="-143.383" y="46.13275" smashed="yes">
 <attribute name="PACKAGE" value="C0603" x="-143.383" y="58.19775" size="1.778" layer="27" display="off"/>
 <attribute name="NAME" x="-143.383" y="46.13275" size="0.6096" layer="37" font="vector" align="center"/>
 <attribute name="VALUE" x="-143.383" y="44.73575" size="1.27" layer="27" font="vector" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
 </element>
 <element name="L301" library="A_Ferrite" package="FB2012" value="FBMMZ2012S" x="-146.2405" y="44.67225" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="2012" x="-146.2405" y="55.72125" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-145.89125" y="42.799" size="1.27" layer="26" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-146.2405" y="46.06925" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
 <attribute name="NAME" x="-146.2405" y="44.67225" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
 </element>
 <element name="C301" library="A_Kondensatoren" package="C0603" value="100n/50V" x="-147.09775" y="47.1805" smashed="yes" rot="MR90">
 <attribute name="PACKAGE" value="C0603" x="-147.09775" y="47.1805" size="1.778" layer="28" rot="MR90" display="off"/>
 <attribute name="NAME" x="-147.09775" y="47.1805" size="0.6096" layer="38" font="vector" rot="MR90" align="center"/>
 <attribute name="VALUE" x="-148.49475" y="47.1805" size="1.27" layer="28" font="vector" rot="MR90" align="center"/>
 <attribute name="NAME" x="-148.463" y="49.149" size="1.27" layer="26" font="vector" rot="MR90" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
 </element>
 <element name="R355.1" library="A_Resistor" package="R0805" value="22R" x="-152.8445" y="14.859" smashed="yes" rot="R270">
 <attribute name="PACKAGE" value="R0805" x="-152.8445" y="14.859" size="1.778" layer="27" rot="R270" display="off"/>
@@ -4509,7 +4492,6 @@ einem neuen Namen ab.</description>
 <attribute name="PACKAGE" value="R0603" x="-149.25675" y="43.8785" size="1.778" layer="28" rot="MR90" display="off"/>
 <attribute name="NAME" x="-149.25675" y="43.8785" size="0.4064" layer="38" font="vector" rot="MR90" align="center"/>
 <attribute name="VALUE" x="-150.65375" y="43.8785" size="1.27" layer="28" font="vector" rot="MR90" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
 </element>
 <element name="IC303" library="A_Linear_IC" package="SO14" value="TL074D" x="-136.2075" y="51.2445" smashed="yes" rot="R180">
 <attribute name="PACKAGE" value="SO-14" x="-136.2075" y="51.2445" size="1.778" layer="27" rot="R180" display="off"/>
@@ -4521,14 +4503,12 @@ einem neuen Namen ab.</description>
 <attribute name="VERSION" value="HW1.00" x="-141.1605" y="53.68925" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-141.1605" y="53.68925" size="0.4064" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-141.1605" y="55.08625" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
 </element>
 <element name="R303" library="A_Resistor" package="R0603" value="1k" x="-141.1605" y="51.6255" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="R0603" x="-141.1605" y="51.6255" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="VERSION" value="HW1.00" x="-141.1605" y="51.6255" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-141.1605" y="51.6255" size="0.4064" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-141.1605" y="53.0225" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
 </element>
 <element name="R321.2" library="A_Resistor" package="R0603" value="10k" x="-132.461" y="55.97525" smashed="yes">
 <attribute name="PACKAGE" value="R0603" x="-147.701" y="69.81825" size="1.778" layer="27" display="off"/>
@@ -4557,7 +4537,6 @@ einem neuen Namen ab.</description>
 <attribute name="PACKAGE" value="R0603" x="-152.781" y="80.01" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-141.1605" y="55.72125" size="0.4064" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-141.1605" y="57.11825" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
 </element>
 <element name="TP305" library="A_Testpoint" package="C90H30" value="TPC90H30" x="-132.68325" y="45.7835" smashed="yes" rot="R180">
 <attribute name="VERSION" value="HW1.00" x="-132.68325" y="45.7835" size="1.778" layer="27" rot="R180" display="off"/>
@@ -4580,8 +4559,7 @@ einem neuen Namen ab.</description>
 <element name="S351.4" library="A_Schalter" package="SS_ESP101" value="SS_ESP101" x="-110.2995" y="26.13025" smashed="yes" rot="R270">
 <attribute name="VALUE" x="-112.3315" y="26.13025" size="1.27" layer="27" rot="R270" align="center"/>
 <attribute name="NAME" x="-110.2995" y="26.13025" size="0.8128" layer="37" rot="R270" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="IC351.1" library="A_Linear_IC" package="SO08" value="AD8672ARZ" x="-156.718" y="13.208" smashed="yes" rot="R180">
 <attribute name="PACKAGE" value="SO-08" x="-156.718" y="13.208" size="1.778" layer="27" rot="R180" display="off"/>
@@ -4620,7 +4598,7 @@ einem neuen Namen ab.</description>
 <attribute name="NAME" x="-136.23925" y="49.7205" size="0.6096" layer="38" font="vector" rot="MR270" align="center"/>
 <attribute name="VALUE" x="-134.84225" y="49.7205" size="1.27" layer="28" font="vector" rot="MR270" align="center"/>
 </element>
-<element name="R302" library="A_Resistor" package="R0603" value="1k" x="-128.4605" y="44.196" smashed="yes" rot="MR0">
+<element name="R302" library="A_Resistor" package="R0603" value="10k" x="-128.4605" y="44.196" smashed="yes" rot="MR0">
 <attribute name="PACKAGE" value="R0603" x="-128.4605" y="44.196" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="VERSION" value="HW1.00" x="-128.4605" y="44.196" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="NAME" x="-128.4605" y="44.196" size="0.4064" layer="38" font="vector" rot="MR0" align="center"/>
@@ -4666,16 +4644,14 @@ einem neuen Namen ab.</description>
 <attribute name="VERSION" value="HW1.00" x="-114.90325" y="22.9235" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-114.90325" y="22.9235" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-114.90325" y="24.3205" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C104.4" library="A_Kondensatoren" package="C0603" value="1u/25V" x="-116.1415" y="20.8915" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0603" x="-116.1415" y="20.8915" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="VERSION" value="HW1.00" x="-116.1415" y="20.8915" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-116.1415" y="20.8915" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-116.1415" y="22.2885" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C102.3" library="A_Kondensatoren" package="C0603" value="1u/25V" x="-130.90525" y="22.9235" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0603" x="-130.90525" y="22.9235" size="1.778" layer="28" rot="MR180" display="off"/>
@@ -4718,15 +4694,13 @@ einem neuen Namen ab.</description>
 <attribute name="PACKAGE" value="C0603" x="-107.7595" y="12.22375" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="NAME" x="-107.7595" y="12.22375" size="0.6096" layer="38" font="vector" rot="MR0" align="center"/>
 <attribute name="VALUE" x="-107.7595" y="10.82675" size="1.27" layer="28" font="vector" rot="MR0" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C352.4" library="A_Kondensatoren" package="C0603" value="1u/25V" x="-109.474" y="14.25575" smashed="yes" rot="MR0">
 <attribute name="PACKAGE" value="C0603" x="-109.474" y="14.25575" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="NAME" x="-109.474" y="14.25575" size="0.6096" layer="38" font="vector" rot="MR0" align="center"/>
 <attribute name="VALUE" x="-109.474" y="12.85875" size="1.27" layer="28" font="vector" rot="MR0" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="TP301" library="A_Testpoint" package="C90" value="TPC90" x="-144.145" y="43.84675" smashed="yes">
 <attribute name="VERSION" value="HW1.00" x="-144.145" y="43.84675" size="1.778" layer="27" display="off"/>
@@ -4869,16 +4843,14 @@ einem neuen Namen ab.</description>
 <attribute name="NAME" x="-104.74325" y="14.89075" size="0.4064" layer="37" font="vector" rot="R270" align="center"/>
 <attribute name="VALUE" x="-106.14025" y="14.89075" size="1.27" layer="27" font="vector" rot="R270" align="center"/>
 <attribute name="TOLERANCE" value="0.1%" x="-104.74325" y="14.89075" size="1.778" layer="27" rot="R270" display="off"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R354.4" library="A_Resistor" package="R0603" value="1k" x="-106.83875" y="18.00225" smashed="yes">
 <attribute name="PACKAGE" value="R0603" x="-106.83875" y="28.92425" size="1.778" layer="27" display="off"/>
 <attribute name="NAME" x="-106.83875" y="18.00225" size="0.4064" layer="37" font="vector" align="center"/>
 <attribute name="VALUE" x="-106.83875" y="16.60525" size="1.27" layer="27" font="vector" align="center"/>
 <attribute name="TOLERANCE" value="0.1%" x="-106.83875" y="18.00225" size="1.778" layer="27" display="off"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R353.4" library="A_Resistor" package="R0603" value="10k" x="-108.61675" y="16.79575" smashed="yes" rot="MR90">
 <attribute name="PACKAGE" value="R0603" x="-107.21975" y="4.34975" size="1.778" layer="28" rot="MR90" display="off"/>
@@ -4886,32 +4858,28 @@ einem neuen Namen ab.</description>
 <attribute name="VALUE" x="-110.01375" y="16.79575" size="1.27" layer="28" font="vector" rot="MR90" align="center"/>
 <attribute name="NAME" x="-107.188" y="18.669" size="1.27" layer="26" font="vector" rot="MR90" align="center"/>
 <attribute name="TOLERANCE" value="0.1%" x="-108.61675" y="16.79575" size="1.778" layer="28" rot="MR90" display="off"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R352.4" library="A_Resistor" package="R0603" value="1k" x="-112.10925" y="16.891" smashed="yes" rot="R270">
 <attribute name="PACKAGE" value="R0603" x="-115.47475" y="23.114" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="NAME" x="-112.10925" y="16.891" size="0.4064" layer="37" font="vector" rot="R270" align="center"/>
 <attribute name="VALUE" x="-113.50625" y="16.891" size="1.27" layer="27" font="vector" rot="R270" align="center"/>
 <attribute name="TOLERANCE" value="0.1%" x="-112.10925" y="16.891" size="1.778" layer="27" rot="R270" display="off"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R351.4" library="A_Resistor" package="R0603" value="10k" x="-107.315" y="20.574" smashed="yes" rot="R270">
 <attribute name="PACKAGE" value="R0603" x="-115.443" y="20.574" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="NAME" x="-107.315" y="20.574" size="0.4064" layer="37" font="vector" rot="R270" align="center"/>
 <attribute name="VALUE" x="-108.712" y="20.574" size="1.27" layer="27" font="vector" rot="R270" align="center"/>
 <attribute name="TOLERANCE" value="0.1%" x="-107.315" y="20.574" size="1.778" layer="27" rot="R270" display="off"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="IC351.4" library="A_Linear_IC" package="SO08" value="AD8672ARZ" x="-108.61675" y="13.23975" smashed="yes" rot="R180">
 <attribute name="PACKAGE" value="SO-08" x="-99.79025" y="26.13025" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="NAME" x="-108.61675" y="6.69925" size="1.016" layer="25" font="vector" rot="R180" align="center"/>
 <attribute name="VALUE" x="-111.91875" y="13.23975" size="1.27" layer="27" font="vector" rot="R270" align="center"/>
 <attribute name="NAME" x="-108.61675" y="13.23975" size="0.6096" layer="37" font="vector" rot="R180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="TP351.4" library="A_Testpoint" package="C90" value="TPC90" x="-110.26775" y="18.57375" smashed="yes" rot="R180">
 <attribute name="NAME" x="-110.26775" y="18.57375" size="0.4064" layer="37" font="vector" ratio="10" rot="R180" align="center"/>
@@ -5008,36 +4976,31 @@ einem neuen Namen ab.</description>
 <attribute name="PACKAGE" value="C0805" x="-139.7635" y="10.16" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="NAME" x="-139.7635" y="10.16" size="0.6096" layer="38" font="vector" rot="MR0" align="center"/>
 <attribute name="VALUE" x="-139.7635" y="8.763" size="1.27" layer="28" font="vector" rot="MR0" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C2" library="A_Kondensatoren" package="C0805" value="4.7u/25V" x="-129.69875" y="46.228" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0805" x="-129.69875" y="46.228" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-129.69875" y="46.228" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-129.69875" y="47.625" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C3" library="A_Kondensatoren" package="C0805" value="4.7u/25V" x="-138.71575" y="24.79675" smashed="yes" rot="MR0">
 <attribute name="PACKAGE" value="C0805" x="-138.71575" y="24.79675" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="NAME" x="-138.71575" y="24.79675" size="0.6096" layer="38" font="vector" rot="MR0" align="center"/>
 <attribute name="VALUE" x="-138.71575" y="23.39975" size="1.27" layer="28" font="vector" rot="MR0" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C4" library="A_Kondensatoren" package="C0805" value="4.7u/25V" x="-132.04825" y="18.8595" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="C0805" x="-132.04825" y="18.8595" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="-132.04825" y="18.8595" size="0.6096" layer="38" font="vector" rot="MR180" align="center"/>
 <attribute name="VALUE" x="-132.04825" y="20.2565" size="1.27" layer="28" font="vector" rot="MR180" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="C5" library="A_Kondensatoren" package="C0805" value="4.7u/25V" x="-129.921" y="48.67275" smashed="yes" rot="MR0">
 <attribute name="PACKAGE" value="C0805" x="-129.032" y="48.67275" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="NAME" x="-129.921" y="48.67275" size="0.6096" layer="38" font="vector" rot="MR0" align="center"/>
 <attribute name="VALUE" x="-129.921" y="47.27575" size="1.27" layer="28" font="vector" rot="MR0" align="center"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </element>
 <element name="R1" library="A_Resistor" package="R0603" value="680" x="-154.7495" y="69.43725" smashed="yes" rot="R90">
 <attribute name="PACKAGE" value="R0603" x="-159.9565" y="69.43725" size="1.778" layer="27" rot="R90" display="off"/>

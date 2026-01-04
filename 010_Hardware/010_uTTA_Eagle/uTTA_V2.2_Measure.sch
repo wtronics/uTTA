@@ -9129,11 +9129,10 @@ Source: www.kingbright.com</description>
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="2.2"/>
+<attribute name="VERSION" value="2.5.4"/>
 </attributes>
 <variantdefs>
-<variantdef name="Manual_Adjust"/>
-<variantdef name="Controller Adjust"/>
+<variantdef name="Base_Variant"/>
 <variantdef name="Optional_content"/>
 </variantdefs>
 <classes>
@@ -9384,44 +9383,34 @@ Source: www.kingbright.com</description>
 <attribute name="TOLERANCE" value="0.1%"/>
 </part>
 <part name="IC101.4" library="A_Linear_Technology" deviceset="LT1167" device="">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="R101.4" library="A_Resistor" deviceset="R-EU_" device="R0805" value="49k9">
 <attribute name="TOLERANCE" value="0.1%"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
-<part name="R103.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="0R">
-<variant name="Manual_Adjust" populate="no"/>
-</part>
+<part name="R103.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="0R"/>
 <part name="L101.4" library="A_Ferrite" deviceset="FB" device="MMZ2012S" value="FBMMZ2012S">
 <attribute name="PACKAGE" value="2012"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="L102.4" library="A_Ferrite" deviceset="FB" device="MMZ2012S" value="FBMMZ2012S">
 <attribute name="PACKAGE" value="2012"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="C105.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="10p">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="R153.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="120">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="C107.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="DNP">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="AGND36" library="supply" deviceset="AGND_" device=""/>
 <part name="R151.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="24k9">
 <attribute name="TOLERANCE" value="0.1%"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="TP152.4" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="TP151.4" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
@@ -9434,8 +9423,7 @@ Source: www.kingbright.com</description>
 <part name="R152.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="PACKAGE" value="R0603"/>
 <attribute name="TOLERANCE" value="0.1%"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="V17" library="A_Supply" deviceset="-5V" device=""/>
 <part name="AGND39" library="supply" deviceset="AGND_" device=""/>
@@ -9445,8 +9433,7 @@ Source: www.kingbright.com</description>
 <part name="AGND29" library="supply" deviceset="AGND_" device=""/>
 <part name="D351.3" library="A_Dioden" deviceset="SD101" device="AWS" value="SD101"/>
 <part name="D351.4" library="A_Dioden" deviceset="SD101" device="AWS" value="SD101">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="AGND9" library="supply" deviceset="AGND_" device=""/>
 <part name="AGND20" library="supply" deviceset="AGND_" device=""/>
@@ -9461,8 +9448,7 @@ Source: www.kingbright.com</description>
 </part>
 <part name="C153.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="10n/25V">
 <attribute name="PACKAGE" value="C0603"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="C153.2" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="10n/25V">
 <attribute name="PACKAGE" value="C0603"/>
@@ -9556,20 +9542,17 @@ Source: www.kingbright.com</description>
 </part>
 <part name="AGND48" library="supply" deviceset="AGND_" device=""/>
 <part name="R102.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="AGND12" library="supply" deviceset="AGND_" device=""/>
 <part name="TP106.4" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="C106.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="330p">
 <attribute name="PACKAGE" value="C0603"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="D101.4" library="A_Dioden" deviceset="SD101" device="AWS" value="SD101">
 <attribute name="PACKAGE" value="SOD-323"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="AGND30" library="supply" deviceset="AGND_" device=""/>
 <part name="R102.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k"/>
@@ -9592,21 +9575,15 @@ Source: www.kingbright.com</description>
 <attribute name="PACKAGE" value="SOD-323"/>
 </part>
 <part name="AGND50" library="supply" deviceset="AGND_" device=""/>
-<part name="IC301" library="A_Analog_Devices" deviceset="AD5664R" device="" value="AD5664">
-<variant name="Manual_Adjust" populate="no"/>
-</part>
+<part name="IC301" library="A_Analog_Devices" deviceset="AD5664R" device="" value="AD5664"/>
 <part name="AGND52" library="supply" deviceset="AGND_" device=""/>
 <part name="C305" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="100n/50V">
 <attribute name="PACKAGE" value="C0603"/>
-<variant name="Manual_Adjust" populate="no"/>
 </part>
-<part name="L301" library="A_Ferrite" deviceset="FB" device="MMZ2012S">
-<variant name="Manual_Adjust" populate="no"/>
-</part>
+<part name="L301" library="A_Ferrite" deviceset="FB" device="MMZ2012S"/>
 <part name="V5" library="supply" deviceset="+3V3" device=""/>
 <part name="C301" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="100n/50V">
 <attribute name="PACKAGE" value="C0603"/>
-<variant name="Manual_Adjust" populate="no"/>
 </part>
 <part name="AGND53" library="supply" deviceset="AGND_" device=""/>
 <part name="AGND54" library="supply" deviceset="AGND_" device=""/>
@@ -9628,17 +9605,14 @@ Source: www.kingbright.com</description>
 <part name="AGND55" library="supply" deviceset="AGND_" device=""/>
 <part name="R301" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="PACKAGE" value="R0603"/>
-<variant name="Manual_Adjust" populate="no"/>
 </part>
 <part name="V11" library="supply" deviceset="+3V3" device=""/>
 <part name="IC303" library="A_Linear_IC" deviceset="TL074" device="D"/>
 <part name="R322.1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k">
 <attribute name="PACKAGE" value="R0603"/>
-<variant name="Manual_Adjust" populate="no"/>
 </part>
 <part name="R303" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k">
 <attribute name="PACKAGE" value="R0603"/>
-<variant name="Manual_Adjust" populate="no"/>
 </part>
 <part name="R321.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="TOLERANCE" value="0.1%"/>
@@ -9652,7 +9626,6 @@ Source: www.kingbright.com</description>
 <part name="TP321.2" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="R322.2" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k">
 <attribute name="PACKAGE" value="R0603"/>
-<variant name="Manual_Adjust" populate="no"/>
 </part>
 <part name="TP305" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
 <part name="C307" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="100n/50V">
@@ -9662,8 +9635,7 @@ Source: www.kingbright.com</description>
 <part name="S351.2" library="A_Schalter" deviceset="SS_ESP101" device=""/>
 <part name="S351.3" library="A_Schalter" deviceset="SS_ESP101" device=""/>
 <part name="S351.4" library="A_Schalter" deviceset="SS_ESP101" device="">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="AGND62" library="supply" deviceset="AGND_" device=""/>
 <part name="AGND63" library="supply" deviceset="AGND_" device=""/>
@@ -9685,7 +9657,7 @@ Source: www.kingbright.com</description>
 <part name="C303" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1u/25V">
 <attribute name="PACKAGE" value="C0603"/>
 </part>
-<part name="R302" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k">
+<part name="R302" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="PACKAGE" value="R0603"/>
 </part>
 <part name="C152.1" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1u/25V">
@@ -9708,13 +9680,11 @@ Source: www.kingbright.com</description>
 </part>
 <part name="C102.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1u/25V">
 <attribute name="PACKAGE" value="C0603"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="C104.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1u/25V">
 <attribute name="PACKAGE" value="C0603"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="C102.3" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1u/25V">
 <attribute name="PACKAGE" value="C0603"/>
@@ -9742,13 +9712,11 @@ Source: www.kingbright.com</description>
 <part name="AGND67" library="supply" deviceset="AGND_" device=""/>
 <part name="C351.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1u/25V">
 <attribute name="PACKAGE" value="C0603"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="C352.4" library="A_Kondensatoren" deviceset="C-EU" device="C0603" value="1u/25V">
 <attribute name="PACKAGE" value="C0603"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="TP301" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="TP303" library="A_Testpoint" deviceset="TP" device="C90H30" value="TPC90H30"/>
@@ -9804,33 +9772,27 @@ Source: www.kingbright.com</description>
 <part name="TP354.3" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="R355.4" library="A_Resistor" deviceset="R-EU_" device="R0805" value="22R">
 <attribute name="TOLERANCE" value="0.1%"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="R354.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k">
 <attribute name="TOLERANCE" value="0.1%"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="R353.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="TOLERANCE" value="0.1%"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="R352.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="1k">
 <attribute name="TOLERANCE" value="0.1%"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="R351.4" library="A_Resistor" deviceset="R-EU_" device="R0603" value="10k">
 <attribute name="TOLERANCE" value="0.1%"/>
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="AGND57" library="supply" deviceset="AGND_" device=""/>
 <part name="IC351.4" library="A_Linear_IC" deviceset="OPA2156" device="ID" value="AD8672ARZ">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="TP351.4" library="A_Testpoint" deviceset="TP" device="C90"/>
 <part name="TP352.4" library="A_Testpoint" deviceset="TP" device="C90"/>
@@ -9886,29 +9848,24 @@ Source: www.kingbright.com</description>
 </part>
 <part name="AGND68" library="supply" deviceset="AGND_" device=""/>
 <part name="C1" library="A_Kondensatoren" deviceset="C-EU" device="C0805" value="4.7u/25V">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="C2" library="A_Kondensatoren" deviceset="C-EU" device="C0805" value="4.7u/25V">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="AGND70" library="supply" deviceset="AGND_" device=""/>
 <part name="C3" library="A_Kondensatoren" deviceset="C-EU" device="C0805" value="4.7u/25V">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="C4" library="A_Kondensatoren" deviceset="C-EU" device="C0805" value="4.7u/25V">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="V26" library="supply" deviceset="+15V" device=""/>
 <part name="V27" library="A_Supply" deviceset="+8V" device="" value="+5V"/>
 <part name="V39" library="A_Supply" deviceset="-5V" device=""/>
 <part name="V40" library="A_Supply" deviceset="-5V" device=""/>
 <part name="C5" library="A_Kondensatoren" deviceset="C-EU" device="C0805" value="4.7u/25V">
-<variant name="Manual_Adjust" populate="no"/>
-<variant name="Controller Adjust" populate="no"/>
+<variant name="Base_Variant" populate="no"/>
 </part>
 <part name="V41" library="A_Supply" deviceset="+8V" device="" value="+5V"/>
 <part name="R1" library="A_Resistor" deviceset="R-EU_" device="R0603" value="680"/>
