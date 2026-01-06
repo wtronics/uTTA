@@ -125,11 +125,9 @@ int main(void)
 
   my_instrument.PrintDebugInfo(USART2, 0);
 
-  INIT_DBG("Init SD Card!\n");
   uint32_t TotalMem=0;
 
   if (w25qxx_init(&w25qxx, SPI3, FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_Pin) == W25QXX_Ok) {
-	  INIT_DBG("W25QXX successfully initialized\n");
 	  INIT_DBG("Manufacturer       = 0x%2x\n", w25qxx.manufacturer_id);
 	  INIT_DBG("Device             = 0x%4x\n", w25qxx.device_id);
 	  INIT_DBG("Block size         = 0x%04x (%lu)\n", w25qxx.block_size, w25qxx.block_size);
