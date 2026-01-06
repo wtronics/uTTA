@@ -59,7 +59,7 @@ void Write_CalibrationToFlash(lfs_t *lfs, lfs_file_t *file){
 void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file, uint8_t details){
 
 	int LFS_ret = 0;
-	UART_printf("CALIBRATION_FILE:\n");
+	UART_printf("CALIBRATION_FILE: ");
 
 	// Open the file and check if it is really available
 	LFS_ret = lfs_file_open(lfs, file, "Cali.ucf", LFS_O_RDONLY);
@@ -67,6 +67,9 @@ void Read_CalibrationFromFlash(lfs_t *lfs, lfs_file_t *file, uint8_t details){
 		UART_printf("NO_FILE\n");
 		CalAvailable = -1;
 		return;
+	}
+	else{
+		UART_printf("Available\n");
 	}
 
 	// read the file from the memory in one step
