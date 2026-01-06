@@ -133,7 +133,7 @@ void Read_FileFromFlash(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart
 	first_parameter = parameters.First();
 
 	LFS_ret = lfs_file_open(&littlefs, &file, first_parameter, LFS_O_RDONLY);
-	if( LFS_ret > 0){
+	if( LFS_ret < 0){
 		ErrorResponse(ERRC_SYSTEM_ERROR, ERST_FILE_NOT_FOUND);
 		return;
 	}
