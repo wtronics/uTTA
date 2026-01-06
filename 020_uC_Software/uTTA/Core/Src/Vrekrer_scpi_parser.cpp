@@ -67,10 +67,12 @@ int8_t SCPI_String_Array::evalBoolParam(char *parameter){
 
 	if ((strcmp(Param,"HIGH")==0)
 	 || (strcmp(Param,"ON")==0)
+	 || (strcmp(Param,"TRUE")==0)
 	 || (strcmp(Param,"1")==0)) {
 		RetVal = 1;
 	} else if ((strcmp(Param,"LOW")==0)
 			|| (strcmp(Param,"OFF")==0)
+			|| (strcmp(Param,"FALSE")==0)
 			|| (strcmp(Param,"0")==0)) {
 		RetVal = 0;
 	}else{
