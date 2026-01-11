@@ -1,0 +1,144 @@
+[DEVICE_INFO]
+SN = "SN001"
+CalDate = "17.04.2025"
+
+[DIFF0]
+Offset = "0.000000E+0"
+LinGain = "1.997266E+0"
+QuadGain = "0.000000E+0"
+
+[DIFF1]
+Offset = "0.000000E+0"
+LinGain = "1.991745E+0"
+QuadGain = "0.000000E+0"
+
+[DIFF2]
+Offset = "0.000000E+0"
+LinGain = "1.989528E+0"
+QuadGain = "0.000000E+0"
+
+[DIFF3]
+Offset = "0.000000E+0"
+LinGain = "1.000000E+0"
+QuadGain = "0.000000E+0"
+
+[DAC_OFF0]
+Offset = "-1.243470E+3"
+LinGain = "56.959880E-3"
+QuadGain = "0.000000E+0"
+
+[DAC_OFF1]
+Offset = "-1.243745E+3"
+LinGain = "56.985880E-3"
+QuadGain = "0.000000E+0"
+
+[PA_00]
+Offset = "-78.040834E-6"
+LinGain = "808.818600E-6"
+QuadGain = "0.000000E+0"
+
+[PA_01]
+Offset = "481.499206E-6"
+LinGain = "539.855530E-6"
+QuadGain = "0.000000E+0"
+
+[PA_02]
+Offset = "441.691527E-6"
+LinGain = "304.265760E-6"
+QuadGain = "0.000000E+0"
+
+[PA_03]
+Offset = "570.589995E-6"
+LinGain = "256.241520E-6"
+QuadGain = "0.000000E+0"
+
+[PA_10]
+Offset = "694.639099E-6"
+LinGain = "231.672810E-6"
+QuadGain = "0.000000E+0"
+
+[PA_20]
+Offset = "899.329753E-6"
+LinGain = "231.767480E-6"
+QuadGain = "0.000000E+0"
+
+[PA_30]
+Offset = "0.000000E+0"
+LinGain = "1.000000E+0"
+QuadGain = "0.000000E+0"
+
+[ADC_I]
+Offset = "25.592721E-3"
+LinGain = "7.865430E-3"
+QuadGain = "0.000000E+0"
+
+[DAC_ISEN]
+Offset = "4.866279E+0"
+LinGain = "172.625450E-3"
+QuadGain = "0.000000E+0"
+
+[$CHAN_DUMMY1]
+Offset = "0.000000E+0"
+LinGain = "1.000000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 0    
+
+[$CHAN_DUMMY2]
+Offset = "0.000000E+0"
+LinGain = "1.000000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 0    
+
+[$CHAN_DUMMY3]
+Offset = "0.000000E+0"
+LinGain = "1.000000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 0    
+
+[$CHAN_BUZ11]
+Offset = "0.000000E+0"
+LinGain = "-2.600000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 1    
+
+[$CHAN_IRF1010N]
+Offset = "0.000000E+0"
+LinGain = "-2.600000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 1    
+
+[$CHAN_IRF1010N_M]
+Offset = "0.000000E+0"
+LinGain = "-2.600000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 1    
+
+[$CHAN_IRF1010N_L]
+Offset = "0.000000E+0"
+LinGain = "-2.600000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 1    
+
+[$CHAN_IRF1010N_R]
+Offset = "0.000000E+0"
+LinGain = "-2.600000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 1    
+
+[$CHAN_IRFZ44N_M]
+Offset = "0.000000E+0"
+LinGain = "-2.600000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 1
+
+[$CHAN_IRFZ44N_L]
+Offset = "0.000000E+0"
+LinGain = "-2.600000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 1
+
+[$CHAN_IRFZ44N_R]
+Offset = "0.000000E+0"
+LinGain = "-2.600000E-3"
+QuadGain = "0.000000E+0"
+CalStatus = 1
