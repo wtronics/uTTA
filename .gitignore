@@ -18,3 +18,4 @@
 *language.settings.xml
 /010_Hardware/070_Simulation/TSP_Calibration_Simulator
 *.xml
+/020_uC_Software/uTTA/Debug
