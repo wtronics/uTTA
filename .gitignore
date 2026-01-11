@@ -17,3 +17,4 @@
 *.settings/
 *language.settings.xml
 /010_Hardware/070_Simulation/TSP_Calibration_Simulator
+*.xml
