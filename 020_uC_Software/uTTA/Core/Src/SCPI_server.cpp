@@ -311,7 +311,7 @@ void Set_FileUploadMode(SCPI_C commands, SCPI_P parameters, USART_TypeDef *huart
 void FileUpload_SerialToFile(char* message){
 	const char* eof_chars = "<EOF>";
 	int LFS_ret = 0;
-	char FileWriteBuff[65];
+	char FileWriteBuff[SCPI_BUFFER_LENGTH +1];
 
 	strcpy(FileWriteBuff , message);
 
