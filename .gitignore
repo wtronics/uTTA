@@ -5,8 +5,6 @@
 030_Documentation/Figure_1_FFT_Pad.png
 030_Documentation/Figure_1_unpadded.png
 010_Hardware/010_uTTA_Eagle/eagle.epf
-020_uC_Software/uTTA/.settings/
-/020_uC_Software/uTTA/.settings
 /050_Phyton_Scripts/uTTA/__pycache__
 040_LabVIEW_GUI/uTTA/Measurement_Window/SubVi/uTTA_GetLiveMeasureStatus_V2.vi
 040_LabVIEW_GUI/uTTA/uTTA_Main_V2.vi
@@ -16,3 +14,4 @@
 /050_Phyton_Scripts/uTTA/private
 /010_Hardware/040_Datasheets/Connector
 *.launch
+*.settings/
