@@ -37,7 +37,7 @@
 #define UTTA_SERIAL_NO "001"
 
 // Define if you have an early hardware of the power PCB (before Version 1.0) or after (because of inverted Power Good Signal from Gatedriver)
-#define EARLY_HW_POWER_BOARD
+//#define EARLY_HW_POWER_BOARD
 #define HW_MEASURE_BOARD_BELOW_V2P2				// uncomment in case of an older Measure Board Hardware (Active and Error LED were twisted)
 //#define ENABLE_TIMER_DEBUGGING
 
