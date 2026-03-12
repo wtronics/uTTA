@@ -6,8 +6,8 @@ import time
 from datetime import datetime
 import re
 import os
-import uTTA_data_import as udi
-import uTTA_SCPI_Driver_Constants as scpi_consts
+import library.uTTA_data_import as udi
+import library.uTTA_SCPI_Driver_Constants as scpi_consts
 
 
 
@@ -36,17 +36,17 @@ def list_serial_ports(pid=None, vid=None, name=None):
                 out_ports.append(port_info)
 
     # terminal output
-    print("+#" * 18 + " Serial Ports (COM & VCP) " + "+#" * 18)
-    if not out_ports:
-        print("No entries found.")
-        return
+    # print("+#" * 18 + " Serial Ports (COM & VCP) " + "+#" * 18)
+    # if not out_ports:
+    #     print("No entries found.")
+    #     return
 
-    for p in out_ports:
-        print(f"Port: {p['device']}")
-        print(f"  Name:         {p['name']}")
-        print(f"  Vendor    :   {p['manufacturer']}")
-        print(f"  Hardware-ID:  {p['hwid']}")
-        print("+#" * 49)
+    # for p in out_ports:
+    #     print(f"Port: {p['device']}")
+    #     print(f"  Name:         {p['name']}")
+    #     print(f"  Vendor    :   {p['manufacturer']}")
+    #     print(f"  Hardware-ID:  {p['hwid']}")
+    #     print("+#" * 49)
 
     return out_ports
 
@@ -731,14 +731,14 @@ class uTTA_Serial_Communication:
 
 if __name__ == "__main__":
 
-    list_serial_ports(vid="0483", name="STLink")
+    # list_serial_ports(vid="0483", name="STLink")
 
-    utta_dev = uTTA_Serial_Communication(port='COM3')
+    # utta_dev = uTTA_Serial_Communication(port='COM3')
     success = False
     msg = None
     # success, msg = utta_dev.identify_instrument()
     # print(f"Status: {msg}")
-    success, msg = utta_dev.reset_instrument()
+    # success, msg = utta_dev.reset_instrument()
     # msg = utta_dev.get_system_clock()
     # utta_dev.sync_system_time()
     # success, msg = utta_dev.set_cooling_time(1000)
@@ -750,7 +750,7 @@ if __name__ == "__main__":
 
     # dev_cal_data, dev_meta_data ,utta_tsp_cal ,utta_tc_cal = udi.read_calfile2dict(os.path.abspath(r'..\..\060_Example_Measurement_Data\Calibration\20250505_SN001_Calibration.ucf') # type: ignore
     # success, msg = utta_dev.set_ch_description(1, "BUZ11_Test", utta_tsp_cal["$CHAN_BUZ11"])
-    success, msg = utta_dev.read_directory('/')
+    # success, msg = utta_dev.read_directory('/')
     # success, msg = utta_dev.get_system_calibration()
     
     # success, msg = utta_dev.get_system_error_status()
