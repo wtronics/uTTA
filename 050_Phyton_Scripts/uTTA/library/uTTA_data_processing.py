@@ -362,8 +362,6 @@ class UttaZthProcessing:
         self.DieMaxThickness = np.sqrt((self.adc_timebase_cooling[interp_idx_start] * 2 * self.kappa_SI) /
                                        (self.Cth_Si * self.rho_Si))  # Die thickness in METER
 
-
-
         print("Maximum Die thickness based on current interpolation: {MaxThick: .2f}µm".
               format(MaxThick=self.DieMaxThickness*1000*1000))
 
@@ -653,7 +651,7 @@ def find_static_states(indata, threshold=0.01, min_length=5):
     start = -1
 
     for i in range(len(indata)):
-        if start is -1:
+        if start == -1:
             start = i
         elif abs(indata[i] - indata[start]) > threshold:
             if i - start >= min_length:
