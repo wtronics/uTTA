@@ -1,152 +1,94 @@
 @echo off
-::setlocal enableDelayedExpansion
+SETLOCAL
+title Python GUI with Auto-Update
 
-set "VENV_NAME=.venv"
-set "LOG_FILE=install_log.txt"
-set "TIMESTAMP=%DATE% %TIME%"
-set "SUCCESS_FLAG=0"
+:: --- CONFIGURATION ---
+set SCRIPT_NAME=uTTA_Postprocess_Measurement_GUI.pyw
+set REQS_FILE=requirements.txt
+set LOG_FILE=install_log.txt
+set VENV_DIR=.venv
+set VENV_PATH=%~dp0%VENV_DIR%\Scripts\activate.bat
 
 :: ----------------------------------------------------------------------
 :: 1. Initialize Log File and Configuration
 :: ----------------------------------------------------------------------
-echo Starting installation script on %TIMESTAMP% > "%LOG_FILE%"
+echo [STEP 1] Starting installation script on %TIMESTAMP% > "%LOG_FILE%"
+echo [STEP 1] Starting installation script on %TIMESTAMP%
 echo ---------------------------------------------------------------------- >> "%LOG_FILE%"
 
-echo Starting installation process... Details will be logged in "%LOG_FILE%".
-
-:: Check for the 'py' launcher (Python)
-py -V >nul 2>&1
-IF ERRORLEVEL 1 (
-    echo.
-    echo CRITICAL ERROR: Python Launcher 'py' not found. Please ensure Python is installed and configured.
-    echo CRITICAL ERROR: Python Launcher 'py' not found. >> "%LOG_FILE%"
-    GOTO ERROR_EXIT
-)
-
-
-:: ----------------------------------------------------------------------
-:: 2. Check for VENV and Create if Missing
-:: ----------------------------------------------------------------------
-echo.
-echo [Checking VENV]
-echo [Checking VENV] >> "%LOG_FILE%"
-
-IF EXIST "%VENV_NAME%\" (
-    echo Virtual environment "%VENV_NAME%" already exists.
-    echo Virtual environment "%VENV_NAME%" already exists. >> "%LOG_FILE%"
-    GOTO INSTALL_REQUIREMENTS
-) ELSE (
-    echo Virtual environment "%VENV_NAME%" not found. Creating it...
-    echo Virtual environment "%VENV_NAME%" not found. Creating it... >> "%LOG_FILE%"
+:: 2. Check if the virtual environment exists. Create if it doesn'taskkill
+if not exist "%VENV_PATH%" (
+    echo [INFO] NO virtual environment found. > "%LOG_FILE%"
+    echo [INFO] Create venv in %~dp0%VENV_DIR%... >> "%LOG_FILE%"
+	echo [INFO] NO virtual environment found.
+    echo [INFO] Create venv in %~dp0%VENV_DIR%...
     
-    :: Create the virtual environment
-    py -m venv "%VENV_NAME%" >> "%LOG_FILE%" 2>&1
+    :: Create a venv (use the installed system python)
+    python -m venv "%~dp0%VENV_DIR%"
     
-    IF ERRORLEVEL 1 (
-        echo.
-        echo ERROR: Failed to create VENV. Check log for details: "%LOG_FILE%"
-        echo ERROR: Failed to create VENV. ERRORLEVEL !ERRORLEVEL!. >> "%LOG_FILE%"
-        GOTO ERROR_EXIT
+    if errorlevel 1 (
+        echo [ERROR] Error while creating venv. Is Python installed?
+		echo [ERROR] Error while creating venv. Is Python installed? >> "%LOG_FILE%"
+        pause
+        exit /b
     )
-    echo VENV successfully created.
-    echo VENV successfully created. >> "%LOG_FILE%"
+    echo [OK] Created virtual environment. >> "%LOG_FILE%"
+	echo [OK] Created virtual environment.
 )
 
+:: 3. Acitivate VENV ---
+echo [INFO] Activate venv... >> "%LOG_FILE%"
+echo [INFO] Activate venv...
+call "%VENV_PATH%"
 
-:: ----------------------------------------------------------------------
-:: 3. Install Requirements
-:: ----------------------------------------------------------------------
-:INSTALL_REQUIREMENTS
+:: 4. Update PIP and the packages ---
+echo.  >> "%LOG_FILE%"
+echo --------------------------------------------------- >> "%LOG_FILE%"
+echo [STEP 2] Update-Check (Pip ^& Requirements)         >> "%LOG_FILE%"
+echo --------------------------------------------------- >> "%LOG_FILE%"
+echo.  >> "%LOG_FILE%"
+
 echo.
-echo [Installing Packages]
-echo [Installing Packages] >> "%LOG_FILE%"
-echo Installing packages from requirements.txt...
-
-set "PIP_PATH=%VENV_NAME%\Scripts\pip.exe"
-
-echo Upgrading pip... >> "%LOG_FILE%"
-"%PIP_PATH%" install --upgrade pip >> "%LOG_FILE%" 2>&1
-
-:: Check if requirements.txt exists
-IF NOT EXIST "requirements.txt" (
-    echo.
-    echo WARNING: requirements.txt not found. Installation skipped.
-    echo WARNING: requirements.txt not found. >> "%LOG_FILE%"
-    set "SUCCESS_FLAG=1"
-    GOTO ACTIVATION_PROMPT
-)
-
-:: Install packages
-echo Starting pip install -r requirements.txt... >> "%LOG_FILE%"
-"%PIP_PATH%" install -r requirements.txt >> "%LOG_FILE%" 2>&1
-
-IF ERRORLEVEL 0 (
-    echo.
-    echo Installation completed successfully.
-    echo Installation completed successfully. >> "%LOG_FILE%"
-    set "SUCCESS_FLAG=1"
-    GOTO ACTIVATION_PROMPT
-) ELSE (
-    echo.
-    echo ERROR: requirements.txt installation failed. Check log for details: "%LOG_FILE%"
-    echo ERROR: requirements.txt installation failed. ERRORLEVEL !ERRORLEVEL!. >> "%LOG_FILE%"
-    GOTO ERROR_EXIT
-)
-
-
-:: ----------------------------------------------------------------------
-:: 4. Activation Prompt
-:: ----------------------------------------------------------------------
-:ACTIVATION_PROMPT
+echo ---------------------------------------------------
+echo [STEP 2] Update-Check (Pip ^& Requirements)        
+echo ---------------------------------------------------
 echo.
-echo ===================================================================
-set /P "CHOICE=Do you want to activate the virtual environment now? (Y/N): "
 
-IF /I "!CHOICE!" EQU "Y" (
-    echo.
-    echo Activating "%VENV_NAME%" in a new command line window...
-    
-    :: starts a new  cmd-Instance and runs activate.bat
-    start cmd /k "%VENV_NAME%\Scripts\activate.bat"
-    
-    echo Activation script started.
-) ELSE (
-    echo.
-    echo Skipped activation. You can start it later on with this command:
-    echo %VENV_NAME%\Scripts\activate.bat
+:: Update Pip
+python -m pip install --upgrade pip >> "%LOG_FILE%" 2>&1
+
+:: Install requirements.txt
+if exist "%REQS_FILE%" (
+    echo [INFO] Install packages from %REQS_FILE%...  >> "%LOG_FILE%"
+	echo [INFO] Install packages from %REQS_FILE%...
+    pip install -r "%~dp0%REQS_FILE%"  >> "%LOG_FILE%" 2>&1
+) else (
+    echo [WARN] No %REQS_FILE%.file found. Please create a requirements file!  >> "%LOG_FILE%"
+	echo [WARN] No %REQS_FILE%.file found. Please create a requirements file!
 )
-echo ===================================================================
 
+:: --- 4. Start the SCRIPT ---
+echo.  >> "%LOG_FILE%"
+echo --------------------------------------------------- >> "%LOG_FILE%"
+echo [STEP 3] Starting %SCRIPT_NAME%...                     >> "%LOG_FILE%"
+echo [INFO] Terminal is kept open for logging or print-outputs.  >> "%LOG_FILE%"
+echo ---------------------------------------------------  >> "%LOG_FILE%"
+echo.  >> "%LOG_FILE%"
 
-:: ----------------------------------------------------------------------
-:: 5. Finish and Cleanup
-:: ----------------------------------------------------------------------
-:END
 echo.
-echo Script finished.
-echo ---------------------------------------------------------------------- >> "%LOG_FILE%"
-echo Ending installation script on %DATE% %TIME% >> "%LOG_FILE%"
+echo ---------------------------------------------------
+echo [STEP 3] Starting %SCRIPT_NAME%...                    
+echo [INFO] Terminal is kept open for logging or print-outputs.
+echo ---------------------------------------------------
+echo.
 
-:: Clean up log file if successful
-::IF "%SUCCESS_FLAG%"=="1" (
-::    echo Cleaning up log file...
-::    del "%LOG_FILE%"
-::)
+python "%~dp0%SCRIPT_NAME%"
 
-::endlocal
+:: --- 5. Finish ---
+echo.  >> "%LOG_FILE%"
+echo ---------------------------------------------------  >> "%LOG_FILE%"
+echo [FINISH] Quit programm.  >> "%LOG_FILE%"
+echo.
+echo ---------------------------------------------------
+echo [FINISH] Quit programm.
 pause
-EXIT /B 0
-
-
-:ERROR_EXIT
-echo.
-echo ----------------------------------------------------------------------
-echo SCRIPT FAILED. Opening log file for review...
-echo ----------------------------------------------------------------------
-
-:: Open log file in Notepad for user inspection
-start notepad "%LOG_FILE%"
-
-::endlocal
-pause
-EXIT /B 1
