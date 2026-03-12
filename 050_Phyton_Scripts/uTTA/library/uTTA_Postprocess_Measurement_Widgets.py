@@ -252,7 +252,7 @@ class DeconvPlotsWidget(ttk.Frame):
     def _setup_plot_mapping(self):
 
         self.plots.plot_mapping=[
-            (0, self.data.add_diode_dt_curve_plot),
-            (1, self.data.add_zth_curve_plot),
-            (2, self.data.add_zth_coupling_curve_plot),
+            (0, self.data.add_deconv_zth_output_plot),
+            (1, self.data.add_deconv_output_plot),
+            (2, self.data.add_zth_deconvolution_error_plot),
         ]
