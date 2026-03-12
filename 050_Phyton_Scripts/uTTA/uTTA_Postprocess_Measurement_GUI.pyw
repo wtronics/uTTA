@@ -3,6 +3,7 @@ import matplotlib # matplotlib 3.9.2
 from tkinter import filedialog as fd
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
 import library.uTTA_data_processing as udProc
+import library.uTTA_Deconvolution as uDeconv
 import library.uTTA_Postprocess_Measurement_Interpol_Widget as uttaInterpolWidget
 import library.uTTA_Postprocess_Measurement_Widgets as uttaWidgets
 
@@ -40,6 +41,7 @@ class UmfViewerApp(ttk.Window):
         self.DirName = ""
 
         self.utta_data = udProc.UttaZthProcessing()
+        self.utta_deconv = uDeconv.UttaDeconvolution()
         self.utta_data.load_settings(__file__)
         self.interp_window = None
 
@@ -143,6 +145,10 @@ class UmfViewerApp(ttk.Window):
         self.frm_deconv.place(x=10, y=10)
         self.tabs.add(self.frm_deconv, text="Deconvolution   ")
 
+        self.deconv_widget = uttaWidgets.DeconvPlotsWidget(self.frm_deconv, self.utta_deconv,
+                                                           (SEC_COL_WIDTH - 2 * 10), 810,
+                                                           screen_dpi)
+
         # 5th Page: Settings
         self.frm_settings = ttk.Frame(master=self)
         self.frm_settings.place(x=10, y=10)
@@ -163,7 +169,23 @@ class UmfViewerApp(ttk.Window):
             self.meas_info_widget.update_widget(self.utta_data)
             self.meas_plots_widget.plots.update_plots()
             self.zth_plots_widget.plots.update_plots()
+            self.deconv_widget.plots.update_plots()
+            
         self.update()
+    
+    def update_calculations(self, complete:bool=True):
+
+        if complete:
+            self.utta_data.calculate_cooling_curve()
+            self.utta_data.calculate_diode_heating()
+            self.utta_data.calculate_tsp_start_voltages()
+
+        self.utta_data.interpolate_zth_curve_start()
+
+        self.utta_deconv.import_from_postprocess(self.utta_data)
+        self.utta_deconv.prepare_zth_deconvolution()
+        self.utta_deconv.deconvolve_zth_lucy_richardson(1000)
+
 
     def read_measurement_file_callback(self):
 
@@ -180,11 +202,7 @@ class UmfViewerApp(ttk.Window):
 
             if not self.utta_data.meta_data.FlagTSPCalibrationFile:
 
-                self.utta_data.calculate_cooling_curve()
-                self.utta_data.calculate_diode_heating()
-                self.utta_data.calculate_tsp_start_voltages()
-
-                self.utta_data.interpolate_zth_curve_start()
+                self.update_calculations()
                 self.update_widgets()
 
                 self.lbl_helpbar.configure(text="File: {fname} was successfully imported.".format(fname=self.FileNameWExt),
@@ -227,7 +245,7 @@ class UmfViewerApp(ttk.Window):
 
     def recalculate_interpolation(self):
         print("recalculate called")
-        self.utta_data.interpolate_zth_curve_start()
+        self.update_calculations(False)
 
     def report_html(self):
 
