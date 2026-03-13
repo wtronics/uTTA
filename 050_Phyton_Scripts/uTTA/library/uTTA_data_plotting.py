@@ -1,9 +1,11 @@
 from matplotlib.figure import Figure
 import matplotlib as mpl
-import matplotlib.pyplot as plt     # matplotlib 3.9.2
+import matplotlib.pyplot as plt
+from matplotlib.ticker import LogLocator
 import matplotlib.ticker as ticker
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore # matplotlib 3.9.2
-import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore
+import ttkbootstrap as ttk
 import numpy as np
 import pprint as pprint
 
@@ -37,8 +39,7 @@ class UttaPlotData:
 
         self.plot_mapping = []
 
-        self.figure, self.axes = Figure(figsize=(size[0] / dpi, (size[1]-10) / dpi)), []
-        # self.figure, self.axes = Figure(figsize=(size[0] / dpi, (size[1] - 10) / dpi), dpi=dpi), []
+        self.figure, self.axes = Figure(figsize=(size[0] / dpi, (size[1]-10) / dpi), dpi=96, tight_layout = True), []
 
         for i in range(rows):
             for j in range(cols):
@@ -57,11 +58,11 @@ class UttaPlotData:
         if not self.no_gui:
             self.canvas = FigureCanvasTkAgg(self.figure, master=parent)
             self.canvas.draw()
-            self.canvas.get_tk_widget().grid( sticky="ew")
+            self.canvas.get_tk_widget().pack(fill=tk.BOTH, padx=10, pady=10)
 
             # Toolbar Frame
             toolbar_frame = ttk.Frame(master=parent)
-            toolbar_frame.place(x=10, y=size[1]-20)
+            toolbar_frame.pack(fill=tk.X, padx=10, pady=10)
             self.toolbar = NavigationToolbar2Tk(self.canvas, toolbar_frame)
             self.toolbar.update()
 
@@ -122,10 +123,13 @@ class UttaPlotData:
                         if config.y_scale == 'log' and np.min(curve['y_data']) < 0.0:
                             config.y_scale = 'linear'
 
-                   
-
                     ax.set_xscale(config.x_scale)
                     ax.set_yscale(config.y_scale)
+                    
+                    if config.x_scale == 'log':
+                        ax.xaxis.set_major_locator(LogLocator(base=10.0, subs=[1.0], numticks=999))
+                        ax.grid(True , axis='x', which='major', ls="-", color='grey') 
+                        ax.grid(True , axis='x', which="minor", alpha=0.7)
 
                 # Common settings for all plots + the legend
                 if num_plots > 0:       # check if anything was printed into the plot. Otherwise mpl will generate an error
