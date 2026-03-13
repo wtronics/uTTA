@@ -1,21 +1,18 @@
-import os
-import matplotlib # matplotlib 3.9.2
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore # matplotlib 3.9.2
+import matplotlib
+from matplotlib.ticker import LogLocator
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore
 from matplotlib.figure import Figure
 import numpy as np
-from numpy import genfromtxt            # numpy 2.1.0
-from tksheet import (Sheet, float_formatter)
-from tkinter import filedialog as fd
-import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
+from numpy import genfromtxt       
+from tksheet import Sheet
+import tkinter as tk
+import ttkbootstrap as ttk
 import library.uTTA_data_processing as udpc
 
 matplotlib.use("TkAgg")
 
 WINDOW_WIDTH = 1580
 WINDOW_HEIGHT = 960
-FIRST_COL_WIDTH = 300
-BTN_HEIGHT = 40
-SEC_COL_WIDTH = (WINDOW_WIDTH - FIRST_COL_WIDTH - 3*10)
 
 class ZthData():
     def __init__(self):
@@ -27,7 +24,6 @@ class ZthData():
         self.zth_data_monitors :list = []
         self.channel_names :list = []
 
-    
     
     def read_file(self, filepath):
         datafile, self.filename, folderpath = udpc.split_file_path(filepath)
@@ -68,39 +64,46 @@ class ZthComparatorApp(ttk.Window):
         self.file_data :dict = {}
         self.plots :list = []
 
-        udp = udpc.UttaZthProcessing()
+        matplotlib.rcParams['axes.labelsize'] = 9
+        matplotlib.rcParams['legend.fontsize'] = 9
+        matplotlib.rcParams['font.size'] = 11
+        matplotlib.rcParams['xtick.labelsize'] = 9
+        matplotlib.rcParams['ytick.labelsize'] = 9
 
         self.iconbitmap(r'library/uTTA_Icon.ico')
-        print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
+        # print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
+
+        self.paned = ttk.Panedwindow(self, orient=tk.HORIZONTAL)
+        self.paned.pack(fill=tk.BOTH, expand=True)
 
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
         # LEFT GUI COLUMN
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
 
         # Measurement File Button Frame
-        self.frm_file_btns = ttk.Labelframe(self, text="Files",
-                                            width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
-        self.frm_file_btns.place(x=10, y=10, height=500)
+        self.frm_left = ttk.Frame(self.paned)
+        self.frm_left.pack(fill=tk.X, padx=10, pady=10)
+        self.frm_file_btns = ttk.Labelframe(self.frm_left, text="Files",
+                                             style="secondary.TLabelframe")
+        self.frm_file_btns.pack(fill=tk.X, padx=10, pady=10)
         self.btn_add_file = ttk.Button(master=self.frm_file_btns,
                                            text="Add File",
                                            command=self.add_measurement_file_callback, style="dark")
-        self.btn_add_file.place(x=10, y=10, height=BTN_HEIGHT, width=180)
+        self.btn_add_file.pack(fill=tk.X, padx=10, pady=10)
 
         self.btn_del_file = ttk.Button(master=self.frm_file_btns,
                                            text="Delete File",
                                            command=self.delete_measurement_file_callback, style="dark", state="disabled")
-        self.btn_del_file.place(x=10, y=BTN_HEIGHT + 2*10, height=BTN_HEIGHT, width=180)
+        self.btn_del_file.pack(fill=tk.X, padx=10, pady=10)
 
         tab_heading = ["Show", "File"]
         self.files_sheet = Sheet(self.frm_file_btns, startup_select=(0, 1, "rows"),
-                                  page_up_down_select_row=True, height=230, width=FIRST_COL_WIDTH-2*10,
-                                  total_columns=2, row_index_width=30)
-        self.files_sheet.place(x=10, y=2*BTN_HEIGHT + 3*10)
+                                 page_up_down_select_row=True, height=230, 
+                                 total_columns=2, row_index_width=30)
+        self.files_sheet.pack(fill=tk.X, padx=10, pady=10)
         self.files_sheet.enable_bindings(('single_select', 'edit_cell')) # type: ignore
-        #self.files_sheet.extra_bindings("cell_select", self.on_cell_select)
         self.files_sheet.extra_bindings("edit_cell", self.after_cell_edit)
-        #self.files_sheet.extra_bindings("end_edit_cell", self.after_cell_edit)
         self.files_sheet.headers(tab_heading)
         self.files_sheet.set_all_column_widths(200)
         self.files_sheet.align_columns(0, "center")
@@ -109,35 +112,47 @@ class ZthComparatorApp(ttk.Window):
   
         self.files_sheet.checkbox("A", checked=False)
 
+        self.paned.add(self.frm_left)
+
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
         # RIGHT GUI COLUMN
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        self.frm_right = ttk.Frame(self.paned)
+        self.frm_right.pack(fill=tk.X, padx=10, pady=10)
 
-        self.lbl_helpbar = ttk.Label(master=self, anchor="w", style="inverse-info", wraplength=1080)
-        self.lbl_helpbar.place(x=FIRST_COL_WIDTH + 20, y=10, width=SEC_COL_WIDTH, height=50)
+        self.lbl_helpbar = ttk.Label(master=self.frm_right, anchor="w", style="inverse-info", wraplength=1080)
+        self.lbl_helpbar.pack(fill=tk.X, padx=10, pady=10)
         self.lbl_helpbar.configure(text="Welcome to the uTTA Zth comparison tool.\n")
 
         # Plot Area
-        self.frm_plot_area = ttk.Frame(master=self)
-        self.frm_plot_area.place(x=FIRST_COL_WIDTH + 20, y=70, width=SEC_COL_WIDTH, height=790)
+        self.frm_plot_area = ttk.Frame(master=self.frm_right)
+        self.frm_plot_area.pack(fill=tk.BOTH, padx=10, pady=10)
 
-        self.fig = Figure(figsize=((SEC_COL_WIDTH-20)/screen_dpi, 770/screen_dpi), dpi=96, tight_layout = True)
+        self.fig = Figure(figsize=(1230/screen_dpi, 770/screen_dpi), dpi=96, tight_layout = True)
         self.plots = self.fig.subplots(3, 1)
+
+        for plot in self.plots:
+            plot.set_xscale('log')
+            plot.xaxis.set_major_locator(LogLocator(base=10.0, subs=[1.0], numticks=999))
+            plot.grid(True , axis='both', which='major', ls="-", color='black') 
+            plot.grid(True , axis='x', which="minor", ls="-", alpha=0.5)
+            plot.set_yscale('log')
+        
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frm_plot_area)
         
-        self.canvas.get_tk_widget().place(x=10, y=10)
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, padx=10, pady=10)
         self.canvas.draw()
         # Toolbar #########
-        toolbar_frame = ttk.Frame(master=self, width=SEC_COL_WIDTH, style="secondary.TFrame")
-        toolbar_frame.place(x=FIRST_COL_WIDTH+20, y=850)
+        toolbar_frame = ttk.Frame(master=self.frm_right, style="secondary.TFrame")
+        toolbar_frame.pack(fill=tk.X, padx=10, pady=10)
         self.toolbar = NavigationToolbar2Tk(self.canvas, toolbar_frame)
         self.toolbar.update()
+        self.paned.add(self.frm_right)
 
         self.update_widgets()
     
     def after_cell_edit(self, event):
-
-        content = event["selected"]
+        # content = event["selected"]
         # print(f"Cell edited in row {content.row}, {content.column}, with value {self.files_sheet.get_cell_data(content.row, content.column)}")
         self.update_widgets()
 
@@ -195,7 +210,7 @@ class ZthComparatorApp(ttk.Window):
                 self.btn_add_file.configure(state="enabled")
 
     def update_widgets(self):
-        # print(self.plots)
+
         if self.plots.any() : # type: ignore
             self.plots[0].clear()
             self.plots[1].clear()
@@ -221,22 +236,14 @@ class ZthComparatorApp(ttk.Window):
                                              label=f"{fil_data.filename} - {fil_data.channel_names[2]}")
 
             if shown_plots > 0: 
-                self.plots[0].set_xlabel("Time / [s]")
-                self.plots[0].set_ylabel("Zth / [K/W]")
-                self.plots[0].grid(True)
-                self.plots[0].legend(loc='lower right' )
+                for plot in self.plots:
+                    plot.xaxis.set_major_locator(LogLocator(base=10.0, subs=[1.0], numticks=999))
+                    plot.grid(True , axis='both', which='major', ls="-", color='black') 
+                    plot.grid(True , axis='both', which="minor", alpha=0.7)
+                    plot.set_xlabel("Time / [s]")
+                    plot.set_ylabel("Zth / [K/W]")
+                    plot.legend(loc='lower right' )
 
-                self.plots[1].set_xlabel("Time / [s]")
-                self.plots[1].set_ylabel("Zth / [K/W]")
-                self.plots[1].grid(True)
-                self.plots[1].legend(loc='lower right')
-
-                self.plots[2].set_xlabel("Time / [s]")
-                self.plots[2].set_ylabel("Zth / [K/W]")
-                self.plots[2].grid(True)
-                self.plots[2].legend(loc='lower right')
-
-        print("\033[94mAttempting to update widgets\033[0m")
         self.canvas.draw()
         self.update()
 
