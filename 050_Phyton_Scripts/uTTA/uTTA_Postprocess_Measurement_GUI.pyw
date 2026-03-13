@@ -1,6 +1,7 @@
 import os
 import matplotlib # matplotlib 3.9.2
 from tkinter import filedialog as fd
+import tkinter as tk
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
 import library.uTTA_data_processing as udProc
 import library.uTTA_Deconvolution as uDeconv
@@ -17,9 +18,9 @@ Debug_AutoLoadFile = os.path.abspath(r"..\..\060_Example_Measurement_Data\Exampl
 
 WINDOW_WIDTH = 1480
 WINDOW_HEIGHT = 960
-FIRST_COL_WIDTH = 200
-BTN_HEIGHT = 40
-SEC_COL_WIDTH = (WINDOW_WIDTH - FIRST_COL_WIDTH - 3*10)
+# FIRST_COL_WIDTH = 200
+# BTN_HEIGHT = 40
+# SEC_COL_WIDTH = (WINDOW_WIDTH - FIRST_COL_WIDTH - 3*10)
 
 
 class UmfViewerApp(ttk.Window):
@@ -45,66 +46,75 @@ class UmfViewerApp(ttk.Window):
         self.utta_data.load_settings(__file__)
         self.interp_window = None
 
+        self.paned = ttk.Panedwindow(self, orient=tk.HORIZONTAL)
+        self.paned.pack(fill=tk.BOTH, expand=True)
+
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
         # LEFT GUI COLUMN
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        self.frm_left = ttk.Frame(self.paned)
+        self.frm_left.pack(fill=tk.X, padx=10, pady=10)
 
         # Measurement File Button Frame
-        self.frm_file_btns = ttk.Labelframe(self, text="Import",
-                                            width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
-        self.frm_file_btns.place(x=10, y=10, height=2*20 + BTN_HEIGHT)
+        self.frm_file_btns = ttk.Labelframe(self.frm_left, text="Import",
+                                            style="secondary.TLabelframe")
+        self.frm_file_btns.pack(fill=tk.X, padx=10, pady=10)
         self.btn_measure_file = ttk.Button(master=self.frm_file_btns,
                                            text="Import Measurement",
                                            command=self.read_measurement_file_callback, style="dark")
-        self.btn_measure_file.place(x=10, y=10, height=BTN_HEIGHT, width=180)
+        self.btn_measure_file.pack(fill=tk.X, padx=10, pady=10)
 
 
-        self.frm_processing_btns = ttk.Labelframe(self, text="Processing",
-                                                  width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
+        self.frm_processing_btns = ttk.Labelframe(self.frm_left, text="Processing",
+                                                  style="secondary.TLabelframe")
 
-        self.frm_processing_btns.place(x=10, y=90, height=2*20 + BTN_HEIGHT)
+        self.frm_processing_btns.pack(fill=tk.X, padx=10, pady=10)
         self.btn_interpolation_setup = ttk.Button(master=self.frm_processing_btns,
                                                   text="Interpolation Setup",
                                                   command=self.open_interpolation_window_callback,
                                                   style="dark", state="disabled")
-        self.btn_interpolation_setup.place(x=10, y=10, height=BTN_HEIGHT, width=180)
+        self.btn_interpolation_setup.pack(fill=tk.X, padx=10, pady=10)
 
-        self.frm_processing_btns = ttk.Labelframe(self, text="Export",
-                                                  width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
-        self.frm_processing_btns.place(x=10, y=270, height=4*20 + 3*BTN_HEIGHT)
+        self.frm_processing_btns = ttk.Labelframe(self.frm_left, text="Export",
+                                                  style="secondary.TLabelframe")
+        self.frm_processing_btns.pack(fill=tk.X, padx=10, pady=10)
         self.btn_export_tdim_master = ttk.Button(master=self.frm_processing_btns,
                                                  text="Export TDIM Master", command=self.export_to_tdim_master,
                                                  style="dark", state="disabled")
-        self.btn_export_tdim_master.place(x=10, y=10, height=BTN_HEIGHT, width=180)
+        self.btn_export_tdim_master.pack(fill=tk.X, padx=10, pady=10)
 
         self.btn_export_zth_curve = ttk.Button(master=self.frm_processing_btns,
                                                text="Export Zth Curve", command=self.export_to_zth_curve,
                                                style="dark", state="disabled")
-        self.btn_export_zth_curve.place(x=10, y=10+20 + BTN_HEIGHT, height=BTN_HEIGHT, width=180)
+        self.btn_export_zth_curve.pack(fill=tk.X, padx=10, pady=10)
 
         self.btn_export_t3i_curve = ttk.Button(master=self.frm_processing_btns,
                                                text="Export t3i-Curve", command=self.export_to_t3i_file,
                                                style="dark", state="disabled")
-        self.btn_export_t3i_curve.place(x=10, y=10+2*20 + 2*BTN_HEIGHT, height=BTN_HEIGHT, width=180)
+        self.btn_export_t3i_curve.pack(fill=tk.X, padx=10, pady=10)
 
-        self.frm_report_btns = ttk.Labelframe(self, text="Report",
-                                                  width=FIRST_COL_WIDTH, style="secondary.TLabelframe")
-        self.frm_report_btns.place(x=10, y=480, height=3*20 + 2*BTN_HEIGHT)
+        self.frm_report_btns = ttk.Labelframe(self.frm_left, text="Report",
+                                              style="secondary.TLabelframe")
+        self.frm_report_btns.pack(fill=tk.X, padx=10, pady=10)
 
         self.btn_report_html = ttk.Button(master=self.frm_report_btns,
-                                                 text="Create HTML Report", command=self.report_html,
-                                                 style="dark", state="disabled")
-        self.btn_report_html.place(x=10, y=10, height=BTN_HEIGHT, width=180)
+                                          text="Create HTML Report", command=self.report_html,
+                                          style="dark", state="disabled")
+        self.btn_report_html.pack(fill=tk.X, padx=10, pady=10)
 
+        self.paned.add(self.frm_left)
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
         # RIGHT GUI COLUMN
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        self.frm_right = ttk.Frame(self.paned)
+        self.frm_right.pack(fill=tk.X, padx=10, pady=10)     
+
         # Helper Bar Frame
-        self.frm_help_bar = ttk.Frame(master=self, width=SEC_COL_WIDTH, height=50, style='info.TFrame')
-        self.frm_help_bar.place(x=FIRST_COL_WIDTH+20, y=10)
+        self.frm_help_bar = ttk.Frame(master=self.frm_right, style='info.TFrame')
+        self.frm_help_bar.pack(fill=tk.X, padx=10, pady=10)
 
         self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", style="inverse-info", wraplength=1080)
-        self.lbl_helpbar.place(x=10, y=5)
+        self.lbl_helpbar.pack(fill=tk.X, padx=10, pady=10)
         self.lbl_helpbar.configure(text="Welcome to the uTTA measurement postprocessing GUI. \n"
                                         "Click 'Measurement File' and import a measurement")
 
@@ -112,49 +122,50 @@ class UmfViewerApp(ttk.Window):
         # Tab Control
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
 
-        self.tabs = ttk.Notebook(master=self)
-        self.tabs.place(x=FIRST_COL_WIDTH + 2*10, y=70, width=SEC_COL_WIDTH, height=WINDOW_HEIGHT-70-10)
+        self.tabs = ttk.Notebook(master=self.frm_right)
+        self.tabs.pack(fill=tk.BOTH, padx=10, pady=10)
 
         # 1st Page: Plot Area
         self.frm_plot_area = ttk.Frame(master=self)
-        self.frm_plot_area.place(x=10, y=10)
+        self.frm_plot_area.pack(fill=tk.BOTH, padx=10, pady=10)
         self.tabs.add(self.frm_plot_area, text="Measurement Data")
 
         self.meas_plots_widget = uttaWidgets.MeasurementPlotsWidget(self.frm_plot_area, self.utta_data,
-                                                                    (SEC_COL_WIDTH - 2 * 10), 810,
+                                                                    1230, 750,
                                                                     screen_dpi)
 
         # 2nd Page: Measurement Details
         self.frm_meas_details = ttk.Frame(master=self)
-        self.frm_meas_details.place(x=10, y=10)
+        self.frm_meas_details.pack(fill=tk.BOTH, padx=10, pady=10)
         self.tabs.add(self.frm_meas_details, text="Measurement Info")
 
         self.meas_info_widget = uttaWidgets.MeasurementInfoWidget(self.frm_meas_details)
 
         # 3rd Page: Zth Curves
         self.frm_zth_curves = ttk.Frame(master=self)
-        self.frm_zth_curves.place(x=10, y=10)
+        self.frm_zth_curves.pack(fill=tk.BOTH, padx=10, pady=10)
         self.tabs.add(self.frm_zth_curves, text="Zth Curves      ")
 
         self.zth_plots_widget = uttaWidgets.ZthPlotsWidget(self.frm_zth_curves, self.utta_data,
-                                                           (SEC_COL_WIDTH - 2 * 10), 810,
+                                                           1230, 750,
                                                            screen_dpi)
 
         # 4th Page: Deconvolution
         self.frm_deconv = ttk.Frame(master=self)
-        self.frm_deconv.place(x=10, y=10)
+        self.frm_deconv.pack(fill=tk.BOTH, padx=10, pady=10)
         self.tabs.add(self.frm_deconv, text="Deconvolution   ")
 
         self.deconv_widget = uttaWidgets.DeconvPlotsWidget(self.frm_deconv, self.utta_deconv,
-                                                           (SEC_COL_WIDTH - 2 * 10), 810,
+                                                           1230, 750,
                                                            screen_dpi)
 
         # 5th Page: Settings
         self.frm_settings = ttk.Frame(master=self)
-        self.frm_settings.place(x=10, y=10)
+        self.frm_settings.pack(fill=tk.BOTH, padx=10, pady=10)
         self.tabs.add(self.frm_settings, text="Settings        ")
 
         self.settings = uttaWidgets.SettingsWidget(self.frm_settings, self.utta_data)
+        self.paned.add(self.frm_right)
 
         self.update_widgets()
 
