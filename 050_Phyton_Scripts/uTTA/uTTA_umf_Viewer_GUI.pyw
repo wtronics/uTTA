@@ -1,7 +1,6 @@
-import matplotlib # matplotlib 3.9.2
-from matplotlib.ticker import LogLocator
+import matplotlib
 import tkinter as tk
-import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
+import ttkbootstrap as ttk
 import library.uTTA_data_processing as udProc
 import library.uTTA_data_plotting as udPlot
 
@@ -42,7 +41,7 @@ class UmfViewerApp(ttk.Window):
         self.frm_file_btns = ttk.Frame(master=self.frm_left, style="secondary.TFrame")
         self.frm_file_btns.pack(fill=tk.X, padx=10, pady=10)
 
-        self.btn_measure_file = ttk.Button(master=self.frm_file_btns, text="Measurement File",
+        self.btn_measure_file = ttk.Button(master=self.frm_file_btns, text="Measurement File", width=30,
                                            command=self.read_measurement_file_callback, style="dark")
         self.btn_measure_file.pack(fill=tk.X, padx=10, pady=10)
 
