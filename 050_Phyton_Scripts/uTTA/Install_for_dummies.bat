@@ -1,5 +1,5 @@
 @echo off
-SETLOCAL
+SETLOCAL EnableDelayedExpansion
 title Python GUI with Auto-Update
 
 :: --- CONFIGURATION ---
@@ -81,9 +81,60 @@ echo [STEP 3] Starting %SCRIPT_NAME%...
 echo [INFO] Terminal is kept open for logging or print-outputs.
 echo ---------------------------------------------------
 echo.
+:: --- 4. List all PYTHON scripts ---
+:User_Input
+cls
+echo ======================================================
+echo   Available Py scripts within this folder:
+echo ======================================================
+echo.
 
-python "%~dp0%SCRIPT_NAME%"
+set count=0
+echo  [X] EXIT
+for %%f in (*.py *.pyw) do (
+    set /a count+=1
+    set "script[!count!]=%%f"
+    echo  [!count!] %%f
+)
 
+if %count%==0 (
+    echo [ERROR] No .py or .pyw files were found!
+    pause
+    exit /b
+)
+
+echo.
+echo ======================================================
+set /p choice="Please enter a number and press ENTER. Enter X to Exit: "
+
+
+if %choice% ==X (
+	goto :END
+)
+:: Input validation
+if not defined script[%choice%] (
+    echo.
+    echo [ERROR] Invalid input!
+    pause
+    exit /b
+)
+
+set "SELECTED_SCRIPT=!script[%choice%]!"
+
+:: --- 5. start selected script with logging ---
+cls
+echo ======================================================
+echo   Starting: %SELECTED_SCRIPT%
+echo   Logs will be saved in %LOG_FILE%.
+echo ======================================================
+echo.
+
+:: Start via PowerShell for simultanouos logging (COnsole + File)
+powershell -Command "python -u '%~dp0%SELECTED_SCRIPT%' | Tee-Object -FilePath '%~dp0%LOG_FILE%' -Append"
+
+
+goto :User_Input
+:END
 :: --- 5. Finish ---
 echo.  >> "%LOG_FILE%"
 echo ---------------------------------------------------  >> "%LOG_FILE%"
