@@ -1,4 +1,6 @@
 import matplotlib # matplotlib 3.9.2
+from matplotlib.ticker import LogLocator
+import tkinter as tk
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
 import library.uTTA_data_processing as udProc
 import library.uTTA_data_plotting as udPlot
@@ -21,35 +23,57 @@ class UmfViewerApp(ttk.Window):
 
         self.utta_data = udProc.UttaZthProcessing()
 
+        matplotlib.rcParams['axes.labelsize'] = 9
+        matplotlib.rcParams['legend.fontsize'] = 9
+        matplotlib.rcParams['font.size'] = 11
+        matplotlib.rcParams['xtick.labelsize'] = 9
+        matplotlib.rcParams['ytick.labelsize'] = 9
+
+        self.paned = ttk.Panedwindow(self, orient=tk.HORIZONTAL)
+        self.paned.pack(fill=tk.BOTH, expand=True)
+
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        # LEFT GUI COLUMN
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        self.frm_left = ttk.Frame(self.paned)
+        self.frm_left.pack(fill=tk.X, padx=10, pady=10)
+
         # Measurement File Button Frame
-        self.frm_file_btns = ttk.Frame(master=self, width=350, height=60, style="secondary.TFrame")
-        self.frm_file_btns.place(x=10, y=10)
+        self.frm_file_btns = ttk.Frame(master=self.frm_left, style="secondary.TFrame")
+        self.frm_file_btns.pack(fill=tk.X, padx=10, pady=10)
 
         self.btn_measure_file = ttk.Button(master=self.frm_file_btns, text="Measurement File",
                                            command=self.read_measurement_file_callback, style="dark")
-        self.btn_measure_file.place(x=10, y=10)
+        self.btn_measure_file.pack(fill=tk.X, padx=10, pady=10)
 
         # Measurement Meta Data Frame
-        self.frm_meas_data = ttk.Frame(master=self, width=350, height=860, style="secondary.TFrame")
-        self.frm_meas_data.place(x=10, y=80)
+        self.frm_meas_data = ttk.Frame(master=self.frm_left, style="secondary.TFrame")
+        self.frm_meas_data.pack(fill=tk.BOTH, padx=10, pady=10)
 
-        self.meas_meta_dummy = ttk.Frame(master=self.frm_meas_data, width=336, height=846, style="info.TFrame")
-        self.meas_meta_dummy.place(x=7, y=7)
-        self.meas_meta_data = ttk.Label(master=self.frm_meas_data, anchor="w", style="inverse-info", width=41, wraplength=330)
+        # self.meas_meta_dummy = ttk.Frame(master=self.frm_meas_data, width=336, height=846, style="info.TFrame")
+        # self.meas_meta_dummy.place(x=7, y=7)
+        self.meas_meta_data = ttk.Label(master=self.frm_meas_data, anchor="w", style="inverse-info", wraplength=330)
         self.meas_meta_data.configure(text="")
-        self.meas_meta_data.place(x=10, y=10)
+        self.meas_meta_data.pack(fill=tk.X, padx=10, pady=10)
+
+        self.paned.add(self.frm_left)
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        # RIGHT GUI COLUMN
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        self.frm_right = ttk.Frame(self.paned)
+        self.frm_right.pack(fill=tk.X, padx=10, pady=10)
 
         # Helper Bar Frame
-        self.frm_help_bar = ttk.Frame(master=self, width=1100, height=60, style='info.TFrame')
-        self.frm_help_bar.place(x=370, y=10)
+        self.frm_help_bar = ttk.Frame(master=self.frm_right, style='info.TFrame')
+        self.frm_help_bar.pack(fill=tk.X, padx=10, pady=10)
 
         self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", style="inverse-info", wraplength=1080)
-        self.lbl_helpbar.place(x=10, y=10)
+        self.lbl_helpbar.pack(fill=tk.X, padx=10, pady=10)
         self.lbl_helpbar.configure(text="Welcome to the umf-Viewer GUI. Click 'Measurement File' and import a measurement")
 
         # Plot Area
-        self.frm_plot_area = ttk.Frame(master=self)
-        self.frm_plot_area.place(x=370, y=80)
+        self.frm_plot_area = ttk.Frame(master=self.frm_right)
+        self.frm_plot_area.pack(fill=tk.BOTH, padx=10, pady=10)
 
         matplotlib.rcParams['axes.labelsize'] = 8
         matplotlib.rcParams['legend.fontsize'] = 7
@@ -58,7 +82,8 @@ class UmfViewerApp(ttk.Window):
         matplotlib.rcParams['xtick.labelsize'] = 8
         matplotlib.rcParams['ytick.labelsize'] = 8
 
-        self.view_plots = udPlot.UttaPlotData(self.frm_plot_area, (1090, 810), 3, 2)
+        self.view_plots = udPlot.UttaPlotData(self.frm_plot_area, (990, 650), 3, 2)
+        self.paned.add(self.frm_right)
         self._setup_plot_mapping()
 
         self.update_all_plots()
@@ -126,8 +151,8 @@ class UmfViewerApp(ttk.Window):
             self.utta_data.import_data(measfilename)
             if self.utta_data.flag_import_successful:
 
-                self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported.", style="inverse-success")
-                self.frm_help_bar.configure(style="success")
+                self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported.", bootstyle="inverse-success")
+                self.frm_help_bar.configure(bootstyle="success")
 
                 if not self.utta_data.meta_data.FlagTSPCalibrationFile:
                     self.utta_data.calculate_cooling_curve()
