@@ -155,7 +155,7 @@ class TSPInterpolationApp(ttk.Window):
         self.update()
 
     def create_si_string(self,value, unit):
-        return '{val}'.format(val=Quantity(value, unit))
+        return f'{Quantity(value, unit)}'
 
     def update_displays(self):
         # update the displayed time
