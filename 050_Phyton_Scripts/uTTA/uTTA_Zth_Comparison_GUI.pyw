@@ -71,7 +71,7 @@ class ZthComparatorApp(ttk.Window):
         matplotlib.rcParams['ytick.labelsize'] = 9
 
         self.iconbitmap(r'library/uTTA_Icon.ico')
-        # print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
+        print(f"DPI: {screen_dpi}, Geometry: {geometry}")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
         self.paned = ttk.Panedwindow(self, orient=tk.HORIZONTAL)
