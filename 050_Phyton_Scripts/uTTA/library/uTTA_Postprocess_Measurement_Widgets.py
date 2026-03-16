@@ -89,24 +89,18 @@ class MeasurementInfoWidget(ttk.Frame):
 
 
     def update_widget(self, data):
-        self.out_tpreheat.configure(text="{tpreh:,} s".format(tpreh=data.meta_data.TPreheat))
-        self.out_theating.configure(text="{theat:,} s".format(theat=data.meta_data.THeating))
-        self.out_tcooling.configure(text="{tcool:,} s".format(tcool=data.meta_data.TCooling))
-        self.out_isense.configure(text="{val:,} mA".format(val=data.meta_data.Isense * 1000))
-        self.out_ch0offset.configure(text="{val:.4} mV".format(val=data.meta_data.Voffs[0] * 1000))
-        self.out_ch13offset.configure(text="{val:.4} mV".format(val=data.meta_data.Voffs[1] * 1000))
+        self.out_tpreheat.configure(text=f"{data.meta_data.TPreheat:,} s")
+        self.out_theating.configure(text=f"{data.meta_data.THeating:,} s")
+        self.out_tcooling.configure(text=f"{data.meta_data.TCooling:,} s")
+        self.out_isense.configure(text=f"{data.meta_data.Isense * 1000:,} mA")
+        self.out_ch0offset.configure(text=f"{data.meta_data.Voffs[0] * 1000:.4} mV")
+        self.out_ch13offset.configure(text=f"{data.meta_data.Voffs[1] * 1000:.4} mV")
         self.out_dstart.configure(text=data.meta_data.Measurement["StartDate"])
         self.out_tstart.configure(text=data.meta_data.Measurement["StartTime"])
 
-        if "FileVersion" in data.meta_data.Measurement:
-            self.out_fileversion.configure(text=data.meta_data.Measurement["FileVersion"])
-        else:
-            self.out_fileversion.configure(text="unknown")
+        self.out_fileversion.configure(text=data.meta_data.Measurement.get("FileVersion", "unknown"))
+        self.out_device.configure(text=data.meta_data.Measurement.get("DeviceVersion", "unknown"))
 
-        if "DeviceVersion" in data.meta_data.Measurement:
-            self.out_device.configure(text=data.meta_data.Measurement["DeviceVersion"])
-        else:
-            self.out_device.configure(text="unknown")
 
 class ZthPlotsWidget(ttk.Frame):
     def __init__(self, parent, data, figwidth, figheight, screen_dpi):
@@ -114,15 +108,15 @@ class ZthPlotsWidget(ttk.Frame):
         self.parent = parent
         self.data = data
 
-        self.plots = ud_plot.UttaPlotData(self.parent, (figwidth, figheight), 3, 1, dpi=screen_dpi)
+        self.plots = ud_plot.UttaPlotData(self.parent, (figwidth, figheight), 2, 1, dpi=screen_dpi)
         self._setup_plot_mapping()
 
     def _setup_plot_mapping(self):
 
         self.plots.plot_mapping=[
-            (0, self.data.add_diode_dt_curve_plot),
-            (1, self.data.add_zth_curve_plot),
-            (2, self.data.add_zth_coupling_curve_plot),
+            #(0, self.data.add_diode_dt_curve_plot),
+            (0, self.data.add_zth_curve_plot),
+            (1, self.data.add_zth_coupling_curve_plot),
         ]
 
 class SettingsWidget(ttk.Frame):
