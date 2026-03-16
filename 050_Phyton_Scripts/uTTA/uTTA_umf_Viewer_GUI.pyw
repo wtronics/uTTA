@@ -17,7 +17,7 @@ class UmfViewerApp(ttk.Window):
         self.minsize(1480, 960)
         screen_dpi = self.winfo_fpixels('1i')
         geometry = self.winfo_geometry()
-        print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
+        print(f"DPI: {screen_dpi}, Geometry: {geometry}")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
         self.utta_data = udProc.UttaZthProcessing()
@@ -110,34 +110,35 @@ class UmfViewerApp(ttk.Window):
             # Updates all Plots based on their PlotConfiguration.
             self.view_plots.update_plots()
 
-            MetaString = "File Name: " + DataFile + "\n"
-            MetaString += "Measurement started: " + self.utta_data.meta_data.Measurement["StartDate"] + " " + self.utta_data.meta_data.Measurement["StartTime"] + "\n\n"
+            MetaString = f"File Name: {DataFile}\n"
+            MetaString += f"Measurement started: {self.utta_data.meta_data.Measurement["StartDate"]} {self.utta_data.meta_data.Measurement["StartTime"]}\n\n"
 
             if self.utta_data.meta_data.FlagTSPCalibrationFile:
                 MetaString += "** TSP CALIBRATION MEASUREMENT **\n\n"
-                MetaString += "Measurement Time:\t{preheat:.2f} min\n".format(preheat=self.utta_data.meta_data.TPreheat / 60)
+                MetaString += f"Measurement Time:\t{self.utta_data.meta_data.TPreheat / 60:.2f} min\n"
             else:
-                MetaString += "PreHeating Time:\t{preheat:.2f} min\n".format(preheat=self.utta_data.meta_data.TPreheat / 60)
-                MetaString += "Heating Time:\t{heat:.2f} min\n".format(heat=self.utta_data.meta_data.THeating / 60)
-                MetaString += "Cooling Time:\t{cool:.2f} min\n\n".format(cool=self.utta_data.meta_data.TCooling / 60)
+                MetaString += f"PreHeating Time:\t{self.utta_data.meta_data.TPreheat / 60:.2f} min\n"
+                MetaString += f"Heating Time:\t{self.utta_data.meta_data.THeating / 60:.2f} min\n"
+                MetaString += f"Cooling Time:\t{self.utta_data.meta_data.TCooling / 60:.2f} min\n\n"
 
             MetaString += "No. Name\tOffset\t\tGain\n"
-            MetaString += "00:  {name:17s}{offs:.1f}mV\t{gain:.2f}mV/K\n".format(name=self.utta_data.meta_data.Channels["TSP0"]["Name"],
-                                                                                 offs=self.utta_data.meta_data.Channels["TSP0"]["Offset"] * 1000,
-                                                                                 gain=self.utta_data.meta_data.Channels["TSP0"]["LinGain"] * 1000)
+            MetaString += (f"00:  {self.utta_data.meta_data.Channels["TSP0"]["Name"]:17s}"
+                           f"{self.utta_data.meta_data.Channels["TSP0"]["Offset"] * 1000:.1f}mV\t"
+                           f"{self.utta_data.meta_data.Channels["TSP0"]["LinGain"] * 1000:.2f}mV/K\n")
             if not "OFF" in self.utta_data.meta_data.Channels["TSP1"]["Name"]:
-                MetaString += "01:  {name:17s}{offs:.1f}mV\t{gain:.2f}mV/K\n".format(name=self.utta_data.meta_data.Channels["TSP1"]["Name"],
-                                                                                     offs=self.utta_data.meta_data.Channels["TSP1"]["Offset"] * 1000,
-                                                                                     gain=self.utta_data.meta_data.Channels["TSP1"]["LinGain"] * 1000)
+                MetaString += (f"01:  {self.utta_data.meta_data.Channels["TSP1"]["Name"]:17s}"
+                               f"{self.utta_data.meta_data.Channels["TSP1"]["Offset"] * 1000:.1f}mV\t"
+                               f"{self.utta_data.meta_data.Channels["TSP1"]["LinGain"] * 1000:.2f}mV/K\n")
+                
             if not "OFF" in self.utta_data.meta_data.Channels["TSP2"]["Name"]:
-                MetaString += "02:  {name:17s}{offs:.1f}mV\t{gain:.2f}mV/K\n".format(name=self.utta_data.meta_data.Channels["TSP2"]["Name"],
-                                                                                     offs=self.utta_data.meta_data.Channels["TSP2"]["Offset"] * 1000,
-                                                                                     gain=self.utta_data.meta_data.Channels["TSP2"]["LinGain"] * 1000)
+                MetaString += (f"02:  {self.utta_data.meta_data.Channels["TSP2"]["Name"]:17s}"
+                               f"{self.utta_data.meta_data.Channels["TSP2"]["Offset"] * 1000:.1f}mV\t"
+                               f"{self.utta_data.meta_data.Channels["TSP2"]["LinGain"] * 1000:.2f}mV/K\n")
 
-            MetaString += "\nSense Current:\t{Isen:.2f} mA\n".format(Isen=self.utta_data.meta_data.Isense * 1000)
+            MetaString += f"\nSense Current:\t{self.utta_data.meta_data.Isense * 1000:.2f} mA\n"
             if not self.utta_data.meta_data.FlagTSPCalibrationFile:
-                MetaString += "Heating Current:\t{Iheat:.3f} A\n".format(Iheat=self.utta_data.i_heat)
-                MetaString += "Heating Power:\t{Pheat:.3f} W\n".format(Pheat=self.utta_data.p_heat)
+                MetaString += f"Heating Current:\t{self.utta_data.i_heat:.3f} A\n"
+                MetaString += f"Heating Power:\t{self.utta_data.p_heat:.3f} W\n"
 
             self.meas_meta_data.configure(text=MetaString)
 
@@ -150,7 +151,7 @@ class UmfViewerApp(ttk.Window):
             self.utta_data.import_data(measfilename)
             if self.utta_data.flag_import_successful:
 
-                self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported.", bootstyle="inverse-success")
+                self.lbl_helpbar.configure(text=f"File: {DataFile} was successfully imported.", bootstyle="inverse-success")
                 self.frm_help_bar.configure(bootstyle="success")
 
                 if not self.utta_data.meta_data.FlagTSPCalibrationFile:
@@ -164,13 +165,12 @@ class UmfViewerApp(ttk.Window):
 
                 self.update_all_plots()
         else:
-            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.", style="inverse-danger")
+            self.lbl_helpbar.configure(text=f"File: {DataFile} was not imported.", style="inverse-danger")
             self.frm_help_bar.configure(style="danger")
 
     def on_closing(self):
         # if messagebox.askokcancel("Quit", "Do you want to quit?"):
         self.destroy()
-
 
 app = UmfViewerApp()
 
