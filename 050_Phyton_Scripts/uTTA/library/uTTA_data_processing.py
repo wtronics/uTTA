@@ -91,6 +91,10 @@ class UttaZthProcessing:
         self.flag_zero_current_unfeasible = False  # a flag to disable downstream operations in case of a problem in zero current detection
         self.flag_cooling_curve_calculated = False # a flag to indicate that the cooling curve was extracted
 
+    def print_console(self, text):
+        if self.print_to_console:
+            print(text)
+
     def load_settings(self, gui_name):
 
         fileext = gui_name.split(".")[-1]
@@ -158,21 +162,19 @@ class UttaZthProcessing:
             self.adc_timebase, self.adc, self.tc, self.meta_data = uTTA_data_import.read_measurement_file(file_nam, 0)
             if len(self.adc_timebase) > 0:
                 self.flag_import_successful = True
-                print("\033[92mSUCCESS: File import completed\033[0m")
+                self.print_console("\033[92mSUCCESS: File import completed\033[0m")
                 retval = True
             else:
-                print("\033[91mERROR: File import failed due to an unknown reason\033[0m")
+                self.print_console("\033[91mERROR: File import failed due to an unknown reason\033[0m")
         else:
-            print("\033[91mERROR: No proper file selected\033[0m")
+            self.print_console("\033[91mERROR: No proper file selected\033[0m")
 
         return retval
 
     def interpolate_to_common_timebase(self):
         if self.flag_import_successful:
-            print("Number of temperature samples: {TCsamp}, Duration of measurement: {tmeas} = {TCsS} Samples/Second".
-                  format(TCsamp=len(self.tc[0]),
-                         tmeas=self.adc_timebase[-1],
-                         TCsS=len(self.tc[0]) / self.adc_timebase[-1]))
+            self.print_console(f"Number of temperature samples: {len(self.tc[0])}, "
+                               f"Duration of measurement: {self.adc_timebase[-1]} = {len(self.tc[0]) / self.adc_timebase[-1]} Samples/Second")
 
             timebase_int = np.linspace(0, stop=self.adc_timebase[-1], num=int(self.adc_timebase[-1]) + 1)
 
@@ -212,27 +214,30 @@ class UttaZthProcessing:
             self.jut_imax = max(self.adc_cooling[3, :])
             zero_current_trsh = self.jut_imin
 
-            print("Min Diode Current:  {min:.2f}A; Max Diode current: {max:.2f}A".format(min=self.jut_imin,
-                                                                                         max=self.jut_imax))
-            print("Zero Current Detection Mode: {mode}.".format(mode=self.zero_current_detection_mode))
+            self.print_console(f"Min Diode Current:  {self.jut_imin:.2f}A; Max Diode current: {self.jut_imax:.2f}A")
+            self.print_console(f"Zero Current Detection Mode: {self.zero_current_detection_mode}.")
+
             if self.zero_current_detection_mode == "Ratio":
                 zero_current_trsh = (self.jut_imax - self.jut_imin) * self.zero_current_detection_ratio
-                print("Zero Current Detection Ratio: {ratio}. Threshold: {trsh:.2f}A".format(ratio=self.zero_current_detection_ratio, trsh=zero_current_trsh))
                 self.cooling_start_index = find_nearest(self.adc_cooling[3, :], zero_current_trsh)
+
+                self.print_console(f"Zero Current Detection Ratio: {self.zero_current_detection_ratio}. Threshold: {zero_current_trsh:.2f}A")
             else:
                 self.cooling_start_index = (np.where(np.isclose(self.adc_cooling[3, :], zero_current_trsh)))[0][0]
-            print("Index of closest value: " + str(self.cooling_start_index))
+
+                self.print_console(f"Index of closest value: {self.cooling_start_index}")
+
             if self.cooling_start_index > self.cooling_start_index_max_trsh:      # An Index larger than that is an indicator of an unusual behaviour of the system
                                                     # The user should review the test setup and the system
-                print("\033[91mERROR: The start index of the cooling curve is far out of the nominal range! \n"
-                      "Calculation is not feasible and will be stopped!\033[0m")
+                self.print_console("\033[91mERROR: The start index of the cooling curve is far out of the nominal range! \n"
+                                   "Calculation is not feasible and will be stopped!\033[0m")
                 self.flag_zero_current_unfeasible = True
 
             # Cut the measurement data down to the starting point of the cooling phase
             self.adc_cooling = self.adc_cooling[:, self.cooling_start_index:-1]
             self.adc_timebase_cooling = time_base_cooling[self.cooling_start_index:-1] - time_base_cooling[self.cooling_start_index - 1]
             self.flag_cooling_curve_calculated = True
-
+                
         return
 
     def calculate_tsp_start_voltages(self):
@@ -242,12 +247,11 @@ class UttaZthProcessing:
         samp_decade = self.meta_data.SamplesPerDecade
         t_dio = np.zeros(shape=self.adc_cooling.shape)
         for Ch in range(0, self.no_of_tsp):
-            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            ch_tsp = f"TSP{Ch}"
 
             chan_cal_data = self.meta_data.Channels[ch_tsp]
             if chan_cal_data["Name"] != "OFF":
                 # Calculate the average Diode voltage at the start of the measurement
-                # print ("Channel {Chan}, Min ADC: {MinADC}, Max ADC: {MaxADC}".format(Chan=Ch,MinADC=ADC[Ch, :].min(), MaxADC=ADC[Ch, :].max()))
                 u_dio_cold_start[Ch] = np.mean(self.adc[Ch, 0:samp_decade])
                 # Calculate the average Diode voltage at the end of the measurement
                 u_dio_cold_end[Ch] = np.mean(self.adc[Ch, -samp_decade:-1])
@@ -259,24 +263,16 @@ class UttaZthProcessing:
                 t_monitor_heated[Ch] = (np.mean(
                     self.adc[Ch, ((self.meta_data.CoolingStartBlock - 2) * samp_decade):((self.meta_data.CoolingStartBlock - 1) * samp_decade) - 1])
                                         + chan_cal_data["Offset"]) / chan_cal_data["LinGain"]
+                
                 if Ch == 0:
-                    print(
-                        "COLD VOLTAGE: DUT{DUTno} at Start: {Ucold: 3.4f}V; at End: {UColdEnd: 3.4f}V; Delta U: {dU_DUT: 3.4f}V; Delta T: {dT_DUT: 3.4f}°C".format(
-                            DUTno=Ch,
-                            Ucold=u_dio_cold_start[Ch],
-                            UColdEnd=u_dio_cold_end[Ch],
-                            dU_DUT=u_dio_cold_start[Ch] - u_dio_cold_end[Ch],
-                            dT_DUT=((u_dio_cold_end[Ch] - u_dio_cold_start[Ch]) / chan_cal_data["LinGain"])))
+                    self.print_console(f"COLD VOLTAGE: DUT{Ch} at Start: {u_dio_cold_start[Ch]: 3.4f}V; at End: {u_dio_cold_end[Ch]: 3.4f}V;" 
+                                       f" Delta U: {u_dio_cold_start[Ch] - u_dio_cold_end[Ch]: 3.4f}V;"
+                                       f" Delta T: {((u_dio_cold_end[Ch] - u_dio_cold_start[Ch]) / chan_cal_data["LinGain"]): 3.4f}°C")
                 else:
-                    print(
-                        "COLD VOLTAGE: DUT{DUTno} at Start: {Ucold: 3.4f}V; at End: {UColdEnd: 3.4f}V; Delta U: {dU_DUT: 3.4f}V; Delta T: {dT_DUT: 3.4f}°C; "
-                        "Heated Temp: {T_heated: 3.4f}°C".format(DUTno=Ch,
-                                                                 Ucold=u_dio_cold_start[Ch],
-                                                                 UColdEnd=u_dio_cold_end[Ch],
-                                                                 dU_DUT=u_dio_cold_start[Ch] - u_dio_cold_end[Ch],
-                                                                 dT_DUT=((u_dio_cold_end[Ch] - u_dio_cold_start[Ch]) /
-                                                                         chan_cal_data["LinGain"]),
-                                                                 T_heated=t_monitor_heated[Ch]))
+                    self.print_console(f"COLD VOLTAGE: DUT{Ch} at Start: {u_dio_cold_start[Ch]: 3.4f}V; at End: {u_dio_cold_end[Ch]: 3.4f}V;"
+                                       f" Delta U: {u_dio_cold_start[Ch] - u_dio_cold_end[Ch]: 3.4f}V;"
+                                       f" Delta T: {((u_dio_cold_end[Ch] - u_dio_cold_start[Ch]) /chan_cal_data["LinGain"]): 3.4f}°C; "
+                                       f"Heated Temp: {t_monitor_heated[Ch]: 3.4f}°C")
         self.u_dio_cold_start = u_dio_cold_start
         self.u_dio_cold_end = u_dio_cold_end
         self.t_monitor_heated = t_monitor_heated
@@ -285,10 +281,10 @@ class UttaZthProcessing:
     def calculate_diode_heating(self):
         # Calculate the average heating current, voltage and power through the diode
         if not self.flag_import_successful:
-            print("\033[93mWARNING: No file imported. Unable to calculate power dissipation!\033[0m")
+            self.print_console("\033[93mWARNING: No file imported. Unable to calculate power dissipation!\033[0m")
             return
         if self.meta_data.FlagTSPCalibrationFile:
-            print("\033[91mERROR: Unable to calculate power dissipation on a calibration file!\033[0m")
+            self.print_console("\033[91mERROR: Unable to calculate power dissipation on a calibration file!\033[0m")
             return
 
         cooling_start_block = self.meta_data.CoolingStartBlock
@@ -298,12 +294,9 @@ class UttaZthProcessing:
         i_heat = float(np.mean(self.adc[3, t_calc_start_idx : t_calc_end_idx]))
         u_dio_heated = float(np.mean(self.adc[0, t_calc_start_idx : t_calc_end_idx]))
         p_dio_heat = i_heat * u_dio_heated
-        print("HEATING VALUES: Range: {tstart:.2f}s to {tend:.2f}s, Current: {curr:.2f}A, Voltage: {volts:.2f}V, Power: {pow:.2f}W".format(
-            tstart=self.adc_timebase[t_calc_start_idx],
-            tend=self.adc_timebase[t_calc_end_idx],
-            curr=i_heat,
-            volts=u_dio_heated,
-            pow=p_dio_heat))
+
+        self.print_console(f"HEATING VALUES: Range: {self.adc_timebase[t_calc_start_idx]:.2f}s to {self.adc_timebase[t_calc_end_idx]:.2f}s,"
+                           f"Current: {i_heat:.2f}A, Voltage: {u_dio_heated:.2f}V, Power: {p_dio_heat:.2f}W")
         self.i_heat = i_heat
         self.p_heat = p_dio_heat
         self.u_heat = u_dio_heated
@@ -315,12 +308,8 @@ class UttaZthProcessing:
         interp_idx_start = find_nearest(self.adc_timebase_cooling, self.InterpolationTStart)
         interp_idx_end = find_nearest(self.adc_timebase_cooling, self.InterpolationTEnd)
 
-        print(
-            "INTERPOLATION: Start: {IntStart: .6f}s; Index: {IdxStart:3d}; End: {IntEnd: .6f}s; Index: {IdxEnd:3d}".format(
-                IntStart=self.InterpolationTStart,
-                IntEnd=self.InterpolationTEnd,
-                IdxStart=interp_idx_start,
-                IdxEnd=interp_idx_end))
+        self.print_console(f"INTERPOLATION: Start: {self.InterpolationTStart: .6f}s; Index: {self.InterpolationTEnd:3d};"
+                           f" End: {interp_idx_start: .6f}s; Index: {interp_idx_end:3d}")
 
         interpol_sq_t_start = np.sqrt(self.InterpolationTStart)
         interpol_sq_t_end = np.sqrt(self.InterpolationTEnd)
@@ -362,8 +351,7 @@ class UttaZthProcessing:
         self.DieMaxThickness = np.sqrt((self.adc_timebase_cooling[interp_idx_start] * 2 * self.kappa_SI) /
                                        (self.Cth_Si * self.rho_Si))  # Die thickness in METER
 
-        print("Maximum Die thickness based on current interpolation: {MaxThick: .2f}µm".
-              format(MaxThick=self.DieMaxThickness*1000*1000))
+        self.print_console(f"Maximum Die thickness based on current interpolation: {self.DieMaxThickness*1000*1000: .2f}µm")
 
         # Interpolated curve of the temperature.
         # self.t_dio_start_interpolation = (np.sqrt(self.adc_timebase_cooling) * self.InterpolationFactorM +
@@ -377,19 +365,15 @@ class UttaZthProcessing:
         #overwrite the beginning with the interpolated curve
         # the curves are stitched together at the LEFT interpolation marker
         self.t_dio_interpolated[0, 0:interp_idx_start] = self.t_dio_start_interpolation[0:interp_idx_start]
-        print("INTERPOLATION: Start: {StartY: .3f}K; End: {EndY: .3f}K; Factor M: {IntFactM: .4f}; "
-              "Offset: {IntOffs: .4f}; Estimated Die Size: {DieSize: .2f}mm²".format(StartY=interpol_y_start,
-                                                                                     EndY=interpol_y_end,
-                                                                                     IntFactM=self.InterpolationFactorM,
-                                                                                     IntOffs=self.InterpolationOffset,
-                                                                                     DieSize=self.EstimatedDieSize))
+        self.print_console(f"INTERPOLATION: Start: {interpol_y_start: .3f}K; End: {interpol_y_end: .3f}K; Factor M: {self.InterpolationFactorM: .4f}; "
+                           f"Offset: {self.InterpolationOffset: .4f}; Estimated Die Size: {self.EstimatedDieSize: .2f}mm²")
 
         self.zth = np.zeros(shape=self.adc_cooling.shape)
         self.r_th_static = np.zeros(self.no_of_tsp)
         self.dT_diode = np.zeros(shape=(self.no_of_tsp, len(self.t_dio_interpolated[3, :])))
         # self.dT_diode = np.zeros(shape=(self.no_of_tsp, len(self.t_dio_interpolated[3, interp_idx_start:-1])))
         for Ch in range(0, self.no_of_tsp):
-            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            ch_tsp = f"TSP{Ch}"
             if self.meta_data.Channels[ch_tsp]["Name"] != "OFF":
                 if Ch == 0:
                     # Do the Zth calculation for the driven channel
@@ -397,7 +381,7 @@ class UttaZthProcessing:
                     self.zth[Ch, :] = self.dT_diode[Ch, :] / -self.p_heat
                     # take the last 100 samples to calculate the static Zth
                     self.r_th_static[Ch] = np.mean(self.zth[Ch, -100:-1])
-                    print("Static Zth for Channel{ChNo}: {ZthStat: .4f}K/W".format(ChNo=Ch, ZthStat=self.r_th_static[Ch]))
+                    self.print_console(f"Static Zth for Channel{Ch}: {self.r_th_static[Ch]: .4f}K/W")
                 else:
                     # Do the Zth calculation for the Monitor channels
                     # ToDo: Check the correctness of this calculation
@@ -409,8 +393,7 @@ class UttaZthProcessing:
 
                     self.zth[Ch, :] = self.dT_diode[Ch, :] / self.p_heat
                     self.r_th_static[Ch] = np.mean(self.zth[Ch, -100:-1])
-                    print("Static Coupling-Zth for Channels 0-{ChNo}: {RthStat: .4f}K/W".
-                          format(ChNo=Ch, RthStat=self.r_th_static[Ch]))
+                    self.print_console(f"Static Coupling-Zth for Channels 0-{Ch}: {self.r_th_static[Ch]: .4f}K/W")
 
     def export_diode_voltages(self, filename):
         uTTA_data_export.write_diode_voltages(self.adc_timebase_cooling, self.adc_cooling,
@@ -421,9 +404,9 @@ class UttaZthProcessing:
         if not self.flag_zero_current_unfeasible:
 
             uTTA_data_export.export_t3i_file(self.adc_timebase_cooling, self.zth,
-                                             headername=str(self.meta_data.Channels[str("TSP0")]["Name"]) + "\t" +
-                                                        str(self.meta_data.Channels[str("TSP1")]["Name"]) + "\t" +
-                                                        str(self.meta_data.Channels[str("TSP2")]["Name"]),
+                                             headername=(f'{self.meta_data.Channels["TSP0"]["Name"]}\t'
+                                                         f'{self.meta_data.Channels["TSP1"]["Name"]}\t'
+                                                         f'{self.meta_data.Channels["TSP2"]["Name"]}'),
                                              filename=filename)
             
     def report_html(self, outfilename):
@@ -456,12 +439,12 @@ class UttaZthProcessing:
         prim_lines = [
             {'x_data': self.adc_timebase[before_start:start] - start_time,
              'y_data': self.adc[0, before_start:start],
-             'label': self.meta_data.Channels["TSP0"]["Name"] + " before Zero-Current",
+             'label': f"{self.meta_data.Channels["TSP0"]["Name"]} before Zero-Current",
              'axis': 0,
              'style':{'color':'red', 'marker':'x'}},
             {'x_data': self.adc_timebase[start:after_start] - start_time,
              'y_data': self.adc[0, start:after_start],
-             'label': self.meta_data.Channels["TSP0"]["Name"] + " after Zero-Current",
+             'label': f"{self.meta_data.Channels["TSP0"]["Name"]} after Zero-Current",
              'axis': 0,
              'style':{'color':'red'}}
         ]
@@ -494,7 +477,7 @@ class UttaZthProcessing:
 
         lines = []
         for Ch in range(0, self.no_of_tsp):
-            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            ch_tsp = f"TSP{Ch}"
             if self.meta_data.Channels[ch_tsp]["Name"] != "OFF":
                 lines += [
                     {'x_data': self.adc_timebase,
@@ -514,7 +497,7 @@ class UttaZthProcessing:
 
         prim_lines = []
         for Ch in range(0, self.no_of_tsp):
-            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            ch_tsp = f"TSP{Ch}"
             if self.meta_data.Channels[ch_tsp]["Name"] != "OFF":
                 prim_lines += [
                     {'x_data': self.adc_timebase_cooling,
@@ -563,7 +546,7 @@ class UttaZthProcessing:
 
         lines = []
         for Ch in range(0, self.no_of_tsp):
-            ch_tsp = "TSP{Ch}".format(Ch=Ch)
+            ch_tsp = f"TSP{Ch}"
             if self.meta_data.Channels[ch_tsp]["Name"] != "OFF":
                 lines += [
                     {'x_data': self.adc_timebase_cooling,
@@ -586,7 +569,7 @@ class UttaZthProcessing:
             lines += [
                 {'x_data': np.arange(1, n_samples+1),
                  'y_data': self.tc[Ch],
-                 'label': "Sensor {no}".format(no=Ch),
+                 'label': f"Sensor {Ch}",
                  'axis': 0}
             ]
 
@@ -616,7 +599,7 @@ class UttaZthProcessing:
         lines = []
 
         for Ch in range(1, self.no_of_tsp):
-            ch_tsp = 'TSP{Ch}'.format(Ch=Ch)
+            ch_tsp = f'TSP{Ch}'
             if self.meta_data.Channels[ch_tsp]["Name"] != "OFF":
                 lines += [
                     {'x_data': self.adc_timebase_cooling,
@@ -684,7 +667,7 @@ def split_file_path(file_path):
     # get the file extension. Should be the last item when splitting the filename at the dots
     file_extension = data_file.split('.')[-1]
 
-    data_file_no_ext = data_file.replace('.' + file_extension, '')
+    data_file_no_ext = data_file.replace(f'.{file_extension}', '')
     file_path = os.path.dirname(file_path)
 
     # return the FileName with FileExtension, the bare filename and the directory to the file
