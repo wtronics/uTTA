@@ -48,7 +48,7 @@ def read_measurement_file(filename, flag_raw_value_mode):
             cells = lines[0].split(";")
             t3r_file_version = str(cells[1])
             t3r_file_vers = float(t3r_file_version)
-            print("File Version: {FileVers:.1f}".format(FileVers=t3r_file_vers))
+            print(f"File Version: {t3r_file_vers:.1f}")
             # print("Number of Lines: " + str(num_lines))
 
             timebase_total, adc, temp, meta_data = read_measurement_file_30up(lines,
@@ -129,7 +129,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
 
                     case '#ISEN':
                         meas_meta_data.Isense = float(cells[1]) / 1000000
-                        print("SENSING: Sense Current was:    {isen:>7.2f}mA".format(isen=meas_meta_data.Isense * 1000))
+                        print(f"SENSING: Sense Current was:    {meas_meta_data.Isense * 1000:>7.2f}mA")
                     case '#VOFFS0':
                         meas_meta_data.Voffs[0] = float(cells[1]) / 1000
                     case '#VOFFS1':
@@ -145,22 +145,23 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
 
                     case 'T_Cool':
                         meas_meta_data.TCooling = int(cells[1])
-                        print("TIMING:   Preheating:    {tPreh:>7.2f}Min ; Heating:  {tHeat:>7.2f}Min ; Cooling:        {tCool:>7.2f}Min".format(
-                            tPreh=meas_meta_data.TPreheat / 60, tHeat=meas_meta_data.THeating / 60, tCool=meas_meta_data.TCooling / 60))
+                        print(f"TIMING:   Preheating:    {meas_meta_data.TPreheat / 60:>7.2f}Min ; "
+                              f"Heating:  {meas_meta_data.THeating / 60:>7.2f}Min ; "
+                              f"Cooling:        {meas_meta_data.TCooling / 60:>7.2f}Min")
                         pga = np.zeros((num_lines,), numpy.int16)
                         temp = np.zeros((4, int(num_lines)), numpy.float32)
                         block_no = np.zeros((num_lines,), numpy.int16)
                     case '#B':
                         last_block_no = int(cells[1])
                         if adc_samples_in_block > 0:
-                            print("\033[92mERROR: Seems like the previous block ({bno}) did not have samples.".format(bno=last_block_no-1) +
-                                  " There were {left} samples not filled!\033[0m".format(left=adc_samples_in_block))
+                            print(f"\033[92mERROR: Seems like the previous block ({last_block_no-1}) did not have samples." +
+                                  f" There were {adc_samples_in_block} samples not filled!\033[0m")
                         adc_samples_in_block = meas_meta_data.SamplesPerDecade
                     case '#BlockNo':
                         last_block_no = int(cells[1])
                         if adc_samples_in_block > 0:
-                            print("\033[92mERROR: Seems like the previous block ({bno}) did not have samples.".format(bno=last_block_no-1) +
-                                  " There were {left} samples not filled!\033[0m".format(left=adc_samples_in_block))
+                            print(f"\033[92mERROR: Seems like the previous block ({last_block_no-1}) did not have samples." +
+                                  f" There were {adc_samples_in_block} samples not filled!\033[0m")
                         adc_samples_in_block = meas_meta_data.SamplesPerDecade
                     case '#P':
                         pga_now = int(cells[1])
@@ -179,8 +180,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
 
                     case 'Total Blocks':
                         meas_meta_data.TotalBlocks = int(cells[1])
-                        print("BLOCKS:   Cool start block:  {CSB}    ; Total:        {TotBlocks}".format(CSB=meas_meta_data.CoolingStartBlock,
-                                                                                                         TotBlocks=meas_meta_data.TotalBlocks))
+                        print("BLOCKS:   Cool start block:  {meas_meta_data.CoolingStartBlock}    ; Total:        {meas_meta_data.TotalBlocks}")
                         if meas_meta_data.CoolingStartBlock > meas_meta_data.TotalBlocks:
                             meas_meta_data.CoolingStartBlock = meas_meta_data.TotalBlocks
                             meas_meta_data.FlagTSPCalibrationFile = True
@@ -196,7 +196,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                     adc_samples_in_block -= 1
                     block_no[adc_idx] = last_block_no
                     if flag_raw_value_mode == 0:
-                        ch_pa = "CAL_PA_0{ch}".format(ch=int(pga_now))
+                        ch_pa = f"CAL_PA_0{int(pga_now)}"
                         ch_diff = "CAL_DIFF0"
 
                         adc[0, adc_idx] = ((float(cells[0]) * meas_meta_data.CalData[ch_pa]["LinGain"]) + meas_meta_data.CalData[ch_pa]["Offset"] -
@@ -206,8 +206,8 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                                 ch_pa = "CAL_ADC_I"
                                 adc[CellIdx, adc_idx] = ((float(cells[CellIdx]) * meas_meta_data.CalData[ch_pa]["LinGain"]) + meas_meta_data.CalData[ch_pa]["Offset"])
                             else:  # scaling 2 the 2 monitoring channels
-                                ch_pa = "CAL_PA_{ch}0".format(ch=int(CellIdx))
-                                ch_diff = "CAL_DIFF{ch}".format(ch=CellIdx)
+                                ch_pa = f"CAL_PA_{int(CellIdx)}0"
+                                ch_diff = f"CAL_DIFF{CellIdx}"
                                 adc[CellIdx, adc_idx] = ((float(cells[CellIdx]) * meas_meta_data.CalData[ch_pa]["LinGain"]) + meas_meta_data.CalData[ch_pa]["Offset"] -
                                                          meas_meta_data.Voffs[1]) / meas_meta_data.CalData[ch_diff]["LinGain"]
                     else:
@@ -224,9 +224,8 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
     adc = adc[:, 0:adc_idx]
     del adc_idx
     if meas_meta_data.TotalBlocks != last_block_no:
-        print(
-            "\033[92mERROR: The number of total blocks ({bno}) does not match".format(bno=meas_meta_data.TotalBlocks) +
-            " the actual number of blocks imported ({imported})\033[0m".format(imported=last_block_no))
+        print(f"\033[92mERROR: The number of total blocks ({meas_meta_data.TotalBlocks}) does not match" +
+              f" the actual number of blocks imported ({last_block_no})\033[0m")
 
 
     time_base_heating = np.arange(0.0, (meas_meta_data.CoolingStartBlock * meas_meta_data.SamplesPerDecade) * tsamp_slow, tsamp_slow, dtype=numpy.float64)
@@ -263,11 +262,8 @@ def get_channel_data(tsp_no, cells):
                        "QuadGain": float(cells[4]) / 1000000,
                        "CalStatus": 0       # CAL Stati: 0 = Uncalibrated, 1 = Calibrated, 2 = Dummy Channel
                        }
-        print("CH{no} Cal:    {Offs:.3f}V  ; Linear:   {Lin:.6f}V/K  ; Quadratic: {Cub:.3f}".format(
-            no=tsp_no-1,
-            Offs=channel["Offset"],
-            Lin=channel["LinGain"],
-            Cub=channel["QuadGain"]))
+        print(f"CH{tsp_no-1} Cal:    {channel["Offset"]:.3f}V  ; "
+              f"Linear:   {channel["LinGain"]:.6f}V/K  ; Quadratic: {channel["QuadGain"]:.3f}")
 
     return channel
 
@@ -330,9 +326,9 @@ def write_tsp_cal_to_file(filename, tsp_cal):
     config.read_file(open(filename))
 
     for tsp_name, tsp in tsp_cal.items():
-        tsp_offs = '"{:.6e}"'.format(tsp["Offset"])
-        tsp_lin = '"{:.6e}"'.format(tsp["LinGain"])
-        tsp_quad = '"{:.6e}"'.format(tsp["QuadGain"])
+        tsp_offs = f'"{tsp["Offset"]:.6e}"'
+        tsp_lin = f'"{tsp["LinGain"]:.6e}"'
+        tsp_quad = f'"{tsp["QuadGain"]:.6e}"'
 
         print("Creating Cal Entry for Channel Name: {nam}, Offset {Offs}, Gain {Gain}, QuadGain {QGain}, CalStat {CS}".
               format(nam=tsp_name, Offs=tsp_offs, Gain=tsp_lin, QGain=tsp_quad, CS=tsp["CalStatus"]))
