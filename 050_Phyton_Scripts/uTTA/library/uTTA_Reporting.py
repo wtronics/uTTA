@@ -38,8 +38,8 @@ def export(utta_data, outfilename):
     utta_dict["T_Heating"] = utta_data.meta_data.THeating
     utta_dict["T_Cooling"] = utta_data.meta_data.TCooling
 
-    utta_dict["InterpolTStart"] = '{val}'.format(val=Quantity(utta_data.InterpolationTStart, "s")) 
-    utta_dict["InterpolTEnd"] = '{val}'.format(val=Quantity(utta_data.InterpolationTEnd, "s")) 
+    utta_dict["InterpolTStart"] = f'{Quantity(utta_data.InterpolationTStart, "s")}'
+    utta_dict["InterpolTEnd"] = f'{Quantity(utta_data.InterpolationTEnd, "s")}'
     utta_dict["InterpolFactor"] = utta_data.InterpolationFactorM
     utta_dict["InterpolOffset"] = utta_data.InterpolationOffset
     utta_dict["InterpolDieSize"] = utta_data.EstimatedDieSize
