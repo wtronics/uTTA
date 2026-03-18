@@ -7,13 +7,21 @@ import matplotlib # matplotlib 3.9.2
 import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
 import library.uTTA_data_processing as udpc
 from quantiphy import Quantity
+import logging
 
 matplotlib.use("TkAgg")
 
 class TSPInterpolationApp(ttk.Window):
 
-    def __init__(self, mainwindow):
+    def __init__(self, mainwindow, logger=None):
         super().__init__()
+        if logger is None:
+            self.logger = logging.getLogger("dummy")
+            self.logger.addHandler(logging.NullHandler())
+            self.logger.propagate = False # Important: prevents forwarding to the root logger
+        else:
+            self.logger = logger
+        
         self.timebase_scale_set = tkinter.StringVar(self)
         self.timebase_scale_set.set("Sqrt")
 
@@ -29,8 +37,7 @@ class TSPInterpolationApp(ttk.Window):
         self.geometry("1000x960")
         self.minsize(1000, 960)
         screen_dpi = self.winfo_fpixels('1i')
-        geometry = self.winfo_geometry()
-        print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
+        
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
@@ -154,7 +161,7 @@ class TSPInterpolationApp(ttk.Window):
         self.update_displays()
         self.update()
 
-    def create_si_string(self,value, unit):
+    def create_si_string(self, value, unit):
         return f'{Quantity(value, unit)}'
 
     def update_displays(self):
@@ -209,9 +216,8 @@ class TSPInterpolationApp(ttk.Window):
 
         self.canvas.draw() # type: ignore
 
-
     def on_closing(self):
-        # print("closing")
+        self.logger.info("Closing Interpolation Window. Triggering recalculation.")
 
         self.mainwindow.recalculate_interpolation()
         self.mainwindow.interpolation_window_closed()
@@ -225,10 +231,10 @@ class TSPInterpolationApp(ttk.Window):
             plt.close(self.interpol_fig)
             self.interpol_fig = None
 
-        # matplotlib.rcParams['text.usetex'] = False
         plt.clf()  # Cleans up the figure in the global context
         plt.close('all')  # Close all remaining figures
         self.interpol_marker_ctrl.destroy()
+        self.logger.info("Destroying Interpolation Window Instance.")
         self.destroy()
 
 
@@ -290,7 +296,6 @@ class Interpol_Controls_Widget(ttk.Frame):
         self.lbl_interpol_end_time = ttk.Label(master=self.frm_interpol_markers, text="", anchor="center")
         self.lbl_interpol_end_time.place(x=205, y=30, width=80)
 
-
     def change_interpolation_start_pos_fast(self):
         self.change_interpolation_settings("start", self.interpolation_marker_move_fast)
 
@@ -315,7 +320,7 @@ class Interpol_Controls_Widget(ttk.Frame):
     def change_interpolation_end_neg_fast(self):
         self.change_interpolation_settings("end", -self.interpolation_marker_move_fast)
 
-    def change_interpolation_settings(self,point, value):
+    def change_interpolation_settings(self, point, value):
         if point == "start":
             if 0 <= self.__window.interp_points_idx_start + value < self.__window.interpol_plot_cutoff_idx:
                 self.__window.interp_points_idx_start += value
