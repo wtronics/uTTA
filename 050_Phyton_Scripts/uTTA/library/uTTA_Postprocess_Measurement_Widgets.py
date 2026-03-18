@@ -1,8 +1,9 @@
-import ttkbootstrap as ttk  # ttkbootstrap 1.14.2
+import ttkbootstrap as ttk
 from ttkbootstrap.tooltip import ToolTip
 import library.uTTA_data_plotting as ud_plot
 import tkinter as tk
 import tkinter
+import logging
 
 BTN_HEIGHT = 40
 
@@ -15,7 +16,6 @@ class MeasurementPlotsWidget(ttk.Frame):
         self.plots = ud_plot.UttaPlotData(self.parent, (figwidth, figheight), 3, 2, dpi=screen_dpi)
         self._setup_plot_mapping()
 
-
     def _setup_plot_mapping(self):
 
         self.plots.plot_mapping=[
@@ -26,7 +26,6 @@ class MeasurementPlotsWidget(ttk.Frame):
             (4, self.data.add_cooling_curve_start_plot),
             (5, self.data.add_thermocouple_plot)
         ]
-
 
 class MeasurementInfoWidget(ttk.Frame):
     def __init__(self, parent):
@@ -87,7 +86,6 @@ class MeasurementInfoWidget(ttk.Frame):
         self.out_isense = ttk.Label(master=self.frm_sense, text="")
         self.out_isense.grid(row=0, column=1, padx=10, pady=10, sticky='w')
 
-
     def update_widget(self, data):
         self.out_tpreheat.configure(text=f"{data.meta_data.TPreheat:,} s")
         self.out_theating.configure(text=f"{data.meta_data.THeating:,} s")
@@ -100,7 +98,6 @@ class MeasurementInfoWidget(ttk.Frame):
 
         self.out_fileversion.configure(text=data.meta_data.Measurement.get("FileVersion", "unknown"))
         self.out_device.configure(text=data.meta_data.Measurement.get("DeviceVersion", "unknown"))
-
 
 class ZthPlotsWidget(ttk.Frame):
     def __init__(self, parent, data, figwidth, figheight, screen_dpi):
@@ -120,9 +117,17 @@ class ZthPlotsWidget(ttk.Frame):
         ]
 
 class SettingsWidget(ttk.Frame):
-    def __init__(self, parent, data):
-        super().__init__(parent)
-        self.parent = parent
+    def __init__(self, parent_frm, data, logger):
+        super().__init__(parent_frm)
+
+        if logger is None:
+            self.logger = logging.getLogger("dummy")
+            self.logger.addHandler(logging.NullHandler())
+            self.logger.propagate = False # Important: prevents forwarding to the root logger
+        else:
+            self.logger = logger
+        
+        self.parent = parent_frm
         self.data = data
         self.parent.grid_columnconfigure([0,1,2,3], minsize=250)
 
@@ -223,7 +228,7 @@ class SettingsWidget(ttk.Frame):
         self.btn_apply_settings.grid(row=5, column=4, padx=10, pady=10, sticky='se')
 
     def apply_settings(self):
-        print("\033[94mSettings changed\033[0m")
+        self.logger.info("GUI Settings changed")
 
         self.data.zero_current_detection_mode = self.ctrl_zero_curr_method_set.get()
         self.data.zero_current_detection_ratio = float(self.spinb_zero_curr_ratio.get())
