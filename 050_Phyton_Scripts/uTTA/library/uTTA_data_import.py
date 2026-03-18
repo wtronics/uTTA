@@ -1,11 +1,12 @@
-import numpy as np  # numpy 2.1.0
-import numpy.dtypes  # numpy 2.1.0
+import numpy as np
+import numpy.dtypes
 import tkinter as tk
-from tkinter import messagebox  # part of python 3.12.5
+from tkinter import messagebox
 from dataclasses import dataclass, field
 from collections import defaultdict
 from typing import List, Dict, Any
-import configparser  # part of python 3.12.5
+import configparser
+import logging
 
 MCU_Clock = 72000000
 TimerPrescaler = 9
@@ -37,7 +38,14 @@ class UTTAMetaData:
 
     FlagTSPCalibrationFile: bool = False
 
-def read_measurement_file(filename, flag_raw_value_mode):
+def read_measurement_file(filename, flag_raw_value_mode, logger=None):
+    if logger is None:
+        logger = logging.getLogger("dummy")
+        logger.addHandler(logging.NullHandler())
+        logger.propagate = False # Important: prevents forwarding to the root logger
+    else:
+        logger = logger
+
     with open(filename, 'r') as fil:
         lines = fil.readlines()
         fil.close()
@@ -48,18 +56,18 @@ def read_measurement_file(filename, flag_raw_value_mode):
             cells = lines[0].split(";")
             t3r_file_version = str(cells[1])
             t3r_file_vers = float(t3r_file_version)
-            print(f"File Version: {t3r_file_vers:.1f}")
-            # print("Number of Lines: " + str(num_lines))
+            logger.info(f"File Version: {t3r_file_vers:.1f}")
 
             timebase_total, adc, temp, meta_data = read_measurement_file_30up(lines,
                                                                               flag_raw_value_mode,
-                                                                              t3r_file_vers)
+                                                                              t3r_file_vers, logger=logger)
 
             return timebase_total, adc, temp, meta_data
     return np.empty((1, 1)), np.empty((4, 1)), np.empty((4, 1)), UTTAMetaData()
 
 
-def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
+def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion, logger):
+
     num_lines = len(lines)
     adc = np.zeros((4, int(num_lines)), numpy.float32)
 
@@ -83,7 +91,6 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
     else:
         temp_divider = 8.0
     
-
     for line in lines:
         line = line.replace("\r", "").replace("\n", "")
         cells = line.split(";")
@@ -91,6 +98,18 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
         if isinstance(cells, list):
             if not cells[0].isnumeric():
                 match cells[0]:
+                    case '#B' | '#BlockNo':
+                        last_block_no = int(cells[1])
+                        if adc_samples_in_block > 0:
+                            logger.error(f"Seems like the previous block ({last_block_no-1}) did not have samples." +
+                                         f" There were {adc_samples_in_block} samples not filled!")
+                        adc_samples_in_block = meas_meta_data.SamplesPerDecade
+                    case '#P' | '#PGA':
+                        pga_now = int(cells[1])
+                    case '#T' | '#TEMP':
+                        for CellIdx in range(1, 5):  # copy the cells to the new array
+                            temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / temp_divider
+                        temp_idx += 1
                     case 'FileVersion':
                         meas_meta_data.Measurement['FileVersion'] = str(cells[1])
                     case 'Device':
@@ -99,14 +118,14 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                         meas_meta_data.Measurement["StartTime"] = str(cells[1])
                     case 'StartDate':
                         meas_meta_data.Measurement["StartDate"] = str(cells[1])
-                        print("Measurement Started " + meas_meta_data.Measurement["StartDate"] + " " + meas_meta_data.Measurement["StartTime"])
+                        logger.info("Measurement Started " + meas_meta_data.Measurement["StartDate"] + " " + meas_meta_data.Measurement["StartTime"])
                     case 'CH1 Name':
-                        meas_meta_data.Channels["TSP0"] = get_channel_data(0, cells)
+                        meas_meta_data.Channels["TSP0"] = get_channel_data(0, cells, logger)
 
                     case 'CH2 Name':
-                        meas_meta_data.Channels["TSP1"] = get_channel_data(1, cells)
+                        meas_meta_data.Channels["TSP1"] = get_channel_data(1, cells, logger)
                     case 'CH3 Name':
-                        meas_meta_data.Channels["TSP2"] = get_channel_data(2, cells)
+                        meas_meta_data.Channels["TSP2"] = get_channel_data(2, cells, logger)
                     case '#CAL_DAC_ISEN':  # ISense DAC Calibration needs to be divided by 1000000 because values are in µA
                         meas_meta_data.CalData["CAL_DAC_ISEN"] = {"Offset": float(cells[1]) / 1000000.0,
                                                                   "LinGain": float(cells[2]) / 1000000.0,
@@ -120,8 +139,6 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                                                                           }
 
                     case s if s.startswith('#CAL_'):
-                        # print(str(cells[0]).replace("#", ""))
-                        # print(meas_meta_data.CalData)
                         meas_meta_data.CalData[str(cells[0]).replace("#", "")] = {"Offset": float(cells[1]),
                                                                           "LinGain": float(cells[2]),
                                                                           "QuadGain": float(cells[3])
@@ -129,7 +146,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
 
                     case '#ISEN':
                         meas_meta_data.Isense = float(cells[1]) / 1000000
-                        print(f"SENSING: Sense Current was:    {meas_meta_data.Isense * 1000:>7.2f}mA")
+                        logger.info(f"SENSING: Sense Current was:    {meas_meta_data.Isense * 1000:>7.2f}mA")
                     case '#VOFFS0':
                         meas_meta_data.Voffs[0] = float(cells[1]) / 1000
                     case '#VOFFS1':
@@ -142,54 +159,29 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
                             meas_meta_data.FlagTSPCalibrationFile = True
                         else:
                             meas_meta_data.FlagTSPCalibrationFile = False
-
                     case 'T_Cool':
                         meas_meta_data.TCooling = int(cells[1])
-                        print(f"TIMING:   Preheating:    {meas_meta_data.TPreheat / 60:>7.2f}Min ; "
-                              f"Heating:  {meas_meta_data.THeating / 60:>7.2f}Min ; "
-                              f"Cooling:        {meas_meta_data.TCooling / 60:>7.2f}Min")
+                        logger.info(f"TIMING:   Preheating:    {meas_meta_data.TPreheat / 60:>7.2f}Min ; "
+                                    f"Heating:  {meas_meta_data.THeating / 60:>7.2f}Min ; "
+                                    f"Cooling:        {meas_meta_data.TCooling / 60:>7.2f}Min")
                         pga = np.zeros((num_lines,), numpy.int16)
                         temp = np.zeros((4, int(num_lines)), numpy.float32)
                         block_no = np.zeros((num_lines,), numpy.int16)
-                    case '#B':
-                        last_block_no = int(cells[1])
-                        if adc_samples_in_block > 0:
-                            print(f"\033[92mERROR: Seems like the previous block ({last_block_no-1}) did not have samples." +
-                                  f" There were {adc_samples_in_block} samples not filled!\033[0m")
-                        adc_samples_in_block = meas_meta_data.SamplesPerDecade
-                    case '#BlockNo':
-                        last_block_no = int(cells[1])
-                        if adc_samples_in_block > 0:
-                            print(f"\033[92mERROR: Seems like the previous block ({last_block_no-1}) did not have samples." +
-                                  f" There were {adc_samples_in_block} samples not filled!\033[0m")
-                        adc_samples_in_block = meas_meta_data.SamplesPerDecade
-                    case '#P':
-                        pga_now = int(cells[1])
-                    case '#PGA':
-                        pga_now = int(cells[1])
-                    case '#T':
-                        for CellIdx in range(1, 5):  # copy the cells to the new array
-                            temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / temp_divider
-                        temp_idx += 1
-                    case '#TEMP':
-                        for CellIdx in range(1, 5):  # copy the cells to the new array
-                            temp[CellIdx - 1, temp_idx] = float(cells[CellIdx]) / temp_divider
-                        temp_idx += 1
+                    
                     case 'Cooling Start Block':
                         meas_meta_data.CoolingStartBlock = int(cells[1]) + 1
 
                     case 'Total Blocks':
                         meas_meta_data.TotalBlocks = int(cells[1])
-                        print("BLOCKS:   Cool start block:  {meas_meta_data.CoolingStartBlock}    ; Total:        {meas_meta_data.TotalBlocks}")
+                        logger.info(f"BLOCKS:   Cool start block:  {meas_meta_data.CoolingStartBlock}    ; Total:        {meas_meta_data.TotalBlocks}")
                         if meas_meta_data.CoolingStartBlock > meas_meta_data.TotalBlocks:
                             meas_meta_data.CoolingStartBlock = meas_meta_data.TotalBlocks
                             meas_meta_data.FlagTSPCalibrationFile = True
 
-                    case 'ADC1':
+                    case 'ADC1':        # dummy case to remove skipped line statement
                         cells[0] = ""
-                    # dummy case to remove skipped line statement
                     case _:
-                        print("Skipped line: " + line)
+                        logger.info(f"Skipped line: {line}")
             else:
                 if cells[0].isnumeric():
                     pga[adc_idx] = pga_now
@@ -218,14 +210,12 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
 
     del lines
 
-    # print("Channel Names: " + str(ch_names))
-
     temp = temp[:, 0:temp_idx + 1]
     adc = adc[:, 0:adc_idx]
     del adc_idx
     if meas_meta_data.TotalBlocks != last_block_no:
-        print(f"\033[92mERROR: The number of total blocks ({meas_meta_data.TotalBlocks}) does not match" +
-              f" the actual number of blocks imported ({last_block_no})\033[0m")
+        logger.error(f"The number of total blocks ({meas_meta_data.TotalBlocks}) does not match" +
+                     f" the actual number of blocks imported ({last_block_no})")
 
 
     time_base_heating = np.arange(0.0, (meas_meta_data.CoolingStartBlock * meas_meta_data.SamplesPerDecade) * tsamp_slow, tsamp_slow, dtype=numpy.float64)
@@ -241,11 +231,15 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion):
 
     timebase_total = timebase_total / 1000000.0
 
-    # print(meas_meta_data)
     return timebase_total, adc, temp, meas_meta_data
 
-
-def get_channel_data(tsp_no, cells):
+def get_channel_data(tsp_no, cells, logger):
+    if logger is None:
+        logger = logging.getLogger("dummy")
+        logger.addHandler(logging.NullHandler())
+        logger.propagate = False # Important: prevents forwarding to the root logger
+    else:
+        logger = logger
     channel = {}
     if 0 <= tsp_no <= 3:
         if len(cells) > 5:
@@ -262,12 +256,10 @@ def get_channel_data(tsp_no, cells):
                        "QuadGain": float(cells[4]) / 1000000,
                        "CalStatus": 0       # CAL Stati: 0 = Uncalibrated, 1 = Calibrated, 2 = Dummy Channel
                        }
-        print(f"CH{tsp_no-1} Cal:    {channel["Offset"]:.3f}V  ; "
-              f"Linear:   {channel["LinGain"]:.6f}V/K  ; Quadratic: {channel["QuadGain"]:.3f}")
+        logger.info(f"CH{tsp_no} Cal:    {channel["Offset"]:.3f}V  ; "
+                    f"Linear:   {channel["LinGain"]:.6f}V/K  ; Quadratic: {channel["QuadGain"]:.3f}")
 
     return channel
-
-
 
 def read_calfile2dict(filename):
     print("Reading calibration values from file: " + filename)
@@ -316,7 +308,6 @@ def read_calfile2dict(filename):
                 utta_cal_data[str(sect)] = utta_cal
 
     return utta_cal_data, utta_dev_meta_data, utta_tsp_cal, utta_tc_cal
-
 
 def write_tsp_cal_to_file(filename, tsp_cal):
     print("Writing calibration values to file: " + filename)
