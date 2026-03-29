@@ -148,13 +148,13 @@ int8_t WriteFileHeaderToFile(lfs_t *lfs, lfs_file_t *file){
 
 	Write_CalibrationToFile(lfs, file);
 
-	sprintf(LogWriteBfr,"CH1 Name;%s;%f;%f;%f;%d\n",Channels[0].CH_Name,Channels[0].CH_Offs,Channels[0].CH_LinGain,Channels[0].CH_QuadGain, Channels[0].CalStatus);
+	snprintf(LogWriteBfr,TX_BFR_SIZE ,"CH1 Name;%s;%f;%f;%f;%d\n",Channels[0].CH_Name,Channels[0].CH_Offs,Channels[0].CH_LinGain,Channels[0].CH_QuadGain, Channels[0].CalStatus);
 	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
-	sprintf(LogWriteBfr,"CH2 Name;%s;%f;%f;%f;%d\n",Channels[1].CH_Name,Channels[1].CH_Offs,Channels[1].CH_LinGain,Channels[1].CH_QuadGain, Channels[1].CalStatus);
+	snprintf(LogWriteBfr,TX_BFR_SIZE ,"CH2 Name;%s;%f;%f;%f;%d\n",Channels[1].CH_Name,Channels[1].CH_Offs,Channels[1].CH_LinGain,Channels[1].CH_QuadGain, Channels[1].CalStatus);
 	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
-	sprintf(LogWriteBfr,"CH3 Name;%s;%f;%f;%f;%d\n",Channels[2].CH_Name,Channels[2].CH_Offs,Channels[2].CH_LinGain,Channels[2].CH_QuadGain, Channels[2].CalStatus);
+	snprintf(LogWriteBfr,TX_BFR_SIZE ,"CH3 Name;%s;%f;%f;%f;%d\n",Channels[2].CH_Name,Channels[2].CH_Offs,Channels[2].CH_LinGain,Channels[2].CH_QuadGain, Channels[2].CalStatus);
 	EvalLFSError(LFS_WRITE_STRING(lfs, file, LogWriteBfr));
 
 	sprintf(LogWriteBfr,"StartTime;%02d:%02d:%02d\n",Time.RTC_Hours,Time.RTC_Minutes,Time.RTC_Seconds);
