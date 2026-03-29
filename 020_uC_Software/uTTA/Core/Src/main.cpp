@@ -322,6 +322,17 @@ void DoMeasurement(void)
 		break;
 	case Meas_State_Heating:
 
+#ifdef EARLY_HW_POWER_BOARD
+		if(LL_GPIO_IsInputPinSet(PWSTG_PGOOD_DI_GPIO_Port, PWSTG_PGOOD_DI_Pin))
+#else
+		if(!LL_GPIO_IsInputPinSet(PWSTG_PGOOD_DI_GPIO_Port, PWSTG_PGOOD_DI_Pin))
+#endif
+		{
+			ErrorResponse(ERRC_SYSTEM_ERROR, ERST_GATEDRV_UVLO);
+			FlagMeasurementState = Meas_State_Deinit;
+			break;
+		}
+
 		if(GetTick() < MeasurementNextStepTime)break;
 
 		SamplingTiming.SetMultiplier = 0;
