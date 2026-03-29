@@ -26,8 +26,8 @@ ErrorStatus UART_Transmit_DMA(USART_TypeDef *huart, const uint8_t *pData, uint16
 void UART_printf(const char *fmt, ...);
 
 // UART Buffer Settings
-#define RX_BFR_SIZE 80
-#define TX_BFR_SIZE 80
+#define RX_BFR_SIZE 120
+#define TX_BFR_SIZE 120
 
 
 #ifdef __cplusplus
