@@ -237,12 +237,11 @@ void DoMeasurement(void)
 
 	switch(FlagMeasurementState){
 	case Meas_State_Init:					// check for the flag to start the measurement
-
 		ADC_TotalBlocks = 0;
 		ADC_CoolingStartBlock = 0;
 		ADC_BufferReadBlock = 0;
 		Log_WrittenBlocks = 0;
-		Meas_StartTime = GetTick();
+
 		NextOutput = GetTick();
 
 		if(FlashMemoryAvailable <= 0){	// no flash memory is attached to save measurement data therefore the measurement is aborted
@@ -255,32 +254,30 @@ void DoMeasurement(void)
 			FlagMeasurementState = Meas_State_Idle;
 			break;
 		}
-
-		EvalLFSError(lfs_file_open(&littlefs, &file, DUT_Name, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC));
-		if(LFS_ret<0){
-			ErrorResponse(ERRC_FILE_SYSTEM, (uint8_t)LFS_ret);
-			FlagMeasurementState = Meas_State_Idle;
-			break;
-		}
 		CheckMemoryFileFit();
-
-		WriteFileHeaderToFile(&littlefs, &file);
-
-		LL_GPIO_SetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin); // Enable the output of the Main Power Supply
 
 		SetPGAGain(PGA_Gains.Cooling);
 		for(uint8_t PGA_Idx=0; PGA_Idx<ADC_BFR_BLOCKS; PGA_Idx++){
 			ADC_PGA_Setting[PGA_Idx] = PGA_Gains.Set;
 		}
 
-		LL_GPIO_SetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin);		// turn on the power of the gate driver
-		MeasurementNextStepTime = GetTick()+ 20;
-		FlagMeasurementState=Meas_State_GDPowerCheck;
+		// check if the file already exists, abort the measurement if the file is already there
+		EvalLFSError(lfs_file_open(&littlefs, &file, DUT_Name, LFS_O_RDONLY));
+		if(LFS_ret<0){
+			ErrorResponse(ERRC_FILE_SYSTEM, (uint8_t)LFS_ret);
+			FlagMeasurementState = Meas_State_Idle;
+			EvalLFSError(lfs_file_close(&littlefs, &file));
+			break;
+		}
 
+		LL_GPIO_SetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin);		// turn on the power of the gate driver
+
+		MeasurementNextStepTime = GetTick() + 20;		// Add a delay of 20ms to allow the gate driver power to settle
+		FlagMeasurementState=Meas_State_GDPowerCheck;
 		break;
 	case Meas_State_GDPowerCheck:
-
 		if(GetTick()< MeasurementNextStepTime) break;
+
 #ifdef EARLY_HW_POWER_BOARD
 		if(LL_GPIO_IsInputPinSet(PWSTG_PGOOD_DI_GPIO_Port, PWSTG_PGOOD_DI_Pin))
 #else
@@ -291,6 +288,21 @@ void DoMeasurement(void)
 			FlagMeasurementState = Meas_State_Deinit;
 			break;
 		}
+
+		FlagMeasurementState = Meas_State_InitMeasFile;	// Set the step for the StateMachine to the next step
+		break;
+	case Meas_State_InitMeasFile:
+
+		Meas_StartTime = GetTick();
+
+		EvalLFSError(lfs_file_open(&littlefs, &file, DUT_Name, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC));
+		if(LFS_ret<0){
+			ErrorResponse(ERRC_FILE_SYSTEM, (uint8_t)LFS_ret);
+			FlagMeasurementState = Meas_State_Idle;
+			break;
+		}
+
+		WriteFileHeaderToFile(&littlefs, &file);
 
 		MeasurementStartTime = GetTick();	// Calculate the time when the next Measurement step shall be started
 		MeasurementNextStepTime = MeasurementStartTime + SamplingTiming.PreHeatingTime;
@@ -307,11 +319,13 @@ void DoMeasurement(void)
 
 		FlagMeasurementState = Meas_State_Preheating;	// Set the step for the StateMachine to the next step
 		break;
+
 	case Meas_State_Preheating:
 
 		if(GetTick()< MeasurementNextStepTime) break;
 
 		if( SamplingTiming.HeatingTime > 0){		// check if this is a real measurement or just a calibration run
+			LL_GPIO_SetOutputPin(PSU_EN_DO_GPIO_Port, PSU_EN_DO_Pin); // Enable the output of the Main Power Supply
 			MeasurementNextStepTime += SamplingTiming.HeatingTime;
 			FlagMeasurementState = Meas_State_PrepHeating;
 		}else		// Just a calibration measurement
@@ -453,7 +467,7 @@ void DoMeasurement(void)
 	}
 
 	// Data logging loop
-	if (FlagMeasurementState){
+	if (FlagMeasurementState > Meas_State_InitMeasFile){
 		if ((ADC_TotalBlocks>0) && (Log_WrittenBlocks < ADC_TotalBlocks) && (FlagMeasurementState < Meas_State_CloseLog) ){
 			LD2_GPIO_Port->BSRR = LD2_Pin;
 			LL_GPIO_SetOutputPin(DBG_IO3_GPIO_Port, DBG_IO3_Pin);
@@ -649,6 +663,7 @@ void SampleClockHandler(void)
 	}
 	if(FlagMeasurementState == Meas_State_PrepHeating){
 		SetPGAGain(PGA_Gains.Heating);
+		LL_GPIO_SetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin);	// turn on the power of the gate driver
 		LL_GPIO_SetOutputPin(PWSTG_EN_DO_GPIO_Port, PWSTG_EN_DO_Pin);			// Enable the powerstage
 		FlagMeasurementState = Meas_State_Heating;
 	}
