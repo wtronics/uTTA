@@ -121,6 +121,22 @@
       <sequence value="a[SYST:POWER?] h[0A]"/>
       <description></description>
     </SequenceItem>
+    <SequenceItem name="Enable Gatedriver Power">
+      <sequence value="a[SYST:GDPOW ON] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Disable Gatedriver Power">
+      <sequence value="a[SYST:GDPOW OFF] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Gatedriver Power Status">
+      <sequence value="a[SYST:GDPOW?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
+    <SequenceItem name="Get Gatedriver Power Good">
+      <sequence value="a[SYST:PWUV?] h[0A]"/>
+      <description></description>
+    </SequenceItem>
     <SequenceItem name="Set System Time">
       <sequence value="a[SYST:CLOCK TIME,]"/>
       <description></description>
