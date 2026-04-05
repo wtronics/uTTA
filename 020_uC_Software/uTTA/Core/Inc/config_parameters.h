@@ -180,6 +180,7 @@ typedef enum {
 	Meas_State_Idle = 0,		// 0 :  Measurement system is not active
 	Meas_State_Init,			// 1 :
 	Meas_State_GDPowerCheck,
+	Meas_State_InitMeasFile,
 	Meas_State_Preheating,
 	Meas_State_PrepHeating,
 	Meas_State_Heating,
