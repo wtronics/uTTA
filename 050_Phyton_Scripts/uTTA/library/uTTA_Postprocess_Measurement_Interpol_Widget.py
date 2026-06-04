@@ -30,8 +30,8 @@ class TSPInterpolationApp(ttk.Window):
 
         self.show_tangent = True
 
-        self.interp_points_idx_start = udpc.find_nearest(self.mainwindow.utta_data.adc_timebase_cooling, self.mainwindow.utta_data.InterpolationTStart)
-        self.interp_points_idx_end = udpc.find_nearest(self.mainwindow.utta_data.adc_timebase_cooling, self.mainwindow.utta_data.InterpolationTEnd)
+        self.interp_points_idx_start = udpc.find_nearest(self.mainwindow.utta_data.time_cooling, self.mainwindow.utta_data.InterpolationTStart)
+        self.interp_points_idx_end = udpc.find_nearest(self.mainwindow.utta_data.time_cooling, self.mainwindow.utta_data.InterpolationTEnd)
 
         self.title("uTTA TSP Interpolation")
         self.geometry("1000x960")
@@ -132,7 +132,7 @@ class TSPInterpolationApp(ttk.Window):
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
         # Data Plotting Part (Display)
         # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
-        self.timebase = self.mainwindow.utta_data.adc_timebase_cooling
+        self.timebase = self.mainwindow.utta_data.time_cooling
         self.diode_temp_values = self.mainwindow.utta_data.t_dio_raw[0, :]
         self.interpol_plot_cutoff = self.interpol_marker_ctrl.interpolation_plot_end_time
         self.interpol_plot_cutoff_idx = udpc.find_nearest(self.timebase, self.interpol_plot_cutoff)
@@ -194,7 +194,7 @@ class TSPInterpolationApp(ttk.Window):
 
             min_y = np.min(self.diode_temp_values[0:self.interpol_plot_cutoff_idx])
 
-            interp_start = (np.sqrt(self.mainwindow.utta_data.adc_timebase_cooling[0:self.interpol_plot_cutoff_idx]) * self.mainwindow.utta_data.InterpolationFactorM +
+            interp_start = (np.sqrt(self.mainwindow.utta_data.time_cooling[0:self.interpol_plot_cutoff_idx]) * self.mainwindow.utta_data.InterpolationFactorM +
                             self.mainwindow.utta_data.InterpolationOffset)
             
             interp_cutoff_idx = udpc.find_nearest(interp_start, min_y)
@@ -324,13 +324,13 @@ class Interpol_Controls_Widget(ttk.Frame):
         if point == "start":
             if 0 <= self.__window.interp_points_idx_start + value < self.__window.interpol_plot_cutoff_idx:
                 self.__window.interp_points_idx_start += value
-                self.__window.mainwindow.utta_data.InterpolationTStart = self.__window.mainwindow.utta_data.adc_timebase_cooling[
+                self.__window.mainwindow.utta_data.InterpolationTStart = self.__window.mainwindow.utta_data.time_cooling[
                     self.__window.interp_points_idx_start]
 
         elif point == "end":
             if self.__window.interp_points_idx_start < self.__window.interp_points_idx_end + value < self.__window.interpol_plot_cutoff_idx:
                 self.__window.interp_points_idx_end += value
-                self.__window.mainwindow.utta_data.InterpolationTEnd = self.__window.mainwindow.utta_data.adc_timebase_cooling[
+                self.__window.mainwindow.utta_data.InterpolationTEnd = self.__window.mainwindow.utta_data.time_cooling[
                     self.__window.interp_points_idx_end]
 
         self.__window.mainwindow.utta_data.interpolate_zth_curve_start()
