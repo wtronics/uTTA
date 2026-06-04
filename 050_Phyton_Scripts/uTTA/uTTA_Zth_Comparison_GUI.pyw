@@ -225,7 +225,7 @@ class ZthComparatorApp(ttk.Window):
                     if enabled[filenames.index(dat)]:
                         shown_plots += 1
                         fil_data = self.file_data[dat]
-                        self.plots[0].loglog(fil_data.timebase, 
+                        self.plots[0].semilogx(fil_data.timebase, 
                                              fil_data.zth_data_driver, 
                                              label=f"{fil_data.filename} - {fil_data.channel_names[0]}")
                         self.plots[1].loglog(fil_data.timebase[fil_data.monitor_ch_first_value_idx:], 
