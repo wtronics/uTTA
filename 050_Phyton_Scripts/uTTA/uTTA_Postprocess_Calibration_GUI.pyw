@@ -145,10 +145,10 @@ class CalApp(ttk.Window):
             ch_tsp = "TSP{Ch}".format(Ch=PlotIdx)
             if ch_tsp in self.utta_data.meta_data.Channels:
                 if self.utta_data.meta_data.Channels[ch_tsp]["Name"] != "OFF":
-                    line, = G_Plots[0].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label=self.utta_data.meta_data.Channels[ch_tsp]["Name"]) # type: ignore
+                    line, = G_Plots[0].plot(self.utta_data.time_interp, self.utta_data.adc_interp[PlotIdx, :], label=self.utta_data.meta_data.Channels[ch_tsp]["Name"]) # type: ignore
                     lines.append(line)
-                    ymin = np.min([ymin, np.min(self.utta_data.adc_int[PlotIdx, :])]) # type: ignore
-                    ymax = np.max([ymax, np.max(self.utta_data.adc_int[PlotIdx, :])]) # type: ignore
+                    ymin = np.min([ymin, np.min(self.utta_data.adc_interp[PlotIdx, :])]) # type: ignore
+                    ymax = np.max([ymax, np.max(self.utta_data.adc_interp[PlotIdx, :])]) # type: ignore
 
         G_Plots[0].set_xlabel("Time / [s]")
         G_Plots[0].set_ylabel("Diode Voltage / [V]")
@@ -156,7 +156,7 @@ class CalApp(ttk.Window):
         G_Plots[0].callbacks.connect('xlim_changed', self.on_xlims_change)
         G_Plots[0].grid(True)
 
-        if len(self.utta_data.adc_int) > 0:
+        if len(self.utta_data.adc_interp) > 0:
             G_Plots[0].legend(loc="lower left")
             G_Plots[0].set_ylim([ymin - (ymax - ymin)*0.05 , ymax + (ymax - ymin)*0.05])
 
@@ -165,12 +165,12 @@ class CalApp(ttk.Window):
         ymin = 100
         ymax = -100
 
-        if len(self.utta_data.adc_int) > 0:
+        if len(self.utta_data.adc_interp) > 0:
             for PlotIdx in range(1):
-                G_Plots[1].plot(self.utta_data.timebase_int, self.utta_data.adc_int[PlotIdx, :], label="TC " + str(PlotIdx)) # type: ignore
+                G_Plots[1].plot(self.utta_data.time_interp, self.utta_data.adc_interp[PlotIdx, :], label="TC " + str(PlotIdx)) # type: ignore
 
-                ymin = np.min([ymin, np.min(self.utta_data.adc_int[PlotIdx, :])]) # type: ignore
-                ymax = np.max([ymax, np.max(self.utta_data.adc_int[PlotIdx, :])]) # type: ignore
+                ymin = np.min([ymin, np.min(self.utta_data.adc_interp[PlotIdx, :])]) # type: ignore
+                ymax = np.max([ymax, np.max(self.utta_data.adc_interp[PlotIdx, :])]) # type: ignore
 
             G_Plots[1].set_xlim(left=0)
             G_Plots[1].legend(loc="lower left")
@@ -198,12 +198,12 @@ class CalApp(ttk.Window):
                 else:
                     bar_color = 'green'
 
-                G_Plots[1].fill_between(self.utta_data.timebase_int, 0, 1,
-                                        where=np.logical_and((stat_state[0] <= self.utta_data.timebase_int), (stat_state[1] >= self.utta_data.timebase_int)),
+                G_Plots[1].fill_between(self.utta_data.time_interp, 0, 1,
+                                        where=np.logical_and((stat_state[0] <= self.utta_data.time_interp), (stat_state[1] >= self.utta_data.time_interp)),
                                         color=bar_color, alpha=0.5,
                                         transform=G_Plots[1].get_xaxis_transform())
-                G_Plots[0].fill_between(self.utta_data.timebase_int, 0, 1,
-                                        where=np.logical_and((stat_state[0] <= self.utta_data.timebase_int), (stat_state[1] >= self.utta_data.timebase_int)),
+                G_Plots[0].fill_between(self.utta_data.time_interp, 0, 1,
+                                        where=np.logical_and((stat_state[0] <= self.utta_data.time_interp), (stat_state[1] >= self.utta_data.time_interp)),
                                         color=bar_color, alpha=0.5,
                                         transform=G_Plots[0].get_xaxis_transform())
 
@@ -282,16 +282,16 @@ class CalApp(ttk.Window):
 
             if self.utta_data.meta_data.FlagTSPCalibrationFile:
                 self.utta_data.interpolate_to_common_timebase()
-                #self.utta_data.timebase_int, self.utta_data.adc_int, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
+                #self.utta_data.time_interp, self.utta_data.adc_interp, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
                 # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.7°C
                 # Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.7, 200)
-                Static_States = udpc.find_static_states(self.utta_data.adc_int[0, :], 0.0008, 500) # type: ignore
+                Static_States = udpc.find_static_states(self.utta_data.adc_interp[0, :], 0.0008, 500) # type: ignore
 
                 if Static_States:
                     for stat_state in Static_States:
                         # for the temperature average take only the last 60 samples (1Minute) for the average
-                        t_avg = np.mean(self.utta_data.tc_int[0, (stat_state[1]-60):stat_state[1]]) # type: ignore
+                        t_avg = np.mean(self.utta_data.tc_interp[0, (stat_state[1]-60):stat_state[1]]) # type: ignore
                         self.add_cal_step_entry(stat_state[1]-60, stat_state[1], t_avg)
 
                 self.update_plots()
@@ -335,10 +335,10 @@ class CalApp(ttk.Window):
     def add_cal_step_entry(self, starttime, endtime, temp_step):
         self.t_step_sheet.insert_row(idx=0)
         self.t_step_sheet["A1"].data = float(temp_step)
-        self.t_step_sheet["B1"].data = np.mean(self.utta_data.adc_int[0, starttime:endtime]) # type: ignore
-        self.t_step_sheet["C1"].data = np.mean(self.utta_data.adc_int[1, starttime:endtime]) # type: ignore
-        self.t_step_sheet["D1"].data = np.mean(self.utta_data.adc_int[2, starttime:endtime]) # type: ignore
-        self.t_step_sheet["E1"].data = np.mean(self.utta_data.adc_int[0, starttime:endtime]) # type: ignore
+        self.t_step_sheet["B1"].data = np.mean(self.utta_data.adc_interp[0, starttime:endtime]) # type: ignore
+        self.t_step_sheet["C1"].data = np.mean(self.utta_data.adc_interp[1, starttime:endtime]) # type: ignore
+        self.t_step_sheet["D1"].data = np.mean(self.utta_data.adc_interp[2, starttime:endtime]) # type: ignore
+        self.t_step_sheet["E1"].data = np.mean(self.utta_data.adc_interp[0, starttime:endtime]) # type: ignore
         self.t_step_sheet["F1"].data = starttime
         self.t_step_sheet["G1"].data = endtime
 
@@ -411,16 +411,16 @@ class CalApp(ttk.Window):
         xlim_max = int(x_limits[1])
         # print("updated xlims: ", event_ax.get_xlim())
         G_Plots[1].set_xlim(left=x_limits[0], right=x_limits[1])
-        ymin = np.min(self.utta_data.adc_int[0, xlim_min:xlim_max]) # type: ignore
-        ymax = np.max(self.utta_data.adc_int[0, xlim_min:xlim_max]) # type: ignore
+        ymin = np.min(self.utta_data.adc_interp[0, xlim_min:xlim_max]) # type: ignore
+        ymax = np.max(self.utta_data.adc_interp[0, xlim_min:xlim_max]) # type: ignore
         G_Plots[1].set_ylim(bottom=ymin, top=ymax)
 
-        tsp_min = float(np.min(self.utta_data.adc_int[0, xlim_min:xlim_max])) # type: ignore
-        tsp_max = float(np.max(self.utta_data.adc_int[0, xlim_min:xlim_max])) # type: ignore
+        tsp_min = float(np.min(self.utta_data.adc_interp[0, xlim_min:xlim_max])) # type: ignore
+        tsp_max = float(np.max(self.utta_data.adc_interp[0, xlim_min:xlim_max])) # type: ignore
         tsp_pp = Quantity(tsp_max-tsp_min, "V")
 
         self.ent_step_temp.delete(0, 'end')
-        self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(self.utta_data.adc_int[0, xlim_min:xlim_max]))) # type: ignore
+        self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(self.utta_data.adc_interp[0, xlim_min:xlim_max]))) # type: ignore
 
         self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state.\n" +
                                    "Peak-to-peak spread of " + MetaData["TSP0"]["Name"] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
