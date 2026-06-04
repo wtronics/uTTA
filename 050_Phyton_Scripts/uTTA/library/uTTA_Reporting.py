@@ -1,3 +1,32 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Module Name:    utta_Reporting.py
+Description:    An HTML report generation service for uTTA Measurements.
+                This module uses jinja2 and plotly to generate HTML reports with
+                interactive graphs the user can zoom in and use cursors to extract meausrement data.
+
+Author:         wtronics
+Email:          169440509+wtronics@users.noreply.github.com
+Date:           04.10.2025
+Version:        $VERSION$
+
+--------------------------------------------------------------------------
+License:
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)
+
+You are free to share and adapt this material under the following terms:
+- Attribution: You must give appropriate credit.
+- NonCommercial: You may not use the material for commercial purposes.
+- ShareAlike: You must distribute your contributions under the same license.
+
+The full license text can be found at:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+--------------------------------------------------------------------------
+"""
+
 from jinja2 import Template, Environment, FileSystemLoader, StrictUndefined, Undefined
 #import plotly.express as px
 import plotly.graph_objects as go
