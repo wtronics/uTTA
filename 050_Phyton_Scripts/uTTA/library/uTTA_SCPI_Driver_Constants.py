@@ -1,3 +1,31 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Module Name:    utta_SCPI_Driver_Constants.py
+Description:    Serial Port SCPI Driver for the uTTA measurement device.
+                Constants to make the SCPI driver work
+                
+Author:         wtronics
+Email:          169440509+wtronics@users.noreply.github.com
+Date:           11.01.2026
+Version:        $VERSION$
+
+--------------------------------------------------------------------------
+License:
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)
+
+You are free to share and adapt this material under the following terms:
+- Attribution: You must give appropriate credit.
+- NonCommercial: You may not use the material for commercial purposes.
+- ShareAlike: You must distribute your contributions under the same license.
+
+The full license text can be found at:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+--------------------------------------------------------------------------
+"""
+
 from enum import Enum
 
 error_codes = {"0.000": "Unknown Error Code",
