@@ -53,8 +53,8 @@ def export_tdim_master_file(timebase, zth, meta_data,
 
         if t_reduce_data > 0:
             zth_output = np.zeros(shape=(2, tdim_data_limit))
-            zth_output[0, 0:reduce_above_idx-1] = timebase[0:reduce_above_idx-1]
-            zth_output[1, 0:reduce_above_idx-1] = zth[0, 0:reduce_above_idx-1]
+            zth_output[0, 0:reduce_above_idx] = timebase[0:reduce_above_idx]
+            zth_output[1, 0:reduce_above_idx] = zth[0, 0:reduce_above_idx]
             # print("Input Samples {nsamp}, Reduction Index {red_idx}".format(nsamp=len(zth[0]), red_idx=reduce_above_idx))
 
             zth_output[0, reduce_above_idx:] = compress_array(timebase[reduce_above_idx:-1], tdim_data_limit - reduce_above_idx)
