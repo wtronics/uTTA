@@ -19,3 +19,4 @@
 /010_Hardware/070_Simulation/TSP_Calibration_Simulator
 *.xml
 /020_uC_Software/uTTA/Debug
+/050_Phyton_Scripts/uTTA/widgets/__pycache__
