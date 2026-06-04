@@ -210,7 +210,7 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion, logg
 
     del lines
 
-    temp = temp[:, 0:temp_idx + 1]
+    temp = temp[:, 0:temp_idx ]
     adc = adc[:, 0:adc_idx]
     del adc_idx
     if meas_meta_data.TotalBlocks != last_block_no:
