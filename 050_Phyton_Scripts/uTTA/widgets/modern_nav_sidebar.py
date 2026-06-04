@@ -1,3 +1,31 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Module Name:    modern_nav_sidebar.py
+Description:    This is a ttkbootstrap custom widget the generate a 
+                modern sidebar similar to ctk_sidebar
+
+Author:         wtronics
+Email:          169440509+wtronics@users.noreply.github.com
+Date:           02.06.2026
+Version:        $VERSION$
+
+--------------------------------------------------------------------------
+License:
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)
+
+You are free to share and adapt this material under the following terms:
+- Attribution: You must give appropriate credit.
+- NonCommercial: You may not use the material for commercial purposes.
+- ShareAlike: You must distribute your contributions under the same license.
+
+The full license text can be found at:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+--------------------------------------------------------------------------
+"""
+
 import tkinter as tk
 import ttkbootstrap as tb
 from ttkbootstrap.constants import LEFT, Y, BOTH, X, BOTTOM, W, TOP
