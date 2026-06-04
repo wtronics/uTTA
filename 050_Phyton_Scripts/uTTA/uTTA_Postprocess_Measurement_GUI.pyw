@@ -7,6 +7,7 @@ import library.uTTA_data_processing as udProc
 import library.uTTA_Deconvolution as uDeconv
 import library.uTTA_Postprocess_Measurement_Interpol_Widget as uttaInterpolWidget
 import library.uTTA_Postprocess_Measurement_Widgets as uttaWidgets
+import logging
 
 
 matplotlib.use("TkAgg")
@@ -14,18 +15,20 @@ matplotlib.use("TkAgg")
 
 Debug_AutoLoadEnable = False
 Debug_AutoExportHTML = False
+Debug_LoggingLevel = logging.INFO
 Debug_AutoLoadFile = os.path.abspath(r"..\..\060_Example_Measurement_Data\Example_Measurement.umf")
 
 WINDOW_WIDTH = 1480
 WINDOW_HEIGHT = 960
-# FIRST_COL_WIDTH = 200
-# BTN_HEIGHT = 40
-# SEC_COL_WIDTH = (WINDOW_WIDTH - FIRST_COL_WIDTH - 3*10)
 
 
 class UmfViewerApp(ttk.Window):
     def __init__(self):
         super().__init__()
+
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(filename=f'test.log', level=logging.WARNING, format='%(asctime)s  %(levelname)s | %(message)s')     # %(module)s::%(funcName)s |
+        logging.getLogger('__main__').setLevel(Debug_LoggingLevel)
         self.title("uTTA Measurement postprocessing GUI")
         self.geometry("1480x960")
         self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -33,17 +36,18 @@ class UmfViewerApp(ttk.Window):
         geometry = self.winfo_geometry()
 
         self.iconbitmap(r'library/uTTA_Icon.ico')
-        print(f"DPI: {screen_dpi}, Geometry: {geometry}")
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
+        self.logger.info(f"DPI: {screen_dpi}, Geometry: {geometry}")
 
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event        
+        
         self.FileOpened = False
         self.FileNameWExt = ""
         self.FileName = ""
         self.DirName = ""
 
-        self.utta_data = udProc.UttaZthProcessing()
-        self.utta_data.print_to_console = False
-        self.utta_deconv = uDeconv.UttaDeconvolution()
+        self.utta_data = udProc.UttaZthProcessing(logger=self.logger)
+        # self.utta_deconv = uDeconv.UttaDeconvolution(logger=self.logger)
+        
         self.utta_data.load_settings(__file__)
         self.interp_window = None
 
@@ -156,7 +160,7 @@ class UmfViewerApp(ttk.Window):
         self.frm_deconv.pack(fill=tk.BOTH, padx=10, pady=10)
         self.tabs.add(self.frm_deconv, text="Deconvolution   ")
 
-        self.deconv_widget = uttaWidgets.DeconvPlotsWidget(self.frm_deconv, self.utta_deconv,
+        self.deconv_widget = uttaWidgets.DeconvPlotsWidget(self.frm_deconv, self.utta_data,
                                                            1230, 750,
                                                            screen_dpi)
 
@@ -165,7 +169,7 @@ class UmfViewerApp(ttk.Window):
         self.frm_settings.pack(fill=tk.BOTH, padx=10, pady=10)
         self.tabs.add(self.frm_settings, text="Settings        ")
 
-        self.settings = uttaWidgets.SettingsWidget(self.frm_settings, self.utta_data)
+        self.settings = uttaWidgets.SettingsWidget(self.frm_settings, self ,self.utta_data, self.logger)
         self.paned.add(self.frm_right)
 
         self.update_widgets()
@@ -175,9 +179,9 @@ class UmfViewerApp(ttk.Window):
 
     def update_widgets(self):
 
-        print("\033[94mAttempting to update widgets\033[0m")
+        self.logger.info("Attempting to update widgets")
         if self.utta_data.flag_import_successful:
-            print("\033[94mUpdating widgets\033[0m")
+            self.logger.info("Updating widgets")
             self.meas_info_widget.update_widget(self.utta_data)
             self.meas_plots_widget.plots.update_plots()
             self.zth_plots_widget.plots.update_plots()
@@ -187,16 +191,22 @@ class UmfViewerApp(ttk.Window):
     
     def update_calculations(self, complete:bool=True):
 
+        self.logger.info("Updating Calculations")
         if complete:
             self.utta_data.calculate_cooling_curve()
-            self.utta_data.calculate_diode_heating()
+            # self.utta_data.calculate_diode_heating()
             self.utta_data.calculate_tsp_start_voltages()
 
         self.utta_data.interpolate_zth_curve_start()
 
-        self.utta_deconv.import_from_postprocess(self.utta_data)
-        self.utta_deconv.prepare_zth_deconvolution()
-        self.utta_deconv.deconvolve_zth_lucy_richardson(1000)
+        self.utta_data.zth_deconvolution_bayes()
+
+        # self.utta_deconv.import_from_postprocess(self.utta_data)
+        # self.utta_deconv.prepare_zth_deconvolution()
+        # self.utta_deconv.deconvolve_zth_lucy_richardson(2000)
+        self.logger.info("Update of calculations completed")
+        self.update_widgets()
+        self.logger.info("Update of widgets completed")
 
 
     def read_measurement_file_callback(self):
@@ -215,7 +225,6 @@ class UmfViewerApp(ttk.Window):
             if not self.utta_data.meta_data.FlagTSPCalibrationFile:
 
                 self.update_calculations()
-                self.update_widgets()
 
                 self.lbl_helpbar.configure(text=f"File: {self.FileNameWExt} was successfully imported.",
                                            style="success.Inverse.TLabel")
@@ -249,14 +258,14 @@ class UmfViewerApp(ttk.Window):
             self.frm_help_bar.configure(style="danger.TFrame")
 
     def open_interpolation_window_callback(self):
-
+        self.logger.info("Opening Interpolation Window")
         if self.interp_window is None: #  or not self.interp_window.winfo_exists():
-            self.interp_window = uttaInterpolWidget.TSPInterpolationApp(self)
+            self.interp_window = uttaInterpolWidget.TSPInterpolationApp(self, self.logger)
         else:
             self.interp_window.lift()
 
     def recalculate_interpolation(self):
-        print("recalculate called")
+        self.logger.info("Recalculate called")
         self.update_calculations(False)
 
     def report_html(self):
@@ -280,7 +289,7 @@ class UmfViewerApp(ttk.Window):
                                         mustexist=True)
         
         if output_folder:
-            outfilename = f"{output_folder}/{self.FileName}.tdim"
+            outfilename = f"{output_folder}/{self.FileName}.txt"
             self.utta_data.export_tdim_master(outfilename)
 
     def export_to_zth_curve(self):
@@ -305,8 +314,7 @@ class UmfViewerApp(ttk.Window):
 
     def interpolation_window_closed(self):
         self.interp_window = None
-        print(f"Updating Widgets after closing interpolation window")
-        self.update_widgets()
+        self.logger.info("Updating Widgets after closing interpolation window")
 
     def on_closing(self):
         # if messagebox.askokcancel("Quit", "Do you want to quit?"):
