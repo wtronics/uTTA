@@ -2,12 +2,11 @@ from matplotlib.figure import Figure
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import LogLocator
-import matplotlib.ticker as ticker
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.backends._backend_tk as nav_toolbar
 import tkinter as tk
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore
 import ttkbootstrap as ttk
 import numpy as np
-import pprint as pprint
 
 class UttaPlotConfiguration:
     def __init__(self, data, title, x_label, y_label, plot_type='line',
@@ -31,21 +30,12 @@ class UttaPlotData:
     def __init__(self, parent, size, rows, cols, dpi=96, padding=3.0, no_gui=False):
         # Creates the Matplotlib-Figure and the subplots in the requested grid
         self.parent = parent
-        self.figure = None
-        self.axes = None
+        # self.figure = None
+        self.axes = []
+        self.plot_mapping = []
         self.size = size
         self.dpi = dpi
         self.no_gui = no_gui
-
-        self.plot_mapping = []
-
-        self.figure, self.axes = Figure(figsize=(size[0] / dpi, (size[1]-10) / dpi), dpi=96, tight_layout = True), []
-
-        for i in range(rows):
-            for j in range(cols):
-                ax = self.figure.add_subplot(rows, cols, i * cols + j + 1)
-                self.axes.append(ax)
-        self.figure.tight_layout(pad=padding)
 
         # matplotlib default settings
         mpl.rcParams['axes.labelsize'] = 8
@@ -55,7 +45,21 @@ class UttaPlotData:
         mpl.rcParams['ytick.labelsize'] = 8
         mpl.rcParams['text.usetex'] = False
 
-        if not self.no_gui:
+        if self.no_gui:
+            fig_size_inch = (size[0] / dpi, size[1] / dpi)
+            self.figure, self.ax_array = plt.subplots(rows, cols, figsize=fig_size_inch, dpi=dpi)
+
+            if rows * cols > 1:
+                self.axes = self.ax_array.flatten().tolist() # type: ignore
+            else:
+                self.axes = [self.ax_array]
+        else:
+            self.figure = Figure(figsize=(size[0] / dpi, (size[1]-10) / dpi), dpi=96, tight_layout = True)
+
+            for i in range(rows * cols):
+                ax = self.figure.add_subplot(rows, cols, i + 1)
+                self.axes.append(ax)
+        
             self.canvas = FigureCanvasTkAgg(self.figure, master=parent)
             self.canvas.draw()
             self.canvas.get_tk_widget().pack(fill=tk.BOTH, padx=10, pady=10)
@@ -63,21 +67,21 @@ class UttaPlotData:
             # Toolbar Frame
             toolbar_frame = ttk.Frame(master=parent)
             toolbar_frame.pack(fill=tk.X, padx=10, pady=10)
-            self.toolbar = NavigationToolbar2Tk(self.canvas, toolbar_frame)
+            self.toolbar = nav_toolbar.NavigationToolbar2Tk(self.canvas, toolbar_frame)
             self.toolbar.update()
+        self.figure.tight_layout(pad=padding)
 
 
     def update_plots(self):
 
         for i, ax in enumerate(self.axes): # type: ignore
             ax.clear()
-
             mapping_item = next((item for item in self.plot_mapping if item[0] == i), None)
 
-            num_plots = 0
             if mapping_item:
                 config_func = mapping_item[1]
                 config = config_func()  # calls back the function to get the next configuration object
+                num_plots = 0
 
                 # ==========================================================
                 # Logic for plots with 2 Y-Axis
@@ -87,19 +91,13 @@ class UttaPlotData:
 
                     # Axis 1: Primary data
                     for line in config.data:
-                        ax.plot(line['x_data'],
-                                line['y_data'],
-                                label=line['label'],
-                                **line['style'])
+                        ax.plot(line['x_data'],line['y_data'],label=line['label'],**line['style'])
                         num_plots += 1
                     ax.set_ylabel(config.y_label)
 
                     # Axis 2: Secondary Data
                     for sec_line in config.secondary_data:
-                        ax2.plot(sec_line['x_data'],
-                                 sec_line['y_data'],
-                                 label=sec_line['label'],
-                                 **sec_line['style'])
+                        ax2.plot(sec_line['x_data'],sec_line['y_data'],label=sec_line['label'],**sec_line['style'])
                         num_plots += 1
                     ax2.set_ylabel(config.secondary_y_label)
 
@@ -120,7 +118,8 @@ class UttaPlotData:
                     for curve in config.data:
                         ax.plot(curve['x_data'], curve['y_data'], label=curve['label'], **curve.get('style', {}))
                         num_plots += 1
-                        if config.y_scale == 'log' and np.min(curve['y_data']) < 0.0:
+                        # In case the plotted data have negative values, the y-axis scaling will be automatically changed to linear scale
+                        if config.y_scale == 'log' and np.min(curve['y_data']) <= 0.0:
                             config.y_scale = 'linear'
 
                     ax.set_xscale(config.x_scale)
@@ -135,14 +134,14 @@ class UttaPlotData:
                 if num_plots > 0:       # check if anything was printed into the plot. Otherwise mpl will generate an error
                     ax.legend(loc='best', fontsize='small')
                 ax.set_title(config.title)
-                ax.grid("both")
+                ax.grid(axis="both")
                 ax.set_xlabel(config.x_label)
                 ax.set_ylabel(config.y_label)
 
-            if self.no_gui:
-
-                plt.show()
-            else:
-                self.canvas.draw()
+        if self.no_gui:
+            plt.draw()
+            plt.show() # blocking plot window is opened here
+        else:
+            self.canvas.draw()
 
 
