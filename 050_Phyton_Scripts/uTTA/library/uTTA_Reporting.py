@@ -27,8 +27,7 @@ https://creativecommons.org/licenses/by-nc-sa/4.0/
 --------------------------------------------------------------------------
 """
 
-from jinja2 import Template, Environment, FileSystemLoader, StrictUndefined, Undefined
-#import plotly.express as px
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, Undefined, Template
 import plotly.graph_objects as go
 import os
 import pandas as pd
@@ -38,6 +37,12 @@ from quantiphy import Quantity
 import base64
 
 def export(utta_data, outfilename):
+    ''' Generates an HTML measurement report for a Zth measurement. 
+        The report contains all measurement relevant information, including interactive plots
+        as plotly graph object. In addition the Zth curves are represented in tables with reduced resolution.
+        For improved traceability the calibration data of each TSP are also stored in a separate section.
+        The template used is stored in "050_Phyton_Scripts/uTTA/Report_Templates/Master_Template.html"
+        '''
 
     environment = Environment(loader=FileSystemLoader("Report_Templates/"))
     template = environment.get_template("Master_Template.html")
@@ -127,8 +132,9 @@ def export(utta_data, outfilename):
     print("\033[94mReport written\033[0m")
 
 
-
 def encode_png2html_string(imagepath):
+    ''' Encodes a given png-file into a base64 encoded string which is then returned.
+    '''
 
     if imagepath.endswith('.png'):
         img_base64 = base64.b64encode(open(imagepath,'rb').read())
@@ -139,7 +145,7 @@ def encode_png2html_string(imagepath):
         return '<p> No PNG-Image found! </p>'
 
 def compress_curve(timebase, data, samples_decade):
-
+    ''' Compresses the measurement data to an array with a selectable number of points per decade.'''
 
     if not isinstance(samples_decade, int) or samples_decade <= 0:
         raise ValueError("Input 'samples_decade' must be a non-negative integer.")
@@ -175,6 +181,8 @@ def compress_curve(timebase, data, samples_decade):
     return data_output
 
 def interpol_plot(utta_data, utta_dict):
+    ''' Generates a nice looking plotly plot to show the starting point interpolation of the
+        heated TSP. The plot includes two cursors to show where the interpolation start and endpoints were placed.'''
 
     fig = go.Figure()
 
@@ -199,6 +207,7 @@ def interpol_plot(utta_data, utta_dict):
     fig.add_trace(go.Scatter(x=tb_show[0:interp_cutoff_idx], y=interp_start[0:interp_cutoff_idx], name="Interpolated"))
 
     fig.update_xaxes(exponentformat="SI")
+    # TODO: Stabilize the sometimes inconsistent rendering of LaTeX axis labels
     fig.update_layout(width=1100, height=600, xaxis_title=r'$\sqrt{\text{Time}} / [\sqrt{s}]$', yaxis_title=r'$\Delta\text{Temperature / [°C]}$')
     fig.add_vline(x=np.sqrt(utta_data.InterpolationTStart), annotation_text=r'$t_{cut}$', annotation_position="top")
     fig.add_vline(x=np.sqrt(utta_data.InterpolationTEnd), annotation_text=r'$t_{end}$', annotation_position="bottom")
