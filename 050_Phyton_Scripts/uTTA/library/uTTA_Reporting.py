@@ -32,16 +32,23 @@ import plotly.graph_objects as go
 import os
 import pandas as pd
 import numpy as np
+import numpy.dtypes 
 import library.uTTA_data_processing as udpc
 from quantiphy import Quantity
 import base64
 
-def export(utta_data, outfilename):
+def export(utta_data, outfilename:str) -> None:
     ''' Generates an HTML measurement report for a Zth measurement. 
-        The report contains all measurement relevant information, including interactive plots
-        as plotly graph object. In addition the Zth curves are represented in tables with reduced resolution.
-        For improved traceability the calibration data of each TSP are also stored in a separate section.
-        The template used is stored in "050_Phyton_Scripts/uTTA/Report_Templates/Master_Template.html"
+    The report contains all measurement relevant information, including interactive plots
+    as plotly graph object. In addition the Zth curves are represented in tables with reduced resolution.
+    For improved traceability the calibration data of each TSP are also stored in a separate section.
+    The template used is stored in >050_Phyton_Scripts/uTTA/Report_Templates/Master_Template.html<
+
+    Args:
+        utta_data (utta_data)   : uTTA measurement data
+        outfilename (string)    : Path of the final report file
+    Returns:
+        None
         '''
 
     environment = Environment(loader=FileSystemLoader("Report_Templates/"))
@@ -131,9 +138,12 @@ def export(utta_data, outfilename):
 
     print("\033[94mReport written\033[0m")
 
-
-def encode_png2html_string(imagepath):
+def encode_png2html_string(imagepath:str) -> str:
     ''' Encodes a given png-file into a base64 encoded string which is then returned.
+    Args:
+        imagepath (string) : Path to png-file to be encoded
+    Returns:
+        (string) The base64 encoded png file
     '''
 
     if imagepath.endswith('.png'):
@@ -144,13 +154,21 @@ def encode_png2html_string(imagepath):
     else:
         return '<p> No PNG-Image found! </p>'
 
-def compress_curve(timebase, data, samples_decade):
-    ''' Compresses the measurement data to an array with a selectable number of points per decade.'''
+def compress_curve(timebase:np.ndarray, data:np.ndarray, samples_decade:int) -> np.ndarray:
+    ''' Compresses the measurement data to an array with a selectable number of points per decade.
+    
+    Args:
+        timebase        (np.ndarray)    : Timebase from the uTTA data processing     
+        data            (np.ndarray)    : Zth curve data from uTTA data processing
+        samples_decade  (int)           : Number of samples per decade which shall be exported
+    Returns:
+        (np.ndarray)    first column is time, the following columns are interpolated Zth curves
+    '''
 
     if not isinstance(samples_decade, int) or samples_decade <= 0:
         raise ValueError("Input 'samples_decade' must be a non-negative integer.")
     if samples_decade >= len(timebase):
-        return
+        return []  # type: ignore
 
     # build the basic timebase for one decade. This will be reused and multiplied by the corresponding decade
     sub_timebase = np.power(10.0, np.linspace(0, 1/samples_decade * (samples_decade-1), samples_decade))
@@ -182,7 +200,13 @@ def compress_curve(timebase, data, samples_decade):
 
 def interpol_plot(utta_data, utta_dict):
     ''' Generates a nice looking plotly plot to show the starting point interpolation of the
-        heated TSP. The plot includes two cursors to show where the interpolation start and endpoints were placed.'''
+    heated TSP. The plot includes two cursors to show where the interpolation start and endpoints were placed.
+    Args:
+        utta_data (utta_data) : uTTA measurement data
+        outfilename (string)  : Path of the final report file
+    Returns:
+        None
+    '''
 
     fig = go.Figure()
 
