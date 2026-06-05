@@ -1,0 +1,60 @@
+name: Update Version on Release Assets
+
+on:
+  release:
+    types: [published]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # set permission to upload files to a release
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+
+      - name: Extract Version
+        id: get_version
+        run: |
+          VERSION=${{ github.event.release.tag_name }}
+          VERSION=${VERSION#v}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      # Replace the $VERSION$ tag within *.c, *.h, *.py, *.pyw and *.md files
+      - name: Replace Placeholder using Python
+        shell: python
+        run: |
+          import pathlib
+          extensions = {'.py', '.pyw', '.c', '.h', '.md'}
+          placeholder = "$VERSION$"
+          target_version = "${{ env.VERSION }}"
+          
+          for path in pathlib.Path('.').rglob('*'):
+              if path.is_file() and path.suffix in extensions:
+                  try:
+                      content = path.read_text(encoding='utf-8')
+                      if placeholder in content:
+                          path.write_text(content.replace(placeholder, target_version), encoding='utf-8')
+                  except Exception:
+                      pass
+
+      # Package the modified release into a zip-file
+      - name: Archive Release Files
+        run: |
+          zip -r source-code-with-version-${{ env.VERSION }}.zip . -x "*.git*" ".*"
+
+      # upload the zip to the Github-release
+      - name: Upload Binaries to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: source-code-with-version-${{ env.VERSION }}.zip
+          asset_name: source-code-v${{ env.VERSION }}.zip
+          tag: ${{ github.event.release.tag_name }}
+          overwrite: true
