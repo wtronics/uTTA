@@ -1,3 +1,32 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Module Name:    utta_data_import.py
+Description:    An HTML report generation service for uTTA Measurements.
+                This module uses jinja2 and plotly to generate HTML reports with
+                interactive graphs the user can zoom in and use cursors to extract meausrement data.
+
+Author:         wtronics
+Email:          169440509+wtronics@users.noreply.github.com
+Date:           28.09.2025 (moved)
+Version:        $VERSION$
+
+--------------------------------------------------------------------------
+License:
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)
+
+You are free to share and adapt this material under the following terms:
+- Attribution: You must give appropriate credit.
+- NonCommercial: You may not use the material for commercial purposes.
+- ShareAlike: You must distribute your contributions under the same license.
+
+The full license text can be found at:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+--------------------------------------------------------------------------
+"""
+
 import numpy as np
 import numpy.dtypes
 import tkinter as tk
@@ -12,9 +41,15 @@ MCU_Clock = 72000000
 TimerPrescaler = 9
 TimerClock = MCU_Clock / TimerPrescaler
 
-
 @dataclass
 class DevCalibration:
+    ''' Holds calibration data for a single device channel
+    Params:
+        Name       (str)      : Name of the channel
+        Offset     (float)    : Offset of the channel
+        Lin_Gain   (float)    : Linear Gain of the channel in mV/K
+        Quad_Gain  (float)    : Quadratic Gain of the channel mV/K²
+    '''
     Name: str
     Offset: float
     Lin_Gain: float
@@ -22,6 +57,23 @@ class DevCalibration:
 
 @dataclass
 class UTTAMetaData:
+    ''' Holds device and measurement data of the uTTA device for one specific
+    measurement run. 
+    Params:
+        SamplesPerDecade    (int)   : Default=250. Number of samples per decade.
+        MaxDivider          (int)   : Default=17. Maximum sampling clock divider (2^17).
+        Channels            (Dict[str, Any])    : Dictionary of channel calibration data
+        Measurement         (Dict[str, Any])    : Dictionary of measurement related meta data
+        Isense              (float) : Default= 0.0. TSP sense current in µA
+        Voffs               (List[0.00, 0.00])  : Default: 0.0mV. List of Offset Voltages in mV. First item is CH0, Second item is CH1-3
+        CalData             (Dict[str, Any])    : Dictionary of device calibration data
+        TPreheat            (int)   : Measurement preheating time in seconds. This is the time before the heating current is switched on. 
+        THeating            (int)   : Measurement heating time in seconds. After this time elapsed the measurement current will be switched off.
+        TCooling            (int)   : Measurement cooling time in seconds. This is the time span after the heating current is switched off.
+        CoolingStartBlock   (int)   : This is the measurement data block which contains the begin of the cooling section.
+        TotalBlocks         (int)   : Total number of blocks within the measurement
+        FlagTSPCalibrationFile (bool)   : Flag to indicate if the current measurement file was created on a TSP calibration
+    '''
     SamplesPerDecade: int = 250
     MaxDivider: int = 17
     Channels: Dict[str, Any] = field(default_factory=dict)
@@ -38,7 +90,19 @@ class UTTAMetaData:
 
     FlagTSPCalibrationFile: bool = False
 
-def read_measurement_file(filename, flag_raw_value_mode, logger=None):
+def read_measurement_file(filename:str, flag_raw_value_mode:int=0, logger:logging.Logger|None=None) -> tuple[np.ndarray, np.ndarray, np.ndarray, UTTAMetaData]:
+    ''' Import function to read *.umf-measurement files. Originally this function bundled a common import function for all file versions.
+    As all old measurement files have been abandoned the old import functions have been deprecaded and removed.
+    Args:
+        filename    (str)       : File path to the *.umf file including the file extension
+        flag_raw_value_mode (int)   : Default=0. Set this flag to 1 to output unscaled ADC values instead.
+        logger      (logging.Logger|None)   : Default=None. A logger for logging to a common logfile
+    Returns:
+        timebase_total (np.ndarray)     : The timebase array with a precisely calculated sampletime for each sample
+        adc            (np.ndarray)     : The scaled or unscaled values of each ADC channel
+        temp           (np.ndarray)     : All temperature samples of the Type K thermocouples
+        meta_data      (UTTAMetaData)   : All meta data related to the measurement 
+    '''
     if logger is None:
         logger = logging.getLogger("dummy")
         logger.addHandler(logging.NullHandler())
@@ -66,8 +130,20 @@ def read_measurement_file(filename, flag_raw_value_mode, logger=None):
     return np.empty((1, 1)), np.empty((4, 1)), np.empty((4, 1)), UTTAMetaData()
 
 
-def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion, logger):
-
+def read_measurement_file_30up(lines:list[str], flag_raw_value_mode:int, 
+                               umf_fileversion:float, logger:logging.Logger) -> tuple[np.ndarray, np.ndarray, np.ndarray, UTTAMetaData]:
+    ''' Import function to read *.umf-measurement files for file version 3.0 and up.
+    Args:
+        lines       (list[str])      : List of lines read from the measurement file
+        flag_raw_value_mode (int)    : Default=0. Set this flag to 1 to output unscaled ADC values instead.
+        umf_fileversion     (float)  : File version of the current file to be parsed.
+        logger      (logging.Logger) : A logger for logging to a common logfile
+    Returns:
+        timebase_total (np.ndarray)     : The timebase array with a precisely calculated sampletime for each sample
+        adc            (np.ndarray)     : The scaled or unscaled values of each ADC channel
+        temp           (np.ndarray)     : All temperature samples of the Type K thermocouples
+        meta_data      (UTTAMetaData)   : All meta data related to the measurement 
+    '''
     num_lines = len(lines)
     adc = np.zeros((4, int(num_lines)), numpy.float32)
 
@@ -233,7 +309,15 @@ def read_measurement_file_30up(lines, flag_raw_value_mode, umf_fileversion, logg
 
     return timebase_total, adc, temp, meas_meta_data
 
-def get_channel_data(tsp_no, cells, logger):
+def get_channel_data(tsp_no:int, cells:List[str], logger:logging.Logger|None) -> dict[str,Any]:
+    ''' Parsing function to retrieve channel TSP calibration data from the measurement file.
+    Args:
+        tsp_no      (int)       : The index of the current TSP
+        cells       (List[str]) : All cells of calibration data line from the umf-file
+        logger      (logging.Logger|None)   : Default=None. A logger for logging to a common logfile
+    Returns:
+        channel     (dict[str,Any])     : Struct of channel calibration data containing all calibration factors
+    '''
     if logger is None:
         logger = logging.getLogger("dummy")
         logger.addHandler(logging.NullHandler())
@@ -261,7 +345,20 @@ def get_channel_data(tsp_no, cells, logger):
 
     return channel
 
-def read_calfile2dict(filename):
+def read_calfile2dict(filename) -> tuple[dict[str,Any], dict[str,Any], dict[str,Any], dict[str,Any]]:
+    ''' Imports an uTTA calibration file and returns calibration values in separate dictionaries for
+    - uTTA Device Calibration Data
+    - uTTA Device Meta Data
+    - TSP Calibration data from a Junction under Test (JUT)
+    - Thermocouple calibration data (mostly not used)
+    Args:
+        filename    (str)       : Path to the uTTA calibration file including file extension (*.ucf)
+    Returns:
+        utta_cal_data       (dict[str,Any])     : Dict of channel calibration data containing all calibration factors
+        utta_dev_meta_data  (dict[str,Any])     : Dict of device calibration meta data
+        utta_tsp_cal        (dict[str,Any]) : Dict of TSP calibration data (Offset, Linear Gain, Quadratic Gain, Calibration Status)
+        utta_tc_cal         (dict[str,Any]) : Dict of Thermocouple calibration data
+    '''
     print("Reading calibration values from file: " + filename)
     config = configparser.ConfigParser()
     config.optionxform =str  # type: ignore # set configparser to Case-Sensitive
@@ -309,8 +406,15 @@ def read_calfile2dict(filename):
 
     return utta_cal_data, utta_dev_meta_data, utta_tsp_cal, utta_tc_cal
 
-def write_tsp_cal_to_file(filename, tsp_cal):
-    print("Writing calibration values to file: " + filename)
+def write_tsp_cal_to_file(filename:str, tsp_cal:dict[str,Any]):
+    ''' Writes calibration data to an uTTA calibration file for TSP Calibration data from a Junction under Test (JUT)
+    Args:
+        filename        (str)           : Path to the uTTA calibration file including file extension (*.ucf)
+        utta_tsp_cal    (dict[str,Any]) : Dict of TSP calibration data (Offset, Linear Gain, Quadratic Gain, Calibration Status)
+    Returns:
+        None
+    '''
+    print(f"Writing calibration values to file: {filename}")
 
     config = configparser.ConfigParser()
     config.optionxform = str  # type: ignore # set configparser to Case-Sensitive
@@ -321,14 +425,12 @@ def write_tsp_cal_to_file(filename, tsp_cal):
         tsp_lin = f'"{tsp["LinGain"]:.6e}"'
         tsp_quad = f'"{tsp["QuadGain"]:.6e}"'
 
-        print("Creating Cal Entry for Channel Name: {nam}, Offset {Offs}, Gain {Gain}, QuadGain {QGain}, CalStat {CS}".
-              format(nam=tsp_name, Offs=tsp_offs, Gain=tsp_lin, QGain=tsp_quad, CS=tsp["CalStatus"]))
+        print(f"Creating Cal Entry for Channel Name: {tsp_name}, Offset {tsp_offs}, Gain {tsp_lin}, QuadGain {tsp_quad}, CalStat {tsp["CalStatus"]}")
 
         if config.has_section(tsp_name):
-
             msgbox_ret = messagebox.askquestion("Existing Calibration",
-                                                   "The channel '" + tsp_name.replace("$CHAN_", "") + "' already exists.\n" +
-                                                   "Do you wish to overwrite existing values?", icon="warning", )
+                                               f"The channel '{tsp_name.replace("$CHAN_", "")}' already exists.\n" +
+                                                "Do you wish to overwrite existing values?", icon="warning", )
             if msgbox_ret == "yes":
                 config.set(tsp_name, "Offset", value=tsp_offs)
                 config.set(tsp_name, "LinGain", value=tsp_lin)
