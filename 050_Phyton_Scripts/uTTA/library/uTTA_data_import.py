@@ -129,7 +129,6 @@ def read_measurement_file(filename:str, flag_raw_value_mode:int=0, logger:loggin
             return timebase_total, adc, temp, meta_data
     return np.empty((1, 1)), np.empty((4, 1)), np.empty((4, 1)), UTTAMetaData()
 
-
 def read_measurement_file_30up(lines:list[str], flag_raw_value_mode:int, 
                                umf_fileversion:float, logger:logging.Logger) -> tuple[np.ndarray, np.ndarray, np.ndarray, UTTAMetaData]:
     ''' Import function to read *.umf-measurement files for file version 3.0 and up.
