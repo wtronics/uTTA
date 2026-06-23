@@ -32,16 +32,15 @@ import numpy as np
 import pprint as pprint
 
 def write_diode_voltages(timebase:np.ndarray, adc:np.ndarray, headername:str, filename:str) -> None:
-    ''' Write the raw diode voltages of the cooling curve to a new tabulator separated
+    """Write the raw diode voltages of the cooling curve to a new tabulator separated
     text file. Only the diode voltage of the heated diode is exported.
+
     Args:
-        timebase (np.ndarray)   : The raw measurement timebase of the cooling curve
-        adc      (np.ndarray)   : Raw measurement data of the heated TSP
-        headername   (string)   : How the heated TSP shall be called in the file header
-        filename     (string)   : Complete export file path including file extension
-    Returns:
-        None
-    '''
+        timebase (np.ndarray): The raw measurement timebase of the cooling curve
+        adc (np.ndarray): Raw measurement data of the heated TSP
+        headername (str): How the heated TSP shall be called in the file header
+        filename (str): Complete export file path including file extension
+    """
         
     dio_voltage_max_lines = len(timebase)
     diode_output = np.zeros(shape=(2, dio_voltage_max_lines))
@@ -56,19 +55,16 @@ def write_diode_voltages(timebase:np.ndarray, adc:np.ndarray, headername:str, fi
                header=f"Time\t{headername}")
 
 def export_t3i_file(timebase:np.ndarray, zth:np.ndarray, headername:str, filename:str) -> None:
-    ''' Exports the completely processed Zth curve (including start interpolation of the heated channel)
+    """Exports the completely processed Zth curve (including start interpolation of the heated channel)
     to a tabulator separated text file. Decimal separation is point!
     This file includes all three measurement channels, even when these channels were set to OFF in the Application GUI.
 
     Args:
-        timebase (np.ndarray)   : The measurement timebase of the zth curve
-        zth      (np.ndarray)   : Processed and interpolated Zth data of all channels
-        headername   (string)   : How the TSPs shall be called in the file header
-        filename     (string)   : Complete export file path including file extension. The intended file extension is *.t3i
-    Returns:
-        None
-    '''
-
+        timebase (np.ndarray): The measurement timebase of the zth curve
+        zth (np.ndarray): Processed and interpolated Zth data of all channels
+        headername (str): How the TSPs shall be called in the file header
+        filename (str): Complete export file path including file extension. The intended file extension is *.t3i
+    """ 
     zth_output = np.zeros(shape=(len(zth), len(zth[0])))
     zth_output[0, :] = timebase
     zth_output[1, :] = zth[0, :]
@@ -85,18 +81,18 @@ def export_t3i_file(timebase:np.ndarray, zth:np.ndarray, headername:str, filenam
 def export_tdim_master_file(timebase:np.ndarray, zth:np.ndarray, meta_data,
                             p_heat:float, filename:str, tdim_data_limit:int=49999,
                             t_reduce_data:float=100.0) -> None:
-    ''' Exports a text file which is compatible with the TDIM Master software supplied together with JESD51-14
+    """Exports a text file which is compatible with the TDIM Master software supplied together with JESD51-14
+
     Args:
-        timebase (np.ndarray)   : The measurement timebase of the zth curve
-        zth      (np.ndarray)   : Processed and interpolated Zth data of all channels
-        meta_data (meta_data)   : Measurement meta data 
-        p_heat        (float)   : The heating power calculated during postprocessing
-        filename     (string)   : Complete export file path including file extension. The intended file extension is *.txt
-        tdim_data_limit (int)   : The maximum number of samples to be exported. TDIM Master accepts only 49999. Default: 49999
-        t_reduce_data (float)   : Above this time the Zth curve gets reduced to fit into the maximum number of samples. Default: 100.0
-    Returns:
-        None
-    '''
+        timebase (np.ndarray): The measurement timebase of the zth curve
+        zth (np.ndarray): Processed and interpolated Zth data of all channels
+        meta_data (_type_): Measurement meta data 
+        p_heat (float): The heating power calculated during postprocessing
+        filename (str): Complete export file path including file extension. The intended file extension is *.txt
+        tdim_data_limit (int, optional): The maximum number of samples to be exported. TDIM Master accepts only 49999. Defaults to 49999.
+        t_reduce_data (float, optional): Above this time the Zth curve gets reduced to fit into the maximum number of samples. Defaults to 100.0.
+    """    
+
     if meta_data is not None:
         header = f"# Transient Dual Interface Measurement: {meta_data.Channels["TSP0"]["Name"]}\n"
         header += f"# Measurement Date: {meta_data.Measurement["StartDate"]}\n"
@@ -131,17 +127,19 @@ def export_tdim_master_file(timebase:np.ndarray, zth:np.ndarray, meta_data,
         del zth_output
 
 def export_zth_curve(timebase:np.ndarray, zth:np.ndarray, meta_data, samples_decade:int, p_heat:float, filename:str) -> None:
-    ''' Exports the Z_th curve of the heated JUT to a tabulator separated text file. Decimal separator is point!
+    """ Exports the Z_th curve of the heated JUT to a tabulator separated text file. Decimal separator is point!
+
     Args:
-        timebase (np.ndarray)   : The measurement timebase of the zth curve
-        zth      (np.ndarray)   : Processed and interpolated Zth data of all channels
-        meta_data (meta_data)   : Measurement meta data 
-        samples_decade  (int)   : Number of samples per decade to be exported
-        p_heat        (float)   : The heating power calculated during postprocessing
-        filename     (string)   : Complete export file path including file extension. The intended file extension is *.txt
-    Returns:
-        None
-    '''
+        timebase (np.ndarray): The measurement timebase of the zth curve
+        zth (np.ndarray): Processed and interpolated Zth data of all channels
+        meta_data (_type_): Measurement meta data
+        samples_decade (int): Number of samples per decade to be exported
+        p_heat (float): The heating power calculated during postprocessing
+        filename (str): Complete export file path including file extension. The intended file extension is *.txt
+
+    Raises:
+        ValueError: Error in case samples_decade is not defined within allowed range
+    """    
 
     if not isinstance(samples_decade, int) or samples_decade <= 0:
         raise ValueError("Input 'samples_decade' must be a non-negative integer.")
@@ -179,15 +177,21 @@ def export_zth_curve(timebase:np.ndarray, zth:np.ndarray, meta_data, samples_dec
         del zth_output
 
 def compress_array(arr:np.ndarray, length:int) -> list[float]|np.ndarray:
-    ''' Compress a given input array into an array of a maximum given length.
+    """Compress a given input array into an array of a maximum given length.
     If the input array is shorter than the desired lenght, the original array will be returned.
     To compress the array the algorithm splits the input array into N equal segments. All segments are averaged and filled into the output array.
+
     Args:
-        arr      (np.ndarray)   : The one dimensional input array
-        length   (int)          : Desired maximum output length
+        arr (np.ndarray): The one dimensional input array
+        length (int): Desired maximum output length
+
+    Raises:
+        ValueError: When lenght is not defined properly (negative)
+
     Returns:
-        (list[float]|np.ndarray)    : Compressed array
-    '''
+        list[float]|np.ndarray: Compressed array
+    """    
+
     if not isinstance(length, int) or length < 0:
         raise ValueError("Input 'length' must be a non-negative integer.")
     if length == 0:
@@ -218,13 +222,16 @@ def compress_array(arr:np.ndarray, length:int) -> list[float]|np.ndarray:
     return compressed_arr
 
 def find_nearest(arr:np.ndarray, value:float) -> np.intp:
-    ''' Searches an array to find the array index of the value which is closest to the searched value.
+    """Searches in an array to find the array index of the value which is closest to the searched value.
+
     Args:
-        arr      (np.ndarray)   : Array which shall be searched through
-        value    (float)        : Value the which shall be searched for
+        arr (np.ndarray): Array which shall be searched through
+        value (float): Value the which shall be searched for
+
     Returns:
-        (np.intp)   : Index of the closest array element
-    '''
+        np.intp: Index of the closest array element
+    """    
+
     # Element in nd array `arr` closest to the scalar value `value`
     idx = np.abs(arr - value).argmin()
     return idx
