@@ -61,20 +61,45 @@ error_codes = {"0.000": "Unknown Error Code",
                             "4.254": "File System Error - No directory entry"}
 
 class MeasureAction(Enum):
+    """
+    Args:
+        Enum (_type_): Start and Stop commands for uTTA measurements
+    """    
     STOP = 0
     START = 1   
 
 class SystemModes(Enum):
-    NORMAL = 0
-    TEST = 1
-    TEMP = 2
+    """
+    Args:
+        Enum (_type_): Enum of uTTA System operation modes
+    """    
+    NORMAL = 0  # Normal measurement mode
+    TEST = 1    # Test mode without heating phase
+    TEMP = 2    # Not yet implemented measurement mode for TSP calibration
 
 class PGA_GainSetModes(Enum):
-    ALL = 0
-    Cooling = 1
-    Heating = 2
+    """
+    Args:
+        Enum (_type_): Selection when to apply the PGA setting
+    """    
+    ALL = 0         # Apply the PGA setting to heating and cooling phases
+    Cooling = 1     # Apply the PGA setting only to cooling phase
+    Heating = 2     # Apply the PGA setting only to heating phase
+
+class OffsetChannel(Enum):
+    """
+    Args:
+        Enum (_type_): Selection to which offset channel shall be adressed
+    """    
+    CH0 = 0         # The heated JUT
+    Ch1_2_3 = 1     # The monitored JUT channels
 
 class MeasurementStates(Enum):
+    """
+    Args:
+        Enum (_type_): Current internal state machine state of the uTTA measurement device. 
+                        The state numbers equal the internal enum numbers of the uTTA software.
+    """    
     Meas_State_Idle = 0		# 0 :  Measurement system is not active
     Meas_State_Init = 1,
     Meas_State_GDPowerCheck = 2,
