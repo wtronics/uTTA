@@ -1,3 +1,32 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Module Name:    utta_data_plotting.py
+Description:    Specialized and custimizable plotting utility for generating
+                diagrams with matplotlib. These functions can be used withi
+                GUIs as well as stand alone.
+
+Author:         wtronics
+Email:          169440509+wtronics@users.noreply.github.com
+Date:           28.09.2025 (moved)
+Version:        $VERSION$
+
+--------------------------------------------------------------------------
+License:
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)
+
+You are free to share and adapt this material under the following terms:
+- Attribution: You must give appropriate credit.
+- NonCommercial: You may not use the material for commercial purposes.
+- ShareAlike: You must distribute your contributions under the same license.
+
+The full license text can be found at:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+--------------------------------------------------------------------------
+"""
+
 from matplotlib.figure import Figure
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -9,9 +38,41 @@ import ttkbootstrap as ttk
 import numpy as np
 
 class UttaPlotConfiguration:
-    def __init__(self, data, title, x_label, y_label, plot_type='line',
-                 x_scale='linear',x_scale_formatter = None , y_scale='linear', y_scale_formatter = None, style=None,
-                 secondary_data=None, secondary_y_label=None):
+    """A class to save the plot configuration and the data for plotting a single graph.
+    This class can be used as return value from functions which provide data to a GUI
+    """    
+    def __init__(self, data:list[dict]|dict, title:str, x_label:str, y_label:str, plot_type:str='line',
+                 x_scale:str='linear',x_scale_formatter = None , y_scale:str='linear', y_scale_formatter = None, #style=None,
+                 secondary_data:list[dict]|dict|None=None, secondary_y_label:str|None=None):
+        """Initialization routine of the plot configuration
+
+        Args:
+            data (list[dict] | dict): X-Y data for the primary Y-axis provided as a list of dictionaries
+                                      Each dictionary carries the following information:
+                                      -x_data (list[]): The x-axis data points
+                                      -y_data (list[]): The y-axis data points
+                                      -label (str): The plot label for this plot line
+                                      -axis (int): The axis number the data is printed on (starting at 0)
+                                      -style (dict[str,str]): Styling information for the graph line e.g. {'color':'blue', 'marker':'x'}
+            title (str): The overall plot title for the graph
+            x_label (str): x-label text appearing on the x-axis
+            y_label (str): y-label text on the primary y-axis
+            plot_type (str, optional): The tpye of plot (Available: 'dual_y_axis' and 'line'). Defaults to 'line'.
+            x_scale (str, optional): Defines the x-axis scaling (Available: 'linear' and 'log'). Defaults to 'linear'.
+            x_scale_formatter (_type_, optional): Use a special formatter for the x-scale grid. Defaults to None.
+            y_scale (str, optional): Defines the y-axis scaling (Available: 'linear' and 'log'). Defaults to 'linear'.
+            y_scale_formatter (_type_, optional): Use a special formatter for the y-scale grid. Defaults to None.
+            secondary_data (list[dict] | dict | None, optional):  X-Y data for the secondary Y-axis provided as a list of dictionaries. Defaults to None.
+                                      Each dictionary carries the following information:
+                                      -x_data (list[]): The x-axis data points
+                                      -y_data (list[]): The y-axis data points
+                                      -label (str): The plot label for this plot line
+                                      -axis (int): The axis number the data is printed on (starting at 0)
+                                      -style (dict[str,str]): Styling information for the graph line e.g. {'color':'blue', 'marker':'x'} 
+            secondary_y_label (str | None, optional): y-label text on the secondary y-axis. Defaults to None.
+        """        
+
+        # TODO: find out if 'axis' in primary and secondary data is really needed.
         self.plot_type = plot_type
         self.data = data
         self.title = title
@@ -21,13 +82,28 @@ class UttaPlotConfiguration:
         self.x_scale_formatter = x_scale_formatter
         self.y_scale = y_scale
         self.y_scale_formatter = y_scale_formatter
-        self.style = style or {}  # for optional use of matplotlib styling parameters
+        #self.style = style or {}  # for optional use of matplotlib styling parameters
         self.secondary_data = secondary_data
         self.secondary_y_label = secondary_y_label or {}
 
 
 class UttaPlotData:
-    def __init__(self, parent, size, rows, cols, dpi=96, padding=3.0, no_gui=False):
+    """A dynamic plotting engine for easy integration of various data sources into a matplotlib
+    graphing object with multiple subplots. The engine can also be used to run without a GUI if needed.
+    """    
+    def __init__(self, parent:ttk.Frame|None, size:tuple[int,int], rows:int, cols:int, dpi:float=96, padding:float=3.0, no_gui:bool=False):
+        """Initializes a new dynamic matplotlib multiplot instance. 
+
+        Args:
+            parent (ttk.Frame|None): The parent object the plot is integrated into. For non-GUI use this can be set to None.
+            size (tuple[int,int]): Size of the plot window in pixels.
+            rows (int): Number of subplot rows
+            cols (int): Number of subplot columns
+            dpi (float, optional): Screen resolution in dots per inch. Defaults to 96.
+            padding (float, optional): Defines the padding around the subplots in pixels. Defaults to 3.0.
+            no_gui (bool, optional): Set this flag to True in case the instance is not run from a GUI. Defaults to False.
+        """              
+
         # Creates the Matplotlib-Figure and the subplots in the requested grid
         self.parent = parent
         # self.figure = None
@@ -71,8 +147,9 @@ class UttaPlotData:
             self.toolbar.update()
         self.figure.tight_layout(pad=padding)
 
-
     def update_plots(self):
+        """Updates all defined subplots within this instance.
+        """        
 
         for i, ax in enumerate(self.axes): # type: ignore
             ax.clear()
