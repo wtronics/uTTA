@@ -1,13 +1,14 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.tooltip import ToolTip
 import library.uTTA_data_plotting as ud_plot
+import library.uTTA_data_processing as udProc
 import tkinter as tk
 import tkinter
 import logging
 
 
 class MeasurementPlotsWidget(ttk.Frame):
-    def __init__(self, parent, data, figwidth, figheight, screen_dpi):
+    def __init__(self, parent:ttk.Frame, data:udProc.UttaZthProcessing, figwidth:int, figheight:int, screen_dpi:float):
         super().__init__(parent)
         self.parent = parent
         self.data = data
@@ -17,14 +18,13 @@ class MeasurementPlotsWidget(ttk.Frame):
 
     def _setup_plot_mapping(self):
 
-        self.plots.plot_mapping=[
-            (0, self.data.add_input_tsp_measure_curve_plot),
-            (1, self.data.add_input_current_measure_curve_plot),
-            (2, self.data.add_tsp_measure_cooling_curve_plot),
-            (3, self.data.add_diode_dt_curve_plot),
-            (4, self.data.add_cooling_curve_start_plot),
-            (5, self.data.add_thermocouple_plot)
-        ]
+        self.plots.add_plot_mapping(row=0, col=0, config_func=self.data.add_input_tsp_measure_curve_plot)
+        self.plots.add_plot_mapping(row=0, col=1, config_func=self.data.add_input_current_measure_curve_plot)
+        self.plots.add_plot_mapping(row=1, col=0, config_func=self.data.add_tsp_measure_cooling_curve_plot)
+        self.plots.add_plot_mapping(row=1, col=1, config_func=self.data.add_diode_dt_curve_plot)
+        self.plots.add_plot_mapping(row=2, col=0, config_func=self.data.add_cooling_curve_start_plot)
+        self.plots.add_plot_mapping(row=2, col=1, config_func=self.data.add_thermocouple_plot)
+
 
 class MeasurementInfoWidget(ttk.Frame):
     def __init__(self, parent):
@@ -140,8 +140,6 @@ class MeasurementInfoWidget(ttk.Frame):
         self.out_p_heat = ttk.Label(master=self.frm_heating_info, text='')
         self.out_p_heat.grid(row=2, column=1, padx=10, pady=10, sticky='w')
 
-
-
     def update_widget(self, data):
         self.out_tpreheat.configure(text=f"{data.meta_data.TPreheat:,} s")
         self.out_theating.configure(text=f"{data.meta_data.THeating:,} s")
@@ -167,7 +165,7 @@ class MeasurementInfoWidget(ttk.Frame):
         self.out_p_heat.configure(text=f"{data.p_heat:.4} W")
 
 class ZthPlotsWidget(ttk.Frame):
-    def __init__(self, parent, data, figwidth, figheight, screen_dpi):
+    def __init__(self, parent, data, figwidth:int, figheight:int, screen_dpi:float):
         super().__init__(parent)
         self.parent = parent
         self.data = data
@@ -177,14 +175,12 @@ class ZthPlotsWidget(ttk.Frame):
 
     def _setup_plot_mapping(self):
 
-        self.plots.plot_mapping=[
-            #(0, self.data.add_diode_dt_curve_plot),
-            (0, self.data.add_zth_curve_plot),
-            (1, self.data.add_zth_coupling_curve_plot),
-        ]
+        self.plots.add_plot_mapping(row=0, col=0, config_func=self.data.add_zth_curve_plot)
+        self.plots.add_plot_mapping(row=1, col=0, config_func=self.data.add_zth_coupling_curve_plot)
+
 
 class SettingsWidget(ttk.Frame):
-    def __init__(self, parent_frm, parent_app, data, logger):
+    def __init__(self, parent_frm:ttk.Frame, parent_app, data, logger:logging.Logger|None):
         super().__init__(parent_frm)
 
         if logger is None:
@@ -338,8 +334,6 @@ class SettingsWidget(ttk.Frame):
                                                style="dark")
         self.btn_apply_settings.grid(row=5, column=4, padx=10, pady=10, sticky='se')
 
-
-
     def apply_settings(self):
         self.logger.info("GUI Settings changed")
 
@@ -364,7 +358,7 @@ class SettingsWidget(ttk.Frame):
         self._parent_app.update_calculations()
 
 class DeconvPlotsWidget(ttk.Frame):
-    def __init__(self, parent, data, figwidth, figheight, screen_dpi):
+    def __init__(self, parent, data, figwidth:int, figheight:int, screen_dpi:float):
         super().__init__(parent)
         self.parent = parent
         self.data = data
@@ -374,8 +368,8 @@ class DeconvPlotsWidget(ttk.Frame):
 
     def _setup_plot_mapping(self):
 
-        self.plots.plot_mapping=[
-            (0, self.data.add_deconv_zth_output_plot),
-            (1, self.data.add_deconv_tau_output_plot),
-            (2, self.data.add_zth_deconvolution_error_plot),
-        ]
+        self.plots.add_plot_mapping(row=0, col=0, config_func=self.data.add_deconv_zth_output_plot)
+        self.plots.add_plot_mapping(row=1, col=0, config_func=self.data.add_deconv_tau_output_plot)
+        self.plots.add_plot_mapping(row=2, col=0, config_func=self.data.add_zth_deconvolution_error_plot)
+
+
