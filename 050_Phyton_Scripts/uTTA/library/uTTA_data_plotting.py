@@ -42,7 +42,7 @@ class UttaPlotConfiguration:
     This class can be used as return value from functions which provide data to a GUI
     """    
     def __init__(self, data:list[dict]|dict, title:str, x_label:str, y_label:str, plot_type:str='line',
-                 x_scale:str='linear',x_scale_formatter = None , y_scale:str='linear', y_scale_formatter = None, #style=None,
+                 x_scale:str='linear',x_scale_formatter = None , y_scale:str='linear', y_scale_formatter = None, style=None,
                  secondary_data:list[dict]|dict|None=None, secondary_y_label:str|None=None):
         """Initialization routine of the plot configuration
 
@@ -82,7 +82,7 @@ class UttaPlotConfiguration:
         self.x_scale_formatter = x_scale_formatter
         self.y_scale = y_scale
         self.y_scale_formatter = y_scale_formatter
-        #self.style = style or {}  # for optional use of matplotlib styling parameters
+        self.style = style or {}  # for optional use of matplotlib styling parameters
         self.secondary_data = secondary_data
         self.secondary_y_label = secondary_y_label or {}
 
