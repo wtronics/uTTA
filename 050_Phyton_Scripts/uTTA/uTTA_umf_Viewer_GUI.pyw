@@ -3,6 +3,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import library.uTTA_data_processing as udProc
 import library.uTTA_data_plotting as udPlot
+import tkinter.messagebox as messagebox
 
 matplotlib.use("TkAgg")
 
@@ -93,16 +94,18 @@ class UmfViewerApp(ttk.Window):
         # defines a flexible mapping of callback functions (which return data and plot configurations) to the subplots
 
         # (Axis-Index, Config Callback function)
-        self.view_plots.plot_mapping = [
-            (0, self.utta_data.add_input_tsp_measure_curve_plot),
-            (1, self.utta_data.add_input_current_measure_curve_plot),
-            (4, self.utta_data.add_cooling_curve_start_plot),
-            (5, self.utta_data.add_thermocouple_plot)
-        ]
-
-        if not self.utta_data.meta_data.FlagTSPCalibrationFile:
-            self.view_plots.plot_mapping += [ (2, self.utta_data.add_tsp_measure_cooling_curve_plot),
-                                              (3, self.utta_data.add_current_measure_cooling_curve_plot)]
+        if not  self.utta_data.meta_data.FlagTSPCalibrationFile:
+            if self.view_plots.cols < 2:
+                self.view_plots.add_column()
+                
+            self.view_plots.add_plot_mapping(row=0, col=0, config_func=self.utta_data.add_input_tsp_measure_curve_plot)
+            self.view_plots.add_plot_mapping(row=1, col=0, config_func=self.utta_data.add_input_current_measure_curve_plot)
+            self.view_plots.add_plot_mapping(row=0, col=1, config_func=self.utta_data.add_tsp_measure_cooling_curve_plot)
+            self.view_plots.add_plot_mapping(row=1, col=1, config_func=self.utta_data.add_current_measure_cooling_curve_plot)
+            self.view_plots.add_plot_mapping(row=2, col=1, config_func=self.utta_data.add_cooling_curve_start_plot)
+            self.view_plots.add_plot_mapping(row=2, col=0, config_func=self.utta_data.add_thermocouple_plot)
+        else:
+            self.view_plots.delete_column(1)
 
     def update_all_plots(self):
 
@@ -157,11 +160,11 @@ class UmfViewerApp(ttk.Window):
                 if not self.utta_data.meta_data.FlagTSPCalibrationFile:
                     self.utta_data.calculate_cooling_curve()
 
-                    self.utta_data.calculate_diode_heating()
-
                     self.utta_data.calculate_tsp_start_voltages()
 
                     self.utta_data.interpolate_zth_curve_start()
+                    
+                self._setup_plot_mapping()
 
                 self.update_all_plots()
         else:
@@ -169,8 +172,8 @@ class UmfViewerApp(ttk.Window):
             self.frm_help_bar.configure(style="danger")
 
     def on_closing(self):
-        # if messagebox.askokcancel("Quit", "Do you want to quit?"):
-        self.destroy()
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.destroy()
 
 app = UmfViewerApp()
 
