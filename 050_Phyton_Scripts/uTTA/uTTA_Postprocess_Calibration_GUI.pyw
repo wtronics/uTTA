@@ -1,34 +1,25 @@
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore # matplotlib 3.9.2
 from matplotlib.figure import Figure
-from tkinter import messagebox  # part of python 3.12.5
+from tkinter import messagebox  
 from tksheet import (Sheet, float_formatter)
-from quantiphy import Quantity      # quantiphy 2.20
+from quantiphy import Quantity      
 
 import library.uTTA_data_processing as udpc
-import numpy as np                  # numpy 2.1.1
-import matplotlib                   # matplotlib 3.9.2
+import numpy as np                  
+import matplotlib                  
 import ttkbootstrap as ttk
 
 matplotlib.use("TkAgg")
 
-CalData_FileName = ''
-Diode_Calibration = []
-TableValues = []
-
 MaxDeltaT_StartEnd = 1.0
-DataFile = ''
-G_Plots = []
-Static_States = []
-Highlight_State = -1
 MaxJUT_Channels = 3
 InterpolationDegrees = 1
-MetaData = {}
 
 
 class CalApp(ttk.Window):
     def __init__(self):
         super().__init__()
-        # self.hdpi = False
+
         self.title("uTTA Calibration Factor Calculation Tool")
         self.geometry("1480x750")
         self.minsize(1480, 750)
@@ -37,9 +28,12 @@ class CalApp(ttk.Window):
         print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
-        global G_Plots
-
         self.utta_data = udpc.UttaZthProcessing()
+
+        self.meas_file_path:str = ''
+        self.g_plots:list = []
+        self.detected_static_states = []
+        self.highlight_static_state:int = -1
 
         self.frm_file_btns = ttk.Frame(master=self,  width=350, height=60, style="secondary.TFrame")
         self.frm_file_btns.place(x=10, y=10)
@@ -118,7 +112,7 @@ class CalApp(ttk.Window):
         self.btn_save_result.place(x=10, y=210)
 
         self.fig = Figure(figsize=(880/screen_dpi, 500/screen_dpi), dpi=screen_dpi, tight_layout = True)
-        G_Plots = self.fig.subplots(2, 1)
+        self.g_plots = self.fig.subplots(2, 1)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
         self.canvas.get_tk_widget().place(x=370, y=80)
@@ -134,8 +128,7 @@ class CalApp(ttk.Window):
 
     def update_plots(self):
 
-        global G_Plots, Static_States, Highlight_State, MetaData
-        G_Plots[0].clear()
+        self.g_plots[0].clear()
 
         lines = []
         ymin = 10
@@ -145,40 +138,40 @@ class CalApp(ttk.Window):
             ch_tsp = "TSP{Ch}".format(Ch=PlotIdx)
             if ch_tsp in self.utta_data.meta_data.Channels:
                 if self.utta_data.meta_data.Channels[ch_tsp]["Name"] != "OFF":
-                    line, = G_Plots[0].plot(self.utta_data.time_interp, self.utta_data.adc_interp[PlotIdx, :], label=self.utta_data.meta_data.Channels[ch_tsp]["Name"]) # type: ignore
+                    line, = self.g_plots[0].plot(self.utta_data.time_interp, self.utta_data.adc_interp[PlotIdx, :], label=self.utta_data.meta_data.Channels[ch_tsp]["Name"]) # type: ignore
                     lines.append(line)
                     ymin = np.min([ymin, np.min(self.utta_data.adc_interp[PlotIdx, :])]) # type: ignore
                     ymax = np.max([ymax, np.max(self.utta_data.adc_interp[PlotIdx, :])]) # type: ignore
 
-        G_Plots[0].set_xlabel("Time / [s]")
-        G_Plots[0].set_ylabel("Diode Voltage / [V]")
-        G_Plots[0].set_xlim(left=0)
-        G_Plots[0].callbacks.connect('xlim_changed', self.on_xlims_change)
-        G_Plots[0].grid(True)
+        self.g_plots[0].set_xlabel("Time / [s]")
+        self.g_plots[0].set_ylabel("Diode Voltage / [V]")
+        self.g_plots[0].set_xlim(left=0)
+        self.g_plots[0].callbacks.connect('xlim_changed', self.on_xlims_change)
+        self.g_plots[0].grid(True)
 
         if len(self.utta_data.adc_interp) > 0:
-            G_Plots[0].legend(loc="lower left")
-            G_Plots[0].set_ylim([ymin - (ymax - ymin)*0.05 , ymax + (ymax - ymin)*0.05])
+            self.g_plots[0].legend(loc="lower left")
+            self.g_plots[0].set_ylim([ymin - (ymax - ymin)*0.05 , ymax + (ymax - ymin)*0.05])
 
-        G_Plots[1].clear()
+        self.g_plots[1].clear()
 
         ymin = 100
         ymax = -100
 
         if len(self.utta_data.adc_interp) > 0:
             for PlotIdx in range(1):
-                G_Plots[1].plot(self.utta_data.time_interp, self.utta_data.adc_interp[PlotIdx, :], label="TC " + str(PlotIdx)) # type: ignore
+                self.g_plots[1].plot(self.utta_data.time_interp, self.utta_data.tc_interp[PlotIdx, :], label="TC " + str(PlotIdx)) # type: ignore
 
-                ymin = np.min([ymin, np.min(self.utta_data.adc_interp[PlotIdx, :])]) # type: ignore
-                ymax = np.max([ymax, np.max(self.utta_data.adc_interp[PlotIdx, :])]) # type: ignore
+                ymin = np.min([ymin, np.min(self.utta_data.tc_interp[PlotIdx, :])]) # type: ignore
+                ymax = np.max([ymax, np.max(self.utta_data.tc_interp[PlotIdx, :])]) # type: ignore
 
-            G_Plots[1].set_xlim(left=0)
-            G_Plots[1].legend(loc="lower left")
-            G_Plots[1].set_ylim([ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05])
-            G_Plots[1].grid(True)
+            self.g_plots[1].set_xlim(left=0)
+            self.g_plots[1].legend(loc="lower left")
+            self.g_plots[1].set_ylim([ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05])
+            self.g_plots[1].grid(True)
 
-        G_Plots[1].set_xlabel("Time / [s]")
-        G_Plots[1].set_ylabel("Temperature / [°C]")
+        self.g_plots[1].set_xlabel("Time / [s]")
+        self.g_plots[1].set_ylabel("Temperature / [°C]")
         tbl = self.t_step_sheet.data
         self.canvas.draw()
 
@@ -189,25 +182,25 @@ class CalApp(ttk.Window):
                                   np.array(self.t_step_sheet.get_column_data(6), dtype=np.float32), # endtime
                                   np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)]) # temperature
 
-            ylims = G_Plots[0].axes.get_ylim()
+            ylims = self.g_plots[0].axes.get_ylim()
             ypos = ylims[0] + (ylims[1] - ylims[0]) * 0.05
             for idx, stat_state in enumerate(times):
                 # Highlight_State
-                if idx == Highlight_State:
+                if idx == self.highlight_static_state:
                     bar_color = 'orange'
                 else:
                     bar_color = 'green'
 
-                G_Plots[1].fill_between(self.utta_data.time_interp, 0, 1,
+                self.g_plots[1].fill_between(self.utta_data.time_interp, 0, 1,
                                         where=np.logical_and((stat_state[0] <= self.utta_data.time_interp), (stat_state[1] >= self.utta_data.time_interp)),
                                         color=bar_color, alpha=0.5,
-                                        transform=G_Plots[1].get_xaxis_transform())
-                G_Plots[0].fill_between(self.utta_data.time_interp, 0, 1,
+                                        transform=self.g_plots[1].get_xaxis_transform())
+                self.g_plots[0].fill_between(self.utta_data.time_interp, 0, 1,
                                         where=np.logical_and((stat_state[0] <= self.utta_data.time_interp), (stat_state[1] >= self.utta_data.time_interp)),
                                         color=bar_color, alpha=0.5,
-                                        transform=G_Plots[0].get_xaxis_transform())
+                                        transform=self.g_plots[0].get_xaxis_transform())
 
-                G_Plots[0].text((stat_state[0]+stat_state[1])/2, ypos, "{temp:.1f}°C".format(temp=stat_state[2]), ha="center", va="center")
+                self.g_plots[0].text((stat_state[0]+stat_state[1])/2, ypos, "{temp:.1f}°C".format(temp=stat_state[2]), ha="center", va="center")
 
         else:
             self.btn_rem_steps.configure(state='disabled')
@@ -268,28 +261,31 @@ class CalApp(ttk.Window):
                                                    style='warning.Inverse.TLabel')
                         self.frm_help_bar.configure(style='warning.Inverse.TLabel')
         else:
-            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.", style='warning.Inverse.TLabel')
+            self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was not imported.", style='warning.Inverse.TLabel')
             self.frm_help_bar.configure(style='warning.Inverse.TLabel')
 
     def read_measurement_file_callback(self):
-        global DataFile, Static_States, MetaData
+
         measfilename = udpc.select_file("Select the measurement file",
                                                     (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
         if len(measfilename) > 0:    # check if string is not empty
-            DataFile, data_file_no_ext, file_path = udpc.split_file_path(measfilename)
+            self.meas_file_path, data_file_no_ext, file_path = udpc.split_file_path(measfilename)
             self.utta_data.import_data(measfilename)
-            #tb_import, adc_import, tc_import, MetaData = uTTA_data_import.read_measurement_file(measfilename, 0)
+            
+            self.g_plots = []
+            self.detected_static_states = []
+            self.highlight_static_state = -1
 
             if self.utta_data.meta_data.FlagTSPCalibrationFile:
                 self.utta_data.interpolate_to_common_timebase()
                 #self.utta_data.time_interp, self.utta_data.adc_interp, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
                 # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.7°C
-                # Static_States = uTTA_data_processing.find_static_states(Temp[0, :], 0.7, 200)
-                Static_States = udpc.find_static_states(self.utta_data.adc_interp[0, :], 0.0008, 500) # type: ignore
+                # self.detected_static_states = uTTA_data_processing.find_static_states(Temp[0, :], 0.7, 200)
+                self.detected_static_states = udpc.find_static_states(self.utta_data.adc_interp[0, :], 0.0008, 500) # type: ignore
 
-                if Static_States:
-                    for stat_state in Static_States:
+                if self.detected_static_states:
+                    for stat_state in self.detected_static_states:
                         # for the temperature average take only the last 60 samples (1Minute) for the average
                         t_avg = np.mean(self.utta_data.tc_interp[0, (stat_state[1]-60):stat_state[1]]) # type: ignore
                         self.add_cal_step_entry(stat_state[1]-60, stat_state[1], t_avg)
@@ -297,20 +293,20 @@ class CalApp(ttk.Window):
                 self.update_plots()
 
                 self.btn_add_steps.configure(state='normal')
-                self.lbl_helpbar.configure(text="File: " + DataFile + " was successfully imported.\nNow click on the magnifying glass below the plot and select "+
+                self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was successfully imported.\nNow click on the magnifying glass below the plot and select "+
                                            "the first horizontal section in the upper plot.",
                                            style='info.Inverse.TLabel')
                 self.frm_help_bar.configure(style='info.Inverse.TLabel')
             else:
-                self.lbl_helpbar.configure(text="Seems like : " + DataFile + " is not a calibration measurement. Therefore the measurement was not imported.",
+                self.lbl_helpbar.configure(text="Seems like : " + self.meas_file_path + " is not a calibration measurement. Therefore the measurement was not imported.",
                                            style='warning.Inverse.TLabel')
                 self.frm_help_bar.configure(style='warning.Inverse.TLabel')
         else:
-            self.lbl_helpbar.configure(text="File: " + DataFile + " was not imported.", style='danger.Inverse.TLabel')
+            self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was not imported.", style='danger.Inverse.TLabel')
             self.frm_help_bar.configure(style='danger.Inverse.TLabel')
 
     def add_calibration_step(self):
-        cal_range = G_Plots[0].get_xlim()
+        cal_range = self.g_plots[0].get_xlim()
 
         t_step = self.ent_step_temp.get()
 
@@ -353,10 +349,10 @@ class CalApp(ttk.Window):
         self.update_plots()
 
     def on_cell_select(self, event):
-        global Highlight_State
+
         content = event["selected"]
-        Highlight_State = content.row
-        # print("Cell Selected in row {row}".format(row=Highlight_State))
+        self.highlight_static_state = content.row
+        # print("Cell Selected in row {row}".format(row=self.highlight_static_state))
         self.update_plots()
 
     def fit_temp_steps(self):
@@ -367,7 +363,7 @@ class CalApp(ttk.Window):
         tbl = self.t_step_sheet.data
         if len(tbl) >= 2:  # above two selected points the interpolation calculation ca begin
 
-            for ChIdx in range(0, 3):  # iterate through all the 4 channels viewed
+            for ChIdx in range(0, MaxJUT_Channels):  # iterate through all the 4 channels viewed
                 ch_tsp = "TSP{Ch}".format(Ch=ChIdx)
                 x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
 
@@ -389,8 +385,8 @@ class CalApp(ttk.Window):
                     r_sq = 1.0
                 print("Fitting Channel {Ch} with quadratic interpolation: Offset: {Offs:.4f} ,Linear: {Lin:.4f}, Quad: {Quad:.7f}, R²: {Rsq:.4f}".format(
                      Ch=ChIdx, Lin=slope, Offs=offs, Quad=quad, Rsq=r_sq))
-                if ChIdx < 3:
-                    self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=MetaData[ch_tsp]["Name"])
+                if ChIdx < MaxJUT_Channels:
+                    self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=self.utta_data.meta_data.Channels[ch_tsp]["Name"])
                 # else:
                     #self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value="TC0")
                 self.t_result_sheet.set_cell_data(r=ChIdx, c=1, value=offs)
@@ -405,15 +401,15 @@ class CalApp(ttk.Window):
         self.destroy()
 
     def on_xlims_change(self, event_ax):
-        global G_Plots, MetaData
+
         x_limits = event_ax.get_xlim()
         xlim_min = int(x_limits[0])
         xlim_max = int(x_limits[1])
         # print("updated xlims: ", event_ax.get_xlim())
-        G_Plots[1].set_xlim(left=x_limits[0], right=x_limits[1])
+        self.g_plots[1].set_xlim(left=x_limits[0], right=x_limits[1])
         ymin = np.min(self.utta_data.adc_interp[0, xlim_min:xlim_max]) # type: ignore
         ymax = np.max(self.utta_data.adc_interp[0, xlim_min:xlim_max]) # type: ignore
-        G_Plots[1].set_ylim(bottom=ymin, top=ymax)
+        self.g_plots[1].set_ylim(bottom=ymin, top=ymax)
 
         tsp_min = float(np.min(self.utta_data.adc_interp[0, xlim_min:xlim_max])) # type: ignore
         tsp_max = float(np.max(self.utta_data.adc_interp[0, xlim_min:xlim_max])) # type: ignore
@@ -423,7 +419,7 @@ class CalApp(ttk.Window):
         self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(self.utta_data.adc_interp[0, xlim_min:xlim_max]))) # type: ignore
 
         self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state.\n" +
-                                   "Peak-to-peak spread of " + MetaData["TSP0"]["Name"] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
+                                   "Peak-to-peak spread of " + self.utta_data.meta_data.Channels["TSP0"]["Name"] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
                                    "\nWhen you are satisfied enter the step temperature and click on 'Add Step'", style='info.Inverse.TLabel')
         self.frm_help_bar.configure(style='info.TFrame')
 
