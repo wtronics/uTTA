@@ -111,6 +111,12 @@ class CalApp(ttk.Window):
                                           command=self.save_calibration_results, state="disabled")
         self.btn_save_result.place(x=10, y=210)
 
+        matplotlib.rcParams['axes.labelsize'] = 7
+        matplotlib.rcParams['legend.fontsize'] = 7
+        matplotlib.rcParams['font.size'] = 11
+        matplotlib.rcParams['xtick.labelsize'] = 7
+        matplotlib.rcParams['ytick.labelsize'] = 7
+
         self.fig = Figure(figsize=(880/screen_dpi, 500/screen_dpi), dpi=screen_dpi, tight_layout = True)
         self.g_plots = self.fig.subplots(2, 1)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
@@ -127,6 +133,9 @@ class CalApp(ttk.Window):
         self.update()
 
     def update_plots(self):
+
+        if len(self.g_plots) == 0 :
+            return
 
         self.g_plots[0].clear()
 
@@ -200,7 +209,7 @@ class CalApp(ttk.Window):
                                         color=bar_color, alpha=0.5,
                                         transform=self.g_plots[0].get_xaxis_transform())
 
-                self.g_plots[0].text((stat_state[0]+stat_state[1])/2, ypos, "{temp:.1f}°C".format(temp=stat_state[2]), ha="center", va="center")
+                self.g_plots[0].text((stat_state[0]+stat_state[1])/2, ypos, f"{stat_state[2]:.1f}°C", ha="center", va="center", size=7)
 
         else:
             self.btn_rem_steps.configure(state='disabled')
@@ -272,7 +281,7 @@ class CalApp(ttk.Window):
             self.meas_file_path, data_file_no_ext, file_path = udpc.split_file_path(measfilename)
             self.utta_data.import_data(measfilename)
             
-            self.g_plots = []
+            
             self.detected_static_states = []
             self.highlight_static_state = -1
 
@@ -423,10 +432,6 @@ class CalApp(ttk.Window):
                                    "\nWhen you are satisfied enter the step temperature and click on 'Add Step'", style='info.Inverse.TLabel')
         self.frm_help_bar.configure(style='info.TFrame')
 
-
-# Declare and register callbacks
-
-
-app = CalApp()
-
-app.mainloop()
+if __name__ == "__main__":
+    app = CalApp()
+    app.mainloop()
