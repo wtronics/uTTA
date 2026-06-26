@@ -1,14 +1,13 @@
 import os
-import matplotlib # matplotlib 3.9.2
+import matplotlib
 from tkinter import filedialog as fd
 import tkinter as tk
-import ttkbootstrap as ttk  # ttkbootstrap 1.13.5
+import ttkbootstrap as ttk
 import library.uTTA_data_processing as udProc
 import library.uTTA_Deconvolution as uDeconv
 import library.uTTA_Postprocess_Measurement_Interpol_Widget as uttaInterpolWidget
 import library.uTTA_Postprocess_Measurement_Widgets as uttaWidgets
 import logging
-
 
 matplotlib.use("TkAgg")
 
@@ -276,7 +275,6 @@ class UmfViewerApp(ttk.Window):
         
         if report_folder:
             outfilename = f"{report_folder}/{self.FileName}_Measurement_Report.html"
-
             self.utta_data.report_html(outfilename)
 
             if Debug_AutoExportHTML:
