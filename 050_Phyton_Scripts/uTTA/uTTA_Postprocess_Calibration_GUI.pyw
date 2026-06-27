@@ -1,12 +1,13 @@
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore # matplotlib 3.9.2
-from matplotlib.figure import Figure
-from tkinter import messagebox  
+from matplotlib.figure import Figure  
 from tksheet import (Sheet, float_formatter)
 from quantiphy import Quantity      
 
 import library.uTTA_data_processing as udpc
 import numpy as np                  
-import matplotlib                  
+import matplotlib 
+import tkinter as tk  
+from tkinter import messagebox               
 import ttkbootstrap as ttk
 
 matplotlib.use("TkAgg")
@@ -15,14 +16,17 @@ MaxDeltaT_StartEnd = 1.0
 MaxJUT_Channels = 3
 InterpolationDegrees = 1
 
+WINDOW_WIDTH = 1580
+WINDOW_HEIGHT = 960
+
 
 class CalApp(ttk.Window):
     def __init__(self):
         super().__init__()
 
         self.title("uTTA Calibration Factor Calculation Tool")
-        self.geometry("1480x750")
-        self.minsize(1480, 750)
+        self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
+        self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
         screen_dpi = self.winfo_fpixels('1i')
         geometry = self.winfo_geometry()
         print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
@@ -35,69 +39,62 @@ class CalApp(ttk.Window):
         self.detected_static_states = []
         self.highlight_static_state:int = -1
 
-        self.frm_file_btns = ttk.Frame(master=self,  width=350, height=60, style="secondary.TFrame")
-        self.frm_file_btns.place(x=10, y=10)
+        self.paned = ttk.Panedwindow(self, orient=tk.HORIZONTAL)
+        self.paned.pack(fill=tk.BOTH, expand=True)
 
-        self.btn_measure_file = ttk.Button(master=self.frm_file_btns, text="Measurement File", width=35,
-                                           command=self.read_measurement_file_callback)
-        self.btn_measure_file.place(x=10, y=10)
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        # LEFT GUI COLUMN
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
 
-        self.frm_help_bar = ttk.Frame(master=self, width=1050, height=60, style='info.TFrame')
-        self.frm_help_bar.place(x=370, y=10)
+        self.frm_left = ttk.Frame(self.paned)
+        self.frm_left.pack(fill=tk.X, padx=5, pady=5)
+        self.frm_file_btns = ttk.Frame(master=self.frm_left)
+        self.frm_file_btns.pack(fill=tk.X, padx=5, pady=5)
 
-        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, width=150, style='info.Inverse.TLabel')
-        self.lbl_helpbar.place(x=10, y=15)
-        self.lbl_helpbar.configure(text="Welcome to the calibration GUI v2. Click 'Measurement File' and import a calibration measurement")
+        self.btn_measure_file = ttk.Button(master=self.frm_file_btns, text="Measurement File",
+                                           command=self.read_measurement_file_callback, width=14)
+        self.btn_measure_file.pack(fill=tk.X, padx=5, pady=5)
 
-        frm_step_table = ttk.Frame(master=self,  width=350, height=400, style="secondary.TFrame")
-        frm_step_table.place(x=10, y=80)
+        frm_step_table = ttk.Labelframe(master=self.frm_left,text="Calibration Temperature Steps")
+        frm_step_table.pack(fill=tk.X, padx=5, pady=5)
 
-        tab_label = ttk.Label(master=frm_step_table, text="Calibration Temperature Steps", style='secondary.Inverse.TLabel',
-                              justify="center", width=330)
-        tab_label.place(x=10, y=10)
-
-        lbl_no_steps = ttk.Label(master=frm_step_table, text="Step Temp:", width=120,
-                                 style='secondary.Inverse.TLabel', justify="right")
-        lbl_no_steps.place(x=170, y=45)
-
-        self.ent_step_temp = ttk.Entry(master=frm_step_table, width=8, justify="right")
+        ttk.Label(master=frm_step_table, text="Step Temp:", 
+                 justify="right").grid(row=0, column=0, sticky="e")
+    
+        self.ent_step_temp = ttk.Entry(master=frm_step_table, justify="right", width=8)
         self.ent_step_temp.insert(-1, "°C")
-        self.ent_step_temp.place(x=250, y=40)
+        self.ent_step_temp.grid(row = 0, column=1, sticky='ew', padx=5, pady=5)
 
-        self.btn_add_steps = ttk.Button(master=frm_step_table, text="Add Step", width=13,
+        self.btn_add_steps = ttk.Button(master=frm_step_table, text="Add Step", width=12,
                                         command=self.add_calibration_step, state="disabled")
-        self.btn_add_steps.place(x=10, y=40)
+        self.btn_add_steps.grid(row=1, column=0, sticky='ew', padx=5, pady=5)
 
-        self.btn_rem_steps = ttk.Button(master=frm_step_table, text="Remove Step", width=13,
+        self.btn_rem_steps = ttk.Button(master=frm_step_table, text="Remove Step", width=12,
                                         command=self.remove_calibration_step)
-        self.btn_rem_steps.place(x=10, y=80)
+        self.btn_rem_steps.grid(row=1, column=1, sticky='ew', padx=5, pady=5)
 
-        self.btn_calc_steps = ttk.Button(master=frm_step_table, text="Recalculate", width=13,
+        self.btn_calc_steps = ttk.Button(master=frm_step_table, text="Recalculate",
                                          command=self.fit_temp_steps, state="disabled")
-        self.btn_calc_steps.place(x=10, y=120)
+        self.btn_calc_steps.grid(row=2, column=0, sticky='ew', padx=5, pady=5)
 
         tab_heading = ["T/[°C]", "CH0 Avg.", "CH1 Avg.", "CH2 Avg.", "Temp Avg.", "Start", "End"]
         self.t_step_sheet = Sheet(frm_step_table, startup_select=(0, 1, "rows"),
-                                  page_up_down_select_row=True, height=230, width=330)
+                                  page_up_down_select_row=True)
         self.t_step_sheet.format("A", formatter_options=float_formatter(), decimals=3)
         self.t_step_sheet.format("B:E", formatter_options=float_formatter(), decimals=4)
 
-        self.t_step_sheet.place(x=10, y=160)
+        self.t_step_sheet.grid(row=3, column=0, columnspan=2)
         self.t_step_sheet.enable_bindings(('single_select', 'edit_cell')) # type: ignore
         self.t_step_sheet.extra_bindings("cell_select", self.on_cell_select)
         self.t_step_sheet.headers(tab_heading)
-        self.t_step_sheet.set_all_column_widths(65)
+        self.t_step_sheet.set_all_column_widths(55)
 
-        frm_result_table = ttk.Frame(master=self, width=350, height=250, style="secondary.TFrame")
-        frm_result_table.place(x=10, y=490)
-
-        result_label = ttk.Label(master=frm_result_table, width=330, style='secondary.Inverse.TLabel',
-                                 text="Linearization Results", justify="center")
-        result_label.place(x=10, y=10)
+        frm_result_table = ttk.Labelframe(master=self.frm_left, text="Linearization Results")
+        frm_result_table.pack(fill=tk.BOTH, padx=5, pady=5)
 
         tab_result_heading = ["Channel", "Offset", "Lin.", "Quad.", "R²"]
-        self.t_result_sheet = Sheet(frm_result_table, show_y_scrollbar=False, height=160, width=330, row_index_width=30)
-        self.t_result_sheet.place(x=10, y=40)
+        self.t_result_sheet = Sheet(frm_result_table, show_y_scrollbar=False, row_index_width=30)
+        self.t_result_sheet.grid(row=1, rowspan=3, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
         self.t_result_sheet.insert_columns(columns=4)
         self.t_result_sheet.insert_rows(rows=3)
         self.t_result_sheet.enable_bindings()
@@ -105,11 +102,24 @@ class CalApp(ttk.Window):
         self.t_result_sheet.format("B:E", formatter_options=float_formatter(), decimals=4)
         # self.t_result_sheet.format("C:E", formatter_options=float_formatter(), decimals=4)
         self.t_result_sheet.headers(tab_result_heading)
-        self.t_result_sheet.set_all_column_widths(65)
+        self.t_result_sheet.set_all_column_widths(70)
 
-        self.btn_save_result = ttk.Button(master=frm_result_table, text="Save Calibration", width=35,
+        self.btn_save_result = ttk.Button(master=frm_result_table, text="Save Calibration", width=12,
                                           command=self.save_calibration_results, state="disabled")
-        self.btn_save_result.place(x=10, y=210)
+        self.btn_save_result.grid(row=0, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
+
+        self.paned.add(self.frm_left)
+
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+        # RIGHT GUI COLUMN
+        # +#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#
+
+        self.frm_right = ttk.Frame(self.paned)
+        self.frm_right.pack(fill=tk.X, padx=5, pady=5)
+
+        self.lbl_helpbar = ttk.Label(master=self.frm_right, style='info.Inverse.TLabel', wraplength=1080)
+        self.lbl_helpbar.pack(fill=tk.X, padx=5, pady=5)
+        self.lbl_helpbar.configure(text="Welcome to the TSP Calibration Postprocessing GUI. Click 'Measurement File' and import a calibration measurement")
 
         matplotlib.rcParams['axes.labelsize'] = 7
         matplotlib.rcParams['legend.fontsize'] = 7
@@ -117,17 +127,23 @@ class CalApp(ttk.Window):
         matplotlib.rcParams['xtick.labelsize'] = 7
         matplotlib.rcParams['ytick.labelsize'] = 7
 
-        self.fig = Figure(figsize=(880/screen_dpi, 500/screen_dpi), dpi=screen_dpi, tight_layout = True)
+        # Plot Area
+        self.frm_plot_area = ttk.Frame(master=self.frm_right)
+        self.frm_plot_area.pack(fill=tk.BOTH, padx=5, pady=5)
+
+        self.fig = Figure(figsize=(1430/screen_dpi, 770/screen_dpi), dpi=96, tight_layout = True)
         self.g_plots = self.fig.subplots(2, 1)
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frm_plot_area)
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, padx=10, pady=10)
         self.canvas.draw()
-        self.canvas.get_tk_widget().place(x=370, y=80)
 
         # Toolbar #########
-        toolbar_frame = ttk.Frame(master=self, width=1050, style="secondary.TFrame")
-        toolbar_frame.place(x=370, y=700)
+        toolbar_frame = ttk.Frame(master=self.frm_right, style="secondary.TFrame")
+        toolbar_frame.pack(fill=tk.X, padx=5, pady=5)
         self.toolbar = NavigationToolbar2Tk(self.canvas, toolbar_frame)
         self.toolbar.update()
+
+        self.paned.add(self.frm_right)
 
         self.update_plots()
         self.update()
@@ -144,7 +160,7 @@ class CalApp(ttk.Window):
         ymax = 0
 
         for PlotIdx in range(0, MaxJUT_Channels):
-            ch_tsp = "TSP{Ch}".format(Ch=PlotIdx)
+            ch_tsp = f"TSP{PlotIdx}"
             if ch_tsp in self.utta_data.meta_data.Channels:
                 if self.utta_data.meta_data.Channels[ch_tsp]["Name"] != "OFF":
                     line, = self.g_plots[0].plot(self.utta_data.time_interp, self.utta_data.adc_interp[PlotIdx, :], label=self.utta_data.meta_data.Channels[ch_tsp]["Name"]) # type: ignore
@@ -240,14 +256,13 @@ class CalApp(ttk.Window):
                     r_sq = self.t_result_sheet.get_cell_data(ChIdx, 4)
                     if r_sq < 0.98:
                         msg_box = messagebox.askquestion("Low confidence results",
-                                                            "The R² of channel '"+ tsp_name +"'only {Rsqmin:.3f}".format(Rsqmin=np.min(r_sq)) +
+                                                            f"The R² of channel '{tsp_name}'only {np.min(r_sq):.3f}" +
                                                             ", this seems to low to provide a good calibration.\n" +
                                                             "Do you wish to continue anyway?", icon="warning", )
                         if msg_box != "yes":
                             abort_save = True
                     if not abort_save:
-                        print("Creating Cal Entry for Channel {Ch}, Name: {nam}, Offset {Offs:.4f}, Gain {Gain:.4f}".format(
-                            Ch=ChIdx, nam=tsp_name, Offs=tsp_offs, Gain=tsp_lin))
+                        print(f"Creating Cal Entry for Channel {ChIdx}, Name: {tsp_name}, Offset {tsp_offs:.4f}, Gain {tsp_lin:.4f}")
 
                         if str(tsp_name).startswith("TC"):
                             chan_prefix = "$TC_"
@@ -264,14 +279,14 @@ class CalApp(ttk.Window):
                         udpc.write_tsp_cal_to_file(cal_file_name, tsp_cal_value)
                         self.lbl_helpbar.configure(text="Successfully saved calibration of channel " + tsp_name + " to file: " + data_file_no_ext,
                                                    style='success.Inverse.TLabel')
-                        self.frm_help_bar.configure(style='success.Inverse.TLabel')
+                        
                     else:
                         self.lbl_helpbar.configure(text="Aborted saving calibration of channel " + tsp_name + "because of bad convergence",
                                                    style='warning.Inverse.TLabel')
-                        self.frm_help_bar.configure(style='warning.Inverse.TLabel')
+                        
         else:
             self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was not imported.", style='warning.Inverse.TLabel')
-            self.frm_help_bar.configure(style='warning.Inverse.TLabel')
+           
 
     def read_measurement_file_callback(self):
 
@@ -305,14 +320,14 @@ class CalApp(ttk.Window):
                 self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was successfully imported.\nNow click on the magnifying glass below the plot and select "+
                                            "the first horizontal section in the upper plot.",
                                            style='info.Inverse.TLabel')
-                self.frm_help_bar.configure(style='info.Inverse.TLabel')
+                
             else:
                 self.lbl_helpbar.configure(text="Seems like : " + self.meas_file_path + " is not a calibration measurement. Therefore the measurement was not imported.",
                                            style='warning.Inverse.TLabel')
-                self.frm_help_bar.configure(style='warning.Inverse.TLabel')
+                
         else:
             self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was not imported.", style='danger.Inverse.TLabel')
-            self.frm_help_bar.configure(style='danger.Inverse.TLabel')
+            
 
     def add_calibration_step(self):
         cal_range = self.g_plots[0].get_xlim()
@@ -361,7 +376,7 @@ class CalApp(ttk.Window):
 
         content = event["selected"]
         self.highlight_static_state = content.row
-        # print("Cell Selected in row {row}".format(row=self.highlight_static_state))
+        # print(f"Cell Selected in row {self.highlight_static_state}")
         self.update_plots()
 
     def fit_temp_steps(self):
@@ -373,7 +388,7 @@ class CalApp(ttk.Window):
         if len(tbl) >= 2:  # above two selected points the interpolation calculation ca begin
 
             for ChIdx in range(0, MaxJUT_Channels):  # iterate through all the 4 channels viewed
-                ch_tsp = "TSP{Ch}".format(Ch=ChIdx)
+                ch_tsp = f"TSP{ChIdx}"
                 x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
 
                 y_data = np.array(self.t_step_sheet.get_column_data(ChIdx + 1), dtype=np.float32)
@@ -392,8 +407,7 @@ class CalApp(ttk.Window):
                     r_sq = corr ** 2
                 else:
                     r_sq = 1.0
-                print("Fitting Channel {Ch} with quadratic interpolation: Offset: {Offs:.4f} ,Linear: {Lin:.4f}, Quad: {Quad:.7f}, R²: {Rsq:.4f}".format(
-                     Ch=ChIdx, Lin=slope, Offs=offs, Quad=quad, Rsq=r_sq))
+                print(f"Fitting Channel {ChIdx} with quadratic interpolation: Offset: {offs:.4f} ,Linear: {slope:.4f}, Quad: {quad:.7f}, R²: {r_sq:.4f}")
                 if ChIdx < MaxJUT_Channels:
                     self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=self.utta_data.meta_data.Channels[ch_tsp]["Name"])
                 # else:
@@ -425,12 +439,12 @@ class CalApp(ttk.Window):
         tsp_pp = Quantity(tsp_max-tsp_min, "V")
 
         self.ent_step_temp.delete(0, 'end')
-        self.ent_step_temp.insert(0, "{:.2f}".format(np.mean(self.utta_data.adc_interp[0, xlim_min:xlim_max]))) # type: ignore
+        self.ent_step_temp.insert(0, f"{np.mean(self.utta_data.adc_interp[0, xlim_min:xlim_max]):.2f}") # type: ignore
 
         self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state.\n" +
-                                   "Peak-to-peak spread of " + self.utta_data.meta_data.Channels["TSP0"]["Name"] + " is {tsp_mm}. ".format(tsp_mm=tsp_pp) +
+                                   f"Peak-to-peak spread of {self.utta_data.meta_data.Channels["TSP0"]["Name"] } is {tsp_pp}. " +
                                    "\nWhen you are satisfied enter the step temperature and click on 'Add Step'", style='info.Inverse.TLabel')
-        self.frm_help_bar.configure(style='info.TFrame')
+        
 
 if __name__ == "__main__":
     app = CalApp()
