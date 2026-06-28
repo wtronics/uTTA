@@ -55,7 +55,7 @@ class ZthComparatorApp(ttk.Window):
     def __init__(self):
         super().__init__()
         self.title("uTTA Zth Comparison GUI")
-        self.geometry("1480x960")
+        self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
         self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
         screen_dpi = self.winfo_fpixels('1i')
         geometry = self.winfo_geometry()
