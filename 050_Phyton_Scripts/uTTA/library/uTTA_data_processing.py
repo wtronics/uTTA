@@ -905,7 +905,8 @@ def find_static_states(indata:list|np.ndarray, threshold: float=0.01, min_length
         
         if arr_pp <= threshold:
             ranges.append((start_idx, end_idx))
-            end_idx += int(min_length/2)
+            # Advance by half the minimum steady state window width. This makes sure there is enough overlap to merge these windows later.
+            end_idx += int(min_length/2)        
         else:
             end_idx +=1
     return ranges
