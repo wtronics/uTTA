@@ -1,3 +1,31 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Module Name:    utta_data_processing.py
+Description:    Combines all Zth curve and deconvolution related processing
+                functions. 
+
+Author:         wtronics
+Email:          169440509+wtronics@users.noreply.github.com
+Date:           28.09.2025 (moved)
+Version:        $VERSION$
+
+--------------------------------------------------------------------------
+License:
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)
+
+You are free to share and adapt this material under the following terms:
+- Attribution: You must give appropriate credit.
+- NonCommercial: You may not use the material for commercial purposes.
+- ShareAlike: You must distribute your contributions under the same license.
+
+The full license text can be found at:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+--------------------------------------------------------------------------
+"""
+
 import tkinter.filedialog as fd
 import os
 import numpy as np              
@@ -15,7 +43,14 @@ import logging
 
 
 class UttaZthProcessing:
-    def __init__(self, logger=None):
+    """Zth curve related processing functions
+    """    
+    def __init__(self, logger:logging.Logger|None=None):
+        """Initializes the Zth processing class
+
+        Args:
+            logger (logging.Logger | None, optional): Logging Handle to log into a common log-file. Defaults to None.
+        """        
 
         if logger is None:
             self.logger = logging.getLogger("dummy")
@@ -71,9 +106,7 @@ class UttaZthProcessing:
         self.tc = np.array([])      # measured thermocouple data
 
         # Deconvolution settings
-
         self.deconv_method = "Bayes"
-        
         self.deconv_samples_per_decade = 20
 
         # Setting especially for Lucy-Richardson (Bayes) Method
@@ -84,8 +117,8 @@ class UttaZthProcessing:
 
         # Variables for interpolated adc and TC-K values
         self.time_interp = np.array([])        # interpolated timebase, when ADC and TC-K are interpolated to each other
-        self.adc_interp = np.array([])             # interpolated ADC-data, when ADC and TC-K are interpolated to each other
-        self.tc_interp = np.array([])              # interpolated thermocouple data, when ADC and TC-K are interpolated to each other
+        self.adc_interp = np.array([])         # interpolated ADC-data, when ADC and TC-K are interpolated to each other
+        self.tc_interp = np.array([])          # interpolated thermocouple data, when ADC and TC-K are interpolated to each other
 
         self.u_dio_cold_start = np.array([])
         self.u_dio_cold_end = np.array([])
@@ -114,6 +147,11 @@ class UttaZthProcessing:
         self.flag_cooling_curve_calculated = False # a flag to indicate that the cooling curve was extracted
 
     def load_settings(self, gui_name: str):
+        """Loads GUI settings from the ini-File into the class itself
+
+        Args:
+            gui_name (str): Name of the GUI to find the matching ini-file
+        """        
 
         fileext = gui_name.split(".")[-1]
         filename = gui_name.replace(fileext, "ini")
@@ -123,31 +161,36 @@ class UttaZthProcessing:
             config.optionxform = str  # type: ignore # set configparser to Case-Sensitive
             config.read_file(open(filename))
 
-            self.no_of_tsp = int(config["Settings"]["NoOfTSP"])
-            self.MaxDeltaT_StartEnd = float(config["Settings"]["MaxDeltaT_StartEnd"])
-            self.cooling_start_idx_max_trsh = int(config["Settings"]["CoolingStartIndexMaxTrsh"])
+            self.no_of_tsp = int(config.get("Settings", "NoOfTSP", fallback='3'))
+            self.MaxDeltaT_StartEnd = float(config.get("Settings", "MaxDeltaT_StartEnd", fallback='1'))
+            self.cooling_start_idx_max_trsh = int(config.get("Settings", "CoolingStartIndexMaxTrsh", fallback='150'))
 
-            self.zero_current_detection_mode = config["Settings"]["ZeroCurrentDetectionMode"]
-            self.zero_current_detection_ratio = float(config["Settings"]["ZeroCurrentDetectionRatio"])
+            self.zero_current_detection_mode = config.get("Settings", "ZeroCurrentDetectionMode", fallback='Minimum')
+            self.zero_current_detection_ratio = float(config.get("Settings", "ZeroCurrentDetectionRatio", fallback='0.312'))
 
-            self.InterpolationAverageHW = int(config["Interpolation"]["AvgHalfWidth"])
-            self.InterpolationTStart = float(config["Interpolation"]["Tstart"])
-            self.InterpolationTEnd = float(config["Interpolation"]["Tend"])
+            self.InterpolationAverageHW = int(config.get("Interpolation", "AvgHalfWidth", fallback='3'))
+            self.InterpolationTStart = float(config.get("Interpolation", "Tstart", fallback='0.0001'))
+            self.InterpolationTEnd = float(config.get("Interpolation", "Tend", fallback='0.0002'))
 
-            self.Cth_Si = float(config["Materials"]["Cth_Si"])
-            self.rho_Si = float(config["Materials"]["rho_Si"])
-            self.kappa_SI = float(config["Materials"]["kappa_SI"])
+            self.Cth_Si = float(config.get("Materials", "Cth_Si", fallback='700.0'))
+            self.rho_Si = float(config.get("Materials", "rho_Si", fallback='2330.0'))
+            self.kappa_SI = float(config.get("Materials", "kappa_SI", fallback='148.0'))
 
-            self.export_zth_samples_decade = int(config["Export"]["Zth_SamplesDecade"])
-            self.export_tdim_max_points = int(config["Export"]["TDIM_MaxSamples"])
-            self.export_tdim_reduce_time = float(config["Export"]["TDIM_ReduceTime"])
+            self.export_zth_samples_decade = int(config.get("Export", "Zth_SamplesDecade", fallback='10'))
+            self.export_tdim_max_points = int(config.get("Export", "TDIM_MaxSamples", fallback='49999'))
+            self.export_tdim_reduce_time = float(config.get("Export", "TDIM_ReduceTime", fallback='100.0'))
             
-            self.deconv_samples_per_decade = int(config["Deconvolution_LucyRichardson"]["SamplesDecade"])
-            self.lr_pad_decades = int(config["Deconvolution_LucyRichardson"]["Pre_Post_Pad_Decades"])
-            self.lr_sharpening = float(config["Deconvolution_LucyRichardson"]["LR_Peak_Sharpening"])
-            self.lr_iterations = int(config["Deconvolution_LucyRichardson"]["LR_Iterations"])
+            self.deconv_samples_per_decade = int(config.get("Deconvolution_LucyRichardson", "SamplesDecade", fallback='20'))
+            self.lr_pad_decades = int(config.get("Deconvolution_LucyRichardson", "Pre_Post_Pad_Decades", fallback='2'))
+            self.lr_sharpening = float(config.get("Deconvolution_LucyRichardson", "LR_Peak_Sharpening", fallback='0.0'))
+            self.lr_iterations = int(config.get("Deconvolution_LucyRichardson", "LR_Iterations", fallback='1000'))
 
     def save_settings(self, gui_name: str):
+        """Saves the current GUI settings into an ini-file with the same name as the GUI.
+
+        Args:
+            gui_name (str): Name of the GUI Application. This name will be used as file name.
+        """        
 
         fileext = gui_name.split(".")[-1]
         filename = gui_name.replace(fileext, "ini")
@@ -184,8 +227,18 @@ class UttaZthProcessing:
         with open(filename, 'w') as configfile:
             config.write(configfile)
 
-    def import_data(self, file_nam: str):
+    def import_data(self, file_nam: str) ->bool:
+        """Imports the data from a utta measurement file (*.umf) an preprocesses the data into a usable format.
+        The data will be stored within the class
+
+        Args:
+            file_nam (str): Path to the measurement file
+
+        Returns:
+            bool: True when import was completed without errors
+        """        
         retval = False
+        self.flag_import_successful = False
         if len(file_nam) > 1:
             self.time_full, adc, self.tc, self.meta_data = uTTA_data_import.read_measurement_file(file_nam, 0, logger=self.logger)
             if len(self.time_full) > 0:
@@ -208,9 +261,11 @@ class UttaZthProcessing:
     ###################################################
     
     def interpolate_to_common_timebase(self):
-        ''' Interpolates the measurement data of ADCs and thermocouples to a common timebase.
-            This interpolation helps when doing data postprocessing for a TSP calibration as ADC values and Thermocouple values are now on a common timebase
-        '''
+        """Interpolates the measurement data of ADCs and thermocouples to a common timebase.
+           This interpolation helps when doing data postprocessing for a TSP calibration as ADC 
+           values and Thermocouple values are now on a common timebase.
+        """        
+
         if self.flag_import_successful:         # prevent interpolation in case no data is available
             self.logger.debug(f"Number of temperature samples: {len(self.tc[0])}, "
                              f"Duration of measurement: {self.time_full[-1]} = {len(self.tc[0]) / self.time_full[-1]} Samples/Second")
@@ -240,7 +295,7 @@ class UttaZthProcessing:
         return
 
     def calculate_cooling_curve(self):
-        ''' First step of postprocessing measurement data from uTTA device. 
+        """ First step of postprocessing measurement data from uTTA device. 
             This procedure includes:
             - Identification of the first block of the cooling section
             - Analysis of current during cooling section, including measurement of min and max current (jut_imin and jut_imax)
@@ -251,7 +306,7 @@ class UttaZthProcessing:
                    what the ADC readings indicate. 
             - Rescaling of the cooling timebase. t=0 is shifted to the sample detected by the zero heating current detection
             - Calculation of the heating current, voltage and power by averaging data from the last data block before the cooling section starts
-        '''
+        """
         if self.meta_data.FlagTSPCalibrationFile:
             self.logger.error("Unable to calculate power dissipation on a calibration file!")
             return
@@ -259,10 +314,10 @@ class UttaZthProcessing:
         if self.flag_import_successful:
             # Cut Timebase and measurement to cooling section
             pre_cooling_samples = self.meta_data.CoolingStartBlock * self.meta_data.SamplesPerDecade
-            time_base_cooling = (self.time_full[pre_cooling_samples:-1] -
+            time_base_cooling = (self.time_full[pre_cooling_samples:] -
                                  self.time_full[pre_cooling_samples - 1])
-            self.udiode_cooling = self.udiode_full[:, pre_cooling_samples:-1]
-            self.current_cooling = self.current_full[pre_cooling_samples:-1]
+            self.udiode_cooling = self.udiode_full[:, pre_cooling_samples:]
+            self.current_cooling = self.current_full[pre_cooling_samples:]
 
             # Get Min and Max Values of the Full Cooling Curve
             self.jut_imin = min(self.current_cooling)
@@ -289,8 +344,9 @@ class UttaZthProcessing:
                 self.flag_zero_current_unfeasible = True
 
             # Cut the measurement data down to the starting point of the cooling phase
-            self.udiode_cooling = self.udiode_cooling[:, self.cooling_start_idx:-1]
-            self.time_cooling = time_base_cooling[self.cooling_start_idx:-1] - time_base_cooling[self.cooling_start_idx - 1]
+            self.udiode_cooling = self.udiode_cooling[:, self.cooling_start_idx:]
+            self.current_cooling = self.current_cooling[self.cooling_start_idx:]
+            self.time_cooling = time_base_cooling[self.cooling_start_idx:] - time_base_cooling[self.cooling_start_idx - 1]
             self.flag_cooling_curve_calculated = True
 
             # Calculate the average heating current, voltage and power through the diode 
@@ -314,6 +370,10 @@ class UttaZthProcessing:
         return
 
     def calculate_tsp_start_voltages(self):
+        """Calculates voltages at the start and end of each measurement. 
+        This way the temperature difference between start and end of the measurement can be calculated.
+        Too high differences in between these temperatures may indicate a problem during the measurement.
+        """        
         u_dio_cold_start = np.zeros((self.no_of_tsp,), numpy.float32)
         u_dio_cold_end = np.zeros((self.no_of_tsp,), numpy.float32)
         t_monitor_heated = np.zeros((self.no_of_tsp,), numpy.float32)
@@ -353,6 +413,9 @@ class UttaZthProcessing:
         self.t_dio_raw = t_dio
 
     def interpolate_zth_curve_start(self):
+        """Interpolation function to do the interpolation at the beginning of the cooling phase.
+        This is needed to get rid of the electrical transient which occurs at the switch off of the heating current.
+        """        
         interp_idx_start = find_nearest(self.time_cooling, self.InterpolationTStart)
         interp_idx_end = find_nearest(self.time_cooling, self.InterpolationTEnd)
 
@@ -686,7 +749,7 @@ class UttaZthProcessing:
     def add_current_measure_cooling_curve_plot(self):
         lines = [
             {'x_data': self.time_cooling,
-             'y_data': self.udiode_cooling[3, :],
+             'y_data': self.current_cooling,
              'label': "Current",
              'axis': 0}
             ]
@@ -819,9 +882,8 @@ class UttaZthProcessing:
                                              y_label='Thermal Impedance / [K/W]',
                                              title='Thermal Impedance')
 
-def find_static_states(indata: np.ndarray, threshold: float=0.01, min_length: int=5):
-    """ Generated with Google Gemini
-    Detects static areas within a numpy-array where values stay within a certain threshold and have a minimum length.
+def find_static_states(indata:list|np.ndarray, threshold: float=0.01, min_length: int=5):
+    """ Detects static areas within a numpy-array where values stay within a certain threshold and have a minimum length.
 
     Args:
         indata (numpy.ndarray): Input data array
@@ -831,23 +893,23 @@ def find_static_states(indata: np.ndarray, threshold: float=0.01, min_length: in
     Returns:
         list: a list of tuples which represent the start and end points of each area.
     """
-
     ranges = []
-    start = -1
 
-    for i in range(len(indata)):
-        if start == -1:
-            start = i
-        elif abs(indata[i] - indata[start]) > threshold:
-            if i - start >= min_length:
-                ranges.append((start, i - 1))
-            start = i
+    end_idx =int(min_length)
+    in_len = len(indata)
 
-    # checking if the last range is long enough
-    if len(indata) - start >= min_length:
-        ranges.append((start, len(indata) - 1))
-
+    while end_idx < in_len-min_length-1:
+        start_idx = max(0, end_idx - min_length)
+        comp_arr = indata[start_idx: end_idx]
+        arr_pp = max(comp_arr) - min(comp_arr)
+        
+        if arr_pp <= threshold:
+            ranges.append((start_idx, end_idx))
+            end_idx += int(min_length/2)
+        else:
+            end_idx +=1
     return ranges
+
 
 def find_nearest(arr: np.ndarray, value: float):
     # Element in nd array `arr` closest to the scalar value `value`
