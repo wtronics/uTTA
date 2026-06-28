@@ -1,3 +1,38 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Module Name:    uTTA_Postprocess_Calibration_GUI.pyw
+Description:    GUI for postprocessing TSP calibration measurements.
+                Features:
+                - Import of uTTA measurement files including automatic scaling
+                - Interpolation of thermocouples and TSPs to a common time base
+                - Automatic detection of steady state regions for identification of valid points for TSP parameter interpolation
+                - Manual identification of steady state regions for TSP parameter interpolation
+                - TSP parameter interpolation. User selectable as pure linear or quadratic interpolation
+                - Save calibration results to existing calibration file
+                - Load and Save last GUI settings when the application is opened/closed
+
+Author:         wtronics
+Email:          169440509+wtronics@users.noreply.github.com
+Date:           28.09.2025 (moved)
+Version:        $VERSION$
+
+--------------------------------------------------------------------------
+License:
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)
+
+You are free to share and adapt this material under the following terms:
+- Attribution: You must give appropriate credit.
+- NonCommercial: You may not use the material for commercial purposes.
+- ShareAlike: You must distribute your contributions under the same license.
+
+The full license text can be found at:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+--------------------------------------------------------------------------
+"""
+
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore # matplotlib 3.9.2
 from matplotlib.figure import Figure  
 from tksheet import (Sheet, float_formatter)
@@ -21,6 +56,8 @@ WINDOW_HEIGHT = 960
 
 class CalApp(ttk.Window):
     def __init__(self):
+        """Initialize the application, load settings from last session and build the GUI
+        """        
         super().__init__()
 
         self.title("uTTA Calibration Factor Calculation Tool")
@@ -120,8 +157,7 @@ class CalApp(ttk.Window):
         self.t_result_sheet.insert_rows(rows=3)
         self.t_result_sheet.enable_bindings()
         self.t_result_sheet.sheet_data_dimensions(total_rows=4, total_columns=4)
-        self.t_result_sheet.format("B:E", formatter_options=float_formatter(), decimals=4)
-        # self.t_result_sheet.format("C:E", formatter_options=float_formatter(), decimals=4)
+        self.t_result_sheet.format("B:E", formatter_options=float_formatter(), decimals=7)
         self.t_result_sheet.headers(tab_result_heading)
         self.t_result_sheet.set_all_column_widths(70)
 
@@ -229,6 +265,9 @@ class CalApp(ttk.Window):
             config.write(configfile)
 
     def update_plots(self):
+        """Updates all plots with fresh data.
+        Adds highlighted areas where steady state regions were marked.
+        """        
 
         if len(self.g_plots) == 0 :
             return
@@ -318,6 +357,8 @@ class CalApp(ttk.Window):
         self.canvas.draw()
 
     def save_calibration_results(self):
+        """Saves calibration results to an existing *.ucf calibration file
+        """        
 
         cal_file_name = udpc.select_file("Select the measurement file",
                                                      (('uTTA Calibration Files', '*.ucf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
@@ -368,13 +409,16 @@ class CalApp(ttk.Window):
             self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was not imported.", style='warning.Inverse.TLabel')
 
     def read_measurement_file_callback(self):
-
+        """Callback function triggered by the Open Measurement button.
+        - Loads a full measurement file into the GUI
+        - Interpolates TSP voltages and thermocouples to a common timebase
+        - searches for steady state temperatures and TSP voltages to find viable calibration points
+        """        
         measfilename = udpc.select_file("Select the measurement file",
                                                     (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
         if len(measfilename) > 0:    # check if string is not empty
             self.meas_file_path, data_file_no_ext, file_path = udpc.split_file_path(measfilename)
             self.utta_data.import_data(measfilename)
-            
             
             self.detected_static_states = []
             self.highlight_static_state = -1
@@ -383,7 +427,6 @@ class CalApp(ttk.Window):
                 self.utta_data.interpolate_to_common_timebase()
 
                 self.auto_detect_steady_states()
-
 
                 self.btn_add_steps.configure(state='normal')
                 self.btn_auto_detects.configure(state='normal')
@@ -396,11 +439,17 @@ class CalApp(ttk.Window):
                                            style='warning.Inverse.TLabel')
                 self.btn_add_steps.configure(state='disabled')
                 self.btn_auto_detects.configure(state='disabled')
-                
         else:
             self.lbl_helpbar.configure(text=f"File: {self.meas_file_path} was not imported.", style='danger.Inverse.TLabel')
             
     def auto_detect_steady_states(self) -> None:
+        """Automatically detects steady state regions in TSP and thermocouple data. At first
+        steady state regions are detected for voltage and temperature separately.
+        After detection the detection the TSP voltage regions are shrunk down to a 60 seconds window
+        in the middle of the detected area (aiming to get even more stable resilts).
+        Next it is checked that this window fits into one of the found temperature regions.
+        Otherwise the area is discarded.
+        """        
 
         if self.utta_data.flag_import_successful:
 
@@ -422,12 +471,14 @@ class CalApp(ttk.Window):
                     for tc_static in tc_static_states:
                         if tc_static[0] < idx_center and tc_static[1]> idx_center+60:
                             t_avg = np.mean(self.utta_data.tc_interp[0, idx_center:idx_center+60]) # type: ignore
-                            self.add_cal_step_entry(idx_center, idx_center+60, t_avg)
+                            self.add_cal_step_entry(idx_center, idx_center+60, float(t_avg))
                             break
                     
             self.update_plots()
 
     def add_calibration_step(self) -> None:
+        """Adds a new calibration step to the table and the plot
+        """        
         cal_range = self.g_plots[0].get_xlim()
 
         t_step = self.ent_step_temp.get()
@@ -450,7 +501,15 @@ class CalApp(ttk.Window):
             else:
                 self.lbl_helpbar.configure(text="Repeat the selection process with the next temperature step")
 
-    def add_cal_step_entry(self, starttime, endtime, temp_step):
+    def add_cal_step_entry(self, starttime:int, endtime:int, temp_step:float) -> None:
+        """Adds a new calibration step as entry to the step table.
+        Start and Endtime are baiscally the indexes of the samples
+
+        Args:
+            starttime (int): Start time ne new area starts
+            endtime (int): End time the new area ends
+            temp_step (float): The average thermocouple temperature calculated for this step
+        """             
         self.t_step_sheet.insert_row(idx=0)
         self.t_step_sheet["A1"].data = float(temp_step)
         self.t_step_sheet["B1"].data = np.mean(self.utta_data.adc_interp[0, starttime:endtime]) # type: ignore
@@ -463,6 +522,10 @@ class CalApp(ttk.Window):
         self.consolidate_cal_step_entries()
 
     def consolidate_cal_step_entries(self):
+        """Runs through the found calibraion steps and removes redundant entries.
+        Furthermore, entries which intersect are merged to one entry.
+        """
+
         tbl = self.t_step_sheet.data
 
         if not tbl: # just in case the table is empty
@@ -517,6 +580,8 @@ class CalApp(ttk.Window):
         self.update()
 
     def remove_calibration_step(self):
+        """Removes the currently selected calibration step from the step table and the plots.
+        """        
         row_number = None
         tbl = self.t_step_sheet
         for box in tbl.get_all_selection_boxes():
@@ -527,6 +592,12 @@ class CalApp(ttk.Window):
         self.update_plots()
 
     def on_cell_select(self, event):
+        """Event-Callback function triggerd by the cell select event of the step table.
+        Triggers a redraw of the plots where the currently selected calibration step is highlighted.
+
+        Args:
+            event (dict): The event information
+        """        
 
         content = event["selected"]
         self.highlight_static_state = content.row
@@ -534,8 +605,9 @@ class CalApp(ttk.Window):
         self.update_plots()
 
     def fit_temp_steps(self):
-
-        global InterpolationDegrees
+        """Fitting function. Takes the identified calibration steps and calculates for each channel (including thermocouples)
+        the polynomial fit. 
+        """        
 
         self.update_plots()
         tbl = self.t_step_sheet.data
@@ -562,7 +634,7 @@ class CalApp(ttk.Window):
                     r_sq = corr ** 2
                 else:
                     r_sq = 1.0
-                print(f"Fitting Channel {ChIdx} with quadratic interpolation: Offset: {offs:.4f} ,Linear: {slope:.4f}, Quad: {quad:.7f}, R²: {r_sq:.4f}")
+                print(f"Fitting Channel {ChIdx} with interpolation degree n={interp_deg}: Offset: {offs:.4f} ,Linear: {slope:.4f}, Quad: {quad:.7f}, R²: {r_sq:.4f}")
                 if ChIdx < MaxJUT_Channels:
                     self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=self.utta_data.meta_data.Channels[ch_tsp]["Name"])
                 # else:
@@ -575,11 +647,18 @@ class CalApp(ttk.Window):
             self.btn_save_result.configure(state='normal')
 
     def on_closing(self):
-        # if messagebox.askokcancel("Quit", "Do you want to quit?"):
-        self.save_settings()
-        self.destroy()
+        """On Closing event. Triggered as soon as the application window is closed
+        """        
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.save_settings()
+            self.destroy()
 
     def on_xlims_change(self, event_ax):
+        """Plot Event, triggerd when the plot is zoomed and the x-limits change.
+
+        Args:
+            event_ax (_type_): The event information
+        """        
 
         x_limits = event_ax.get_xlim()
         xlim_min = int(x_limits[0])
