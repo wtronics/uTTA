@@ -20,3 +20,4 @@
 *.xml
 /020_uC_Software/uTTA/Debug
 /050_Phyton_Scripts/uTTA/widgets/__pycache__
+*.log
