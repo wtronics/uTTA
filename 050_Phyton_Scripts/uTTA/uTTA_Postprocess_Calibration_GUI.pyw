@@ -2,7 +2,8 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 from matplotlib.figure import Figure  
 from tksheet import (Sheet, float_formatter)
 from quantiphy import Quantity      
-
+import os
+import configparser
 import library.uTTA_data_processing as udpc
 import numpy as np                  
 import matplotlib 
@@ -12,9 +13,7 @@ import ttkbootstrap as ttk
 
 matplotlib.use("TkAgg")
 
-MaxDeltaT_StartEnd = 1.0
 MaxJUT_Channels = 3
-InterpolationDegrees = 1
 
 WINDOW_WIDTH = 1580
 WINDOW_HEIGHT = 960
@@ -33,6 +32,15 @@ class CalApp(ttk.Window):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
         self.utta_data = udpc.UttaZthProcessing()
+        fileext = __file__.split(".")[-1]
+        self.ini_filename = __file__.replace(fileext, "ini")
+
+        self.Interpolation_Degrees = tk.IntVar()
+        self.steady_state_min_duration = tk.DoubleVar()
+        self.steady_state_max_pp_diode = tk.DoubleVar()
+        self.steady_state_max_pp_tc_k = tk.DoubleVar()
+
+        self.load_settings()
 
         self.meas_file_path:str = ''
         self.g_plots:list = []
@@ -48,14 +56,23 @@ class CalApp(ttk.Window):
 
         self.frm_left = ttk.Frame(self.paned)
         self.frm_left.pack(fill=tk.X, padx=5, pady=5)
-        self.frm_file_btns = ttk.Frame(master=self.frm_left)
+
+        self.tabs = ttk.Notebook(master=self.frm_left)
+        self.tabs.pack(fill=tk.BOTH, padx=5, pady=5)
+
+        # 1st Page: Calibration
+        self.frm_calibration = ttk.Frame(master=self)
+        self.frm_calibration.pack(fill=tk.BOTH, padx=10, pady=10)
+        self.tabs.add(self.frm_calibration, text="Calibration")
+
+        self.frm_file_btns = ttk.Frame(master=self.frm_calibration)
         self.frm_file_btns.pack(fill=tk.X, padx=5, pady=5)
 
         self.btn_measure_file = ttk.Button(master=self.frm_file_btns, text="Measurement File",
                                            command=self.read_measurement_file_callback, width=14)
         self.btn_measure_file.pack(fill=tk.X, padx=5, pady=5)
 
-        frm_step_table = ttk.Labelframe(master=self.frm_left,text="Calibration Temperature Steps")
+        frm_step_table = ttk.Labelframe(master=self.frm_calibration,text="Calibration Temperature Steps")
         frm_step_table.pack(fill=tk.X, padx=5, pady=5)
 
         ttk.Label(master=frm_step_table, text="Step Temp:", 
@@ -77,6 +94,10 @@ class CalApp(ttk.Window):
                                          command=self.fit_temp_steps, state="disabled")
         self.btn_calc_steps.grid(row=2, column=0, sticky='ew', padx=5, pady=5)
 
+        self.btn_auto_detects = ttk.Button(master=frm_step_table, text="Auto-Detect",
+                                         command=self.auto_detect_steady_states, state="disabled")
+        self.btn_auto_detects.grid(row=2, column=1, sticky='ew', padx=5, pady=5)
+
         tab_heading = ["T/[°C]", "CH0 Avg.", "CH1 Avg.", "CH2 Avg.", "Temp Avg.", "Start", "End"]
         self.t_step_sheet = Sheet(frm_step_table, startup_select=(0, 1, "rows"),
                                   page_up_down_select_row=True)
@@ -89,7 +110,7 @@ class CalApp(ttk.Window):
         self.t_step_sheet.headers(tab_heading)
         self.t_step_sheet.set_all_column_widths(55)
 
-        frm_result_table = ttk.Labelframe(master=self.frm_left, text="Linearization Results")
+        frm_result_table = ttk.Labelframe(master=self.frm_calibration, text="Linearization Results")
         frm_result_table.pack(fill=tk.BOTH, padx=5, pady=5)
 
         tab_result_heading = ["Channel", "Offset", "Lin.", "Quad.", "R²"]
@@ -107,6 +128,34 @@ class CalApp(ttk.Window):
         self.btn_save_result = ttk.Button(master=frm_result_table, text="Save Calibration", width=12,
                                           command=self.save_calibration_results, state="disabled")
         self.btn_save_result.grid(row=0, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
+
+        # 2nd Page: Settings
+        self.frm_settings = ttk.Frame(master=self)
+        self.frm_settings.pack(fill=tk.BOTH, padx=5, pady=5)
+        self.tabs.add(self.frm_settings, text="Settings")
+
+        self.frm_set_interp = ttk.Labelframe(master=self.frm_settings, text='Interpolation')
+        self.frm_set_interp.pack(fill=tk.X, padx=5, pady=5)
+        ttk.Label(master=self.frm_set_interp, text='Polynomial Degrees', anchor='e', width=26).grid(row=0, column=0, padx=5, pady=5)
+        self.sb_interp_degrees = ttk.Spinbox(master=self.frm_set_interp, from_=1, to=2, textvariable=self.Interpolation_Degrees , width=7)
+        self.sb_interp_degrees.grid(row=0, column=1, sticky="ew", padx=5, pady=5)
+
+        self.frm_steady_state = ttk.Labelframe(master=self.frm_settings, text='Steady State Detection')
+        self.frm_steady_state.pack(fill=tk.X, padx=5, pady=5)
+        ttk.Label(master=self.frm_steady_state, text='Minimum Steady Time', anchor='e', width=26).grid(row=0, column=0, padx=5, pady=5)
+        self.sb_min_steady_time = ttk.Spinbox(master=self.frm_steady_state, from_=30.0, to=1000.0, increment=0.5, textvariable=self.steady_state_min_duration , width=7, justify='right')
+        self.sb_min_steady_time.grid(row=0, column=1, sticky="ew", padx=5, pady=5)
+        ttk.Label(master=self.frm_steady_state, text='s', anchor='w', width=3).grid(row=0, column=2, padx=2, pady=5)
+
+        ttk.Label(master=self.frm_steady_state, text='Max. Voltage P-P Deviation', anchor='e', width=26).grid(row=1, column=0, padx=5, pady=5)
+        self.sb_max_diode_pp = ttk.Spinbox(master=self.frm_steady_state, from_=0.01, to=10.0, increment=0.01, textvariable=self.steady_state_max_pp_diode , width=7, justify='right')
+        self.sb_max_diode_pp.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
+        ttk.Label(master=self.frm_steady_state, text='mV', anchor='w', width=3).grid(row=1, column=2, padx=2, pady=5)
+
+        ttk.Label(master=self.frm_steady_state, text='Max. Temperature Deviation', anchor='e', width=26).grid(row=2, column=0, padx=5, pady=5)
+        self.sb_max_tck_pp = ttk.Spinbox(master=self.frm_steady_state, from_=0.05, to=5.0, increment=0.05, textvariable=self.steady_state_max_pp_tc_k , width=7, justify='right')
+        self.sb_max_tck_pp.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
+        ttk.Label(master=self.frm_steady_state, text='°C', anchor='w', width=3).grid(row=2, column=2, padx=2, pady=5)
 
         self.paned.add(self.frm_left)
 
@@ -147,6 +196,37 @@ class CalApp(ttk.Window):
 
         self.update_plots()
         self.update()
+
+    def load_settings(self):
+            """Loads GUI settings from the ini-File into the class itself
+            """        
+
+            if os.path.isfile(self.ini_filename):        # check if the config file exists
+                config = configparser.ConfigParser()
+                config.optionxform = str  # type: ignore # set configparser to Case-Sensitive
+                config.read_file(open(self.ini_filename))
+
+                self.Interpolation_Degrees.set(int(config.get("Settings", "Interpolation_Degrees", fallback='1')))
+
+                self.steady_state_min_duration.set(float(config.get("Steady_State_Detection", "Min_Duration", fallback='500.0')))
+                self.steady_state_max_pp_diode.set(float(config.get("Steady_State_Detection", "Max_PP_Diode", fallback='0.0008')))
+                self.steady_state_max_pp_tc_k.set(float(config.get("Steady_State_Detection", "Max_PP_TCK", fallback='1.55')))
+
+    def save_settings(self):
+        """Saves the current GUI settings into an ini-file with the same name as the GUI.
+        """        
+        config = configparser.ConfigParser()
+        config.optionxform = str  # type: ignore # set configparser to Case-Sensitive
+        config.add_section("Settings")
+        config.set("Settings", "Interpolation_Degrees", value=str(self.Interpolation_Degrees.get()))
+
+        config.add_section('Steady_State_Detection')
+        config.set("Steady_State_Detection", "Min_Duration", value=str(self.steady_state_min_duration.get()))
+        config.set("Steady_State_Detection", "Max_PP_Diode", value=str(self.steady_state_max_pp_diode.get()))
+        config.set("Steady_State_Detection", "Max_PP_TCK", value=str(self.steady_state_max_pp_tc_k.get()))
+
+        with open(self.ini_filename, 'w') as configfile:
+            config.write(configfile)
 
     def update_plots(self):
 
@@ -286,7 +366,6 @@ class CalApp(ttk.Window):
                         
         else:
             self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was not imported.", style='warning.Inverse.TLabel')
-           
 
     def read_measurement_file_callback(self):
 
@@ -302,34 +381,53 @@ class CalApp(ttk.Window):
 
             if self.utta_data.meta_data.FlagTSPCalibrationFile:
                 self.utta_data.interpolate_to_common_timebase()
-                #self.utta_data.time_interp, self.utta_data.adc_interp, Temp = uTTA_data_processing.interpolate_to_common_timebase(tb_import, adc_import, tc_import)
 
-                # look for periods of at least 5 minutes (300 samples) where the temperature changes less than +/-0.7°C
-                # self.detected_static_states = uTTA_data_processing.find_static_states(Temp[0, :], 0.7, 200)
-                self.detected_static_states = udpc.find_static_states(self.utta_data.adc_interp[0, :], 0.0008, 500) # type: ignore
+                self.auto_detect_steady_states()
 
-                if self.detected_static_states:
-                    for stat_state in self.detected_static_states:
-                        # for the temperature average take only the last 60 samples (1Minute) for the average
-                        t_avg = np.mean(self.utta_data.tc_interp[0, (stat_state[1]-60):stat_state[1]]) # type: ignore
-                        self.add_cal_step_entry(stat_state[1]-60, stat_state[1], t_avg)
-
-                self.update_plots()
 
                 self.btn_add_steps.configure(state='normal')
-                self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was successfully imported.\nNow click on the magnifying glass below the plot and select "+
+                self.btn_auto_detects.configure(state='normal')
+                self.lbl_helpbar.configure(text=f"File: {self.meas_file_path} was successfully imported.\nNow click on the magnifying glass below the plot and select "+
                                            "the first horizontal section in the upper plot.",
                                            style='info.Inverse.TLabel')
                 
             else:
-                self.lbl_helpbar.configure(text="Seems like : " + self.meas_file_path + " is not a calibration measurement. Therefore the measurement was not imported.",
+                self.lbl_helpbar.configure(text=f"Seems like : {self.meas_file_path} is not a calibration measurement. Therefore the measurement was not imported.",
                                            style='warning.Inverse.TLabel')
+                self.btn_add_steps.configure(state='disabled')
+                self.btn_auto_detects.configure(state='disabled')
                 
         else:
-            self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was not imported.", style='danger.Inverse.TLabel')
+            self.lbl_helpbar.configure(text=f"File: {self.meas_file_path} was not imported.", style='danger.Inverse.TLabel')
             
+    def auto_detect_steady_states(self) -> None:
 
-    def add_calibration_step(self):
+        if self.utta_data.flag_import_successful:
+
+            max_dev = float(self.steady_state_max_pp_diode.get())/1000.0
+            max_tc_dev = float(self.steady_state_max_pp_tc_k.get())
+            t_steady = int(self.steady_state_min_duration.get())
+            # Check for regions where the TSP value is stable within a certain range for a given time. The do the same with the thermocouples
+            self.detected_static_states = udpc.find_static_states(self.utta_data.adc_interp[0, :], max_dev, t_steady) # type: ignore
+            tc_static_states = udpc.find_static_states(self.utta_data.tc_interp[0, :], max_tc_dev, t_steady) # type: ignore
+
+            #print(f"TC Static States: {tc_static_states}")
+            # After finding areas for TSP and thermocouple these regions are crosschecked to make sure the areas overlap.
+            # Non overlapping areas are discarded
+            if self.detected_static_states:
+                for stat_state in self.detected_static_states:
+                    # calculate the temperature average for the center 60s of the found data
+                    idx_center = int(sum(stat_state)/2) -30  # calculated the most central index of the found range and subtract 30 seconds
+
+                    for tc_static in tc_static_states:
+                        if tc_static[0] < idx_center and tc_static[1]> idx_center+60:
+                            t_avg = np.mean(self.utta_data.tc_interp[0, idx_center:idx_center+60]) # type: ignore
+                            self.add_cal_step_entry(idx_center, idx_center+60, t_avg)
+                            break
+                    
+            self.update_plots()
+
+    def add_calibration_step(self) -> None:
         cal_range = self.g_plots[0].get_xlim()
 
         t_step = self.ent_step_temp.get()
@@ -358,9 +456,65 @@ class CalApp(ttk.Window):
         self.t_step_sheet["B1"].data = np.mean(self.utta_data.adc_interp[0, starttime:endtime]) # type: ignore
         self.t_step_sheet["C1"].data = np.mean(self.utta_data.adc_interp[1, starttime:endtime]) # type: ignore
         self.t_step_sheet["D1"].data = np.mean(self.utta_data.adc_interp[2, starttime:endtime]) # type: ignore
-        self.t_step_sheet["E1"].data = np.mean(self.utta_data.adc_interp[0, starttime:endtime]) # type: ignore
+        self.t_step_sheet["E1"].data = np.mean(self.utta_data.tc_interp[0, starttime:endtime]) # type: ignore
         self.t_step_sheet["F1"].data = starttime
         self.t_step_sheet["G1"].data = endtime
+
+        self.consolidate_cal_step_entries()
+
+    def consolidate_cal_step_entries(self):
+        tbl = self.t_step_sheet.data
+
+        if not tbl: # just in case the table is empty
+            return
+        
+        # Sort the table by start time (column index 5)
+        # This way the overlapping intervall are next to each other.
+        sorted_data = sorted(tbl, key=lambda x: x[5])
+
+        # Initialisation with the first intervall
+        # Saved values: [[Summe_der_Werte], Start, End, , Number of values]
+        current_start = sorted_data[0][5+0]
+        current_end = sorted_data[0][5+1]
+        current_value_sum = sorted_data[0][0:5]
+        current_count = 1
+
+        merged = []
+
+        for i in range(1, len(sorted_data)):
+            next_start= sorted_data[i][5+0]
+            next_end  = sorted_data[i][5+1]
+            next_value = sorted_data[i][0:5]
+
+            # Check if the next intervall overlaps the the current one
+            if next_start <= current_end:
+
+                # Update the enttime (in case the new intervall reaches further than the old one)
+                current_end = max(current_end, next_end)
+                # Sum the values for each column for the later averaging
+                current_value_sum = [sum(x) for x in zip(current_value_sum, next_value)]
+                current_count += 1
+            else:
+                # No overlap -> close the old intervall and calculate the average
+                mean_value = [x/current_count for x in current_value_sum]
+                mean_value.extend([current_start, current_end])
+                merged.append(mean_value)
+                
+                # Get the next intervall as basis for the next step
+                current_start = next_start
+                current_end = next_end
+                current_value_sum = next_value
+                current_count = 1
+
+        # # Add the last remaining intervall
+        mean_value = [x/current_count for x in current_value_sum]    
+        mean_value.extend([current_start, current_end])
+        merged.append(mean_value)
+
+        self.t_step_sheet.set_sheet_data(data=merged, redraw=True)
+        self.t_step_sheet.set_sheet_data_and_display_dimensions(total_rows=len(merged))
+        self.t_step_sheet.refresh()
+        self.update()
 
     def remove_calibration_step(self):
         row_number = None
@@ -390,12 +544,13 @@ class CalApp(ttk.Window):
             for ChIdx in range(0, MaxJUT_Channels):  # iterate through all the 4 channels viewed
                 ch_tsp = f"TSP{ChIdx}"
                 x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
-
                 y_data = np.array(self.t_step_sheet.get_column_data(ChIdx + 1), dtype=np.float32)
 
-                p_fit = np.polyfit(x_data, y_data, InterpolationDegrees)
+                interp_deg = self.Interpolation_Degrees.get()
+                
+                p_fit = np.polyfit(x_data, y_data, interp_deg)
 
-                if InterpolationDegrees == 1:
+                if interp_deg == 1:
                     p_fit = np.insert(p_fit, 0, 0.0)
 
                 [quad, slope, offs] = p_fit
@@ -421,6 +576,7 @@ class CalApp(ttk.Window):
 
     def on_closing(self):
         # if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        self.save_settings()
         self.destroy()
 
     def on_xlims_change(self, event_ax):
@@ -430,8 +586,8 @@ class CalApp(ttk.Window):
         xlim_max = int(x_limits[1])
         # print("updated xlims: ", event_ax.get_xlim())
         self.g_plots[1].set_xlim(left=x_limits[0], right=x_limits[1])
-        ymin = np.min(self.utta_data.adc_interp[0, xlim_min:xlim_max]) # type: ignore
-        ymax = np.max(self.utta_data.adc_interp[0, xlim_min:xlim_max]) # type: ignore
+        ymin = np.min(self.utta_data.tc_interp[0, xlim_min:xlim_max]) # type: ignore
+        ymax = np.max(self.utta_data.tc_interp[0, xlim_min:xlim_max]) # type: ignore
         self.g_plots[1].set_ylim(bottom=ymin, top=ymax)
 
         tsp_min = float(np.min(self.utta_data.adc_interp[0, xlim_min:xlim_max])) # type: ignore
@@ -439,7 +595,7 @@ class CalApp(ttk.Window):
         tsp_pp = Quantity(tsp_max-tsp_min, "V")
 
         self.ent_step_temp.delete(0, 'end')
-        self.ent_step_temp.insert(0, f"{np.mean(self.utta_data.adc_interp[0, xlim_min:xlim_max]):.2f}") # type: ignore
+        self.ent_step_temp.insert(0, f"{np.mean(self.utta_data.tc_interp[0, xlim_min:xlim_max]):.2f}") # type: ignore
 
         self.lbl_helpbar.configure(text="Zoom into the measurement until the whole plot is filled with the steady state.\n" +
                                    f"Peak-to-peak spread of {self.utta_data.meta_data.Channels["TSP0"]["Name"] } is {tsp_pp}. " +
