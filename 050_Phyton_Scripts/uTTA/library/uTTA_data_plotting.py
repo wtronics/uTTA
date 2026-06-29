@@ -3,8 +3,8 @@
 
 """
 Module Name:    utta_data_plotting.py
-Description:    Specialized and custimizable plotting utility for generating
-                diagrams with matplotlib. These functions can be used withi
+Description:    Specialized and customizable plotting utility for generating
+                diagrams with matplotlib. These functions can be used within
                 GUIs as well as stand alone.
 
 Author:         wtronics
@@ -37,16 +37,17 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import numpy as np
 from matplotlib.gridspec import GridSpec
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 
 class UttaPlotConfiguration:
     """A class to save the plot configuration and the data for plotting a single graph.
     This class can be used as return value from functions which provide data to a GUI
-    """    
-    def __init__(self, data:list[dict]|dict, title:str, x_label:str, y_label:str, plot_type:str='line',
-                 x_scale:str='linear',x_scale_formatter = None , y_scale:str='linear', y_scale_formatter = None, style=None,
-                 secondary_data:list[dict]|dict|None=None, secondary_y_label:str|None=None):
+   """
+    def __init__(self, data: Union[List[Dict[str, Any]], Dict[str, Any]], title: str, x_label: str, y_label: str, plot_type: str = 'line',
+                 x_scale: str = 'linear', x_scale_formatter: Optional[Any] = None, y_scale: str = 'linear', y_scale_formatter: Optional[Any] = None, style: Optional[Dict[str, Any]] = None,
+                 secondary_data: Optional[Union[List[Dict[str, Any]], Dict[str, Any]]] = None, secondary_y_label: Optional[str] = None):
         """Initialization routine of the plot configuration
-
         Args:
             data (list[dict] | dict): X-Y data for the primary Y-axis provided as a list of dictionaries
                                       Each dictionary carries the following information:
@@ -71,7 +72,7 @@ class UttaPlotConfiguration:
                                       -axis (int): The axis number the data is printed on (starting at 0)
                                       -style (dict[str,str]): Styling information for the graph line e.g. {'color':'blue', 'marker':'x'} 
             secondary_y_label (str | None, optional): y-label text on the secondary y-axis. Defaults to None.
-        """        
+        """ 
 
         # TODO: find out if 'axis' in primary and secondary data is really needed.
         self.plot_type = plot_type
@@ -83,15 +84,16 @@ class UttaPlotConfiguration:
         self.x_scale_formatter = x_scale_formatter
         self.y_scale = y_scale
         self.y_scale_formatter = y_scale_formatter
-        self.style = style or {}  # for optional use of matplotlib styling parameters
+        self.style = style or {} # for optional use of matplotlib styling parameters
         self.secondary_data = secondary_data
-        self.secondary_y_label = secondary_y_label or {}
+        self.secondary_y_label = secondary_y_label or ""
+
 
 class UttaPlotData:
     """A dynamic plotting engine for easy integration of various data sources into a matplotlib
     graphing object with multiple subplots. The engine can also be used to run without a GUI if needed.
     """    
-    def __init__(self, parent:ttk.Frame|None, size:tuple[int,int], rows:int, cols:int, dpi:float=96, padding:float=3.0, no_gui:bool=False):
+    def __init__(self, parent: Optional[ttk.Frame], size: Tuple[int, int], rows: int, cols: int, dpi: float = 96, padding: float = 3.0, no_gui: bool = False):
         """Initializes a new dynamic matplotlib multiplot instance. 
 
         Args:
@@ -102,7 +104,7 @@ class UttaPlotData:
             dpi (float, optional): Screen resolution in dots per inch. Defaults to 96.
             padding (float, optional): Defines the padding around the subplots in pixels. Defaults to 3.0.
             no_gui (bool, optional): Set this flag to True in case the instance is not run from a GUI. Defaults to False.
-        """              
+        """  
 
         # Creates the Matplotlib-Figure and the subplots in the requested grid
         self.parent = parent
@@ -116,9 +118,15 @@ class UttaPlotData:
         self.cols = cols
         
         # Axis mapping: List if Dicts/tuples: [{"row": r, "col": c, "func": config_func, "ax": ax}, ...]
-        self.plot_mapping = []
+        self.plot_mapping: List[Dict[str, Any]] = []
         self._grid_needs_rebuild = True  # Flag to control when the grid must be rebuilt
 
+        # Saves the visibility of each curve.
+        # Structure: { (ax_index, "Curve-Label"): True/False }
+        self._visibility_cache: Dict[Tuple[int, str], bool] = {}
+
+        # Dictionary for mapping the legend element to the plot function while drawing
+        self._leg_to_plot_line: Dict[Any, Any] = {}
 
         # Matplotlib Defaults
         mpl.rcParams['axes.labelsize'] = 8
@@ -134,7 +142,6 @@ class UttaPlotData:
             self.figure = plt.figure(figsize=fig_size_inch, dpi=dpi)
         else:
             self.figure = Figure(figsize=(size[0] / dpi, (size[1]-10) / dpi), dpi=96)
-            
             # Initialize Canvas
             self.canvas = FigureCanvasTkAgg(self.figure, master=parent)
             self.canvas.get_tk_widget().pack(fill=tk.BOTH, padx=10, pady=10)
@@ -145,38 +152,58 @@ class UttaPlotData:
             self.toolbar = nav_toolbar.NavigationToolbar2Tk(self.canvas, toolbar_frame)
             self.toolbar.update()
 
-    def update_plots(self):
+        # Connect the Matplotlib Pick-Event to the handler
+        self.figure.canvas.mpl_connect('pick_event', self._on_legend_pick)
+
+
+    def update_plots(self) -> None:
         """Updates all defined subplots within this instance.
         """  
-
         # If mappings were added or items were deleted -> Rebuild Grid
         if self._grid_needs_rebuild:
             self._rebuild_grid()
 
-        # Iterate through the active mappings
-        for item in self.plot_mapping:
+        # Clear the mapping dictionary before redraw
+        self._leg_to_plot_line.clear()
+
+        # Iterate through the active mapping
+        for ax_idx, item in enumerate(self.plot_mapping):
             ax = item['ax']
             if ax is None:
                 continue
                 
             ax.clear()
-            config_func = item['func']
-            config = config_func()  
+            config = item['func']()  
             num_plots = 0
+            
+            # Lists to collect the line-objects for the legend
+            primary_lines = []
+            secondary_lines = []
 
             # ==========================================================
             # Logic for plots with 2 Y-Axis
             # ==========================================================
             if config.plot_type == 'dual_y_axis':
                 ax2 = ax.twinx()
+                
                 # Axis 1: Primary data
                 for line in config.data:
-                    ax.plot(line['x_data'], line['y_data'], label=line['label'], **line.get('style', {}))
+                    lbl = line['label']
+                    # Check the visibility cache (standard: True)
+                    is_visible = self._visibility_cache.setdefault((ax_idx, lbl), True)
+                    
+                    l, = ax.plot(line['x_data'], line['y_data'], label=lbl, visible=is_visible, **line.get('style', {}))
+                    primary_lines.append((l, (ax_idx, lbl)))
                     num_plots += 1
                 ax.set_ylabel(config.y_label)
+                
                 # Axis 2: Secondary Data
                 for sec_line in config.secondary_data:
-                    ax2.plot(sec_line['x_data'], sec_line['y_data'], label=sec_line['label'], **sec_line.get('style', {}))
+                    lbl = sec_line['label']
+                    is_visible = self._visibility_cache.setdefault((ax_idx, lbl), True)
+                    
+                    l, = ax2.plot(sec_line['x_data'], sec_line['y_data'], label=lbl, visible=is_visible, **sec_line.get('style', {}))
+                    secondary_lines.append((l, (ax_idx, lbl)))
                     num_plots += 1
                 ax2.set_ylabel(config.secondary_y_label)
                 # Scaling and axis synchronisation
@@ -189,15 +216,22 @@ class UttaPlotData:
                 if config.y_scale_formatter:
                     ax.yaxis.set_major_formatter(config.y_scale_formatter)
 
+            # ==========================================================
             # Logic for line plots
+            # ==========================================================
             elif config.plot_type == 'line':
 
                 for curve in config.data:
-                    ax.plot(curve['x_data'], curve['y_data'], label=curve['label'], **curve.get('style', {}))
+                    lbl = curve['label']
+                    is_visible = self._visibility_cache.setdefault((ax_idx, lbl), True)
+                    
+                    l, = ax.plot(curve['x_data'], curve['y_data'], label=lbl, visible=is_visible, **curve.get('style', {}))
+                    primary_lines.append((l, (ax_idx, lbl)))
                     num_plots += 1
                     # In case the plotted data have negative values, the y-axis scaling will be automatically changed to linear scale
                     if config.y_scale == 'log' and np.min(curve['y_data']) <= 0.0:
                         config.y_scale = 'linear'
+                        
                 ax.set_xscale(config.x_scale)
                 ax.set_yscale(config.y_scale)
                 if config.x_scale == 'log':
@@ -207,7 +241,23 @@ class UttaPlotData:
 
             # Common settings for all plots + the legend
             if num_plots > 0:       # check if anything was printed into the plot. Otherwise mpl will generate an error
-                ax.legend(loc='best', fontsize='small')
+                legend = ax.legend(loc='best', fontsize='small')
+                
+                # combine the legend entries from the lists with the real curve-objects
+                # Combine primary and secondary lines at once
+                all_drawn_lines = primary_lines + secondary_lines
+                
+                for leg_line, (plot_line, cache_key) in zip(legend.get_lines(), all_drawn_lines):
+                    leg_line.set_picker(True)
+                    leg_line.set_pickradius(10)
+                    
+                    # Save the mapping to the dictionary
+                    self._leg_to_plot_line[leg_line] = (plot_line, cache_key)
+                    
+                    # In case the curve is invisible, change the alpha within the legend accordingly
+                    if not plot_line.get_visible():
+                        leg_line.set_alpha(0.2)
+
             ax.set_title(config.title)
             ax.grid(axis="both")
             ax.set_xlabel(config.x_label)
@@ -217,11 +267,11 @@ class UttaPlotData:
         self.figure.tight_layout(pad=self.padding)
         if self.no_gui:
             plt.draw()
-            plt.show() # blocking plot window is opened here
+            plt.show()  # blocking plot window is opened here
         else:
             self.canvas.draw()
 
-    def _rebuild_grid(self):
+    def _rebuild_grid(self) -> None:
         """Deletes all axis and rebuilds them on the defined grid by self.rows and self.cols
         """
         # Delete all existing axes
@@ -231,7 +281,7 @@ class UttaPlotData:
         # Define a new gridspec
         if self.rows > 0 and self.cols > 0:
             gs = GridSpec(self.rows, self.cols, figure=self.figure)
-            
+
             # Add a new axis for every registered mapping within the new grid
             for item in self.plot_mapping:
                 r, c = item['row'], item['col']
@@ -241,14 +291,14 @@ class UttaPlotData:
                     item['ax'] = ax
         self._grid_needs_rebuild = False
 
-    def add_plot_mapping(self, row: int, col: int, config_func):
+    def add_plot_mapping(self, row: int, col: int, config_func: Callable[[], UttaPlotConfiguration]) -> None:
         """Helper method to eregister plots at a defined position.
 
         Args:
             row (int): The row the plot shall be drawn in. Index starts a 0
             col (int): The colum the plot shall be drawn in. Index starts a 0
-            config_func (_type_): The callback function generating the data and styling for the plot 
-        """        
+            config_func (Callable): The callback function generating the data and styling for the plot 
+        """  
         self.plot_mapping.append({
             'row': row,
             'col': col,
@@ -262,8 +312,7 @@ class UttaPlotData:
 
         Args:
             col_index (int): Index of the column to be removed. Index starts at 0
-
-        """        
+        """ 
         if col_index >= self.cols or col_index < 0:
             return  # Invalid Index
 
@@ -287,7 +336,7 @@ class UttaPlotData:
 
         Args:
             row_index (int): Index of the row to be removed. Index starts at 0
-        """        
+        """
         if row_index >= self.rows or row_index < 0:
             return  # Invalid Index
 
@@ -306,18 +355,44 @@ class UttaPlotData:
         self._grid_needs_rebuild = True
         self.update_plots()
     
-    def add_column(self):
+    def add_column(self) -> None:
         """Adds an empty column to the grid. Plots need to be mapped after adding the column.
         The new column is added on the right side
-        """        
+        """
         self.cols += 1
         self._grid_needs_rebuild = True
         self.update_plots()
     
-    def add_row(self):
+    def add_row(self) -> None:
         """Adds an empty row to the grid. Plots need to be mapped after adding the row.
         The new row is added on the bottom
-        """  
+        """
         self.rows += 1
         self._grid_needs_rebuild = True
         self.update_plots()
+    
+    def _on_legend_pick(self, event: Any) -> None:
+        """Internal event handler that toggles line visibility when a legend item is clicked.
+        """
+        leg_line = event.artist
+        if leg_line not in self._leg_to_plot_line:
+            return
+
+        # Find the matching real curve and its cache data
+        plot_line, cache_key = self._leg_to_plot_line[leg_line]
+        
+        # Invert visibility
+        new_visible = not plot_line.get_visible()
+        plot_line.set_visible(new_visible)
+        
+        # Save new status to cache
+        self._visibility_cache[cache_key] = new_visible
+        
+        # Give visual feedback within the legend (greyed out)
+        leg_line.set_alpha(1.0 if new_visible else 0.2)
+        
+        # Redraw the canvas
+        if self.no_gui:
+            plt.draw()
+        else:
+            self.canvas.draw()
