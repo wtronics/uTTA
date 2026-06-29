@@ -35,8 +35,9 @@ https://creativecommons.org/licenses/by-nc-sa/4.0/
 
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)  # type: ignore # matplotlib 3.9.2
 from matplotlib.figure import Figure  
-from tksheet import (Sheet, float_formatter)
+from tksheet import (Sheet, float_formatter, num2alpha, formatter)
 from quantiphy import Quantity      
+from typing import Any, Callable
 import os
 import configparser
 import library.uTTA_data_processing as udpc
@@ -52,6 +53,67 @@ MaxJUT_Channels = 3
 
 WINDOW_WIDTH = 1580
 WINDOW_HEIGHT = 960
+
+# Define a Type Alias for clarity
+TksheetFormatterInstance = Any
+
+# ==============================================================================
+# Quantiphy Formatting Logic
+# ==============================================================================
+
+def convert_SI_to_float(val: Any, **kwargs: Any) -> float:
+    """Cleans German local decimal commas and converts the value to a standard float.
+    
+    This ensures that inputs like "1.500,5" or "12,34" don't crash the parser.
+    """
+    if isinstance(val, (int, float)):
+        return float(val)
+        
+    if val is None or str(val).strip() == "":
+        raise ValueError("Empty cell")
+
+    val_str = str(val).strip()
+    
+    # Case 1: Thousands separator as "." and "," as decimal point (e.g. 1.500,50)
+    if "." in val_str and "," in val_str:
+        val_str = val_str.replace(".", "")   # remove thousands separators
+        val_str = val_str.replace(",", ".")   # Convert comma to point
+    # Case 2: Only decimal comma (e.g. 12,34)
+    elif "," in val_str:
+        val_str = val_str.replace(",", ".")
+        
+    return float(val_str)
+
+
+def create_quantiphy_to_str(unit: str = "") -> Any:
+    """ Factory that returns a string-formatting function bound to a specific unit.
+    """
+    def to_str_function(val: Any, **kwargs: Any) -> str:
+        if val is None or val == "":
+            return ""
+        try:
+            # Create the pyhsical object
+            q = Quantity(float(val), unit)
+            
+            # prec=3 -> 3 decimal digits
+            return q.render(prec=3)
+            
+        except (ValueError, TypeError):
+            return str(val)
+
+    return to_str_function
+
+
+def create_si_formatter(unit: str = "") -> TksheetFormatterInstance:
+    """ Creates a tksheet generic formatter instance configured for SI units.
+    """
+    return formatter(
+        datatypes=(int, float),
+        format_function=convert_SI_to_float,
+        to_str_function=create_quantiphy_to_str(unit),
+        nullable=True,
+        invalid_value="NaN",
+    )
 
 
 class CalApp(ttk.Window):
@@ -135,11 +197,13 @@ class CalApp(ttk.Window):
                                          command=self.auto_detect_steady_states, state="disabled")
         self.btn_auto_detects.grid(row=2, column=1, sticky='ew', padx=5, pady=5)
 
-        tab_heading = ["T/[°C]", "CH0 Avg.", "CH1 Avg.", "CH2 Avg.", "Temp Avg.", "Start", "End"]
+        tab_heading = ["Step Temp", "CH0 Avg.", "CH1 Avg.", "CH2 Avg.", "Temp Avg.", "Start", "End"]
         self.t_step_sheet = Sheet(frm_step_table, startup_select=(0, 1, "rows"),
                                   page_up_down_select_row=True)
-        self.t_step_sheet.format("A", formatter_options=float_formatter(), decimals=3)
-        self.t_step_sheet.format("B:E", formatter_options=float_formatter(), decimals=4)
+
+        self.t_step_sheet['A'].format(create_si_formatter('°C'))
+        self.t_step_sheet['B:D'].format(create_si_formatter('V'))
+        self.t_step_sheet['E'].format(create_si_formatter('°C'))
 
         self.t_step_sheet.grid(row=3, column=0, columnspan=2)
         self.t_step_sheet.enable_bindings(('single_select', 'edit_cell')) # type: ignore
@@ -157,7 +221,11 @@ class CalApp(ttk.Window):
         self.t_result_sheet.insert_rows(rows=3)
         self.t_result_sheet.enable_bindings()
         self.t_result_sheet.sheet_data_dimensions(total_rows=4, total_columns=4)
-        self.t_result_sheet.format("B:E", formatter_options=float_formatter(), decimals=7)
+        self.t_result_sheet['B'].format(create_si_formatter('V'))
+        self.t_result_sheet['C'].format(create_si_formatter('V/K'))
+        self.t_result_sheet['D'].format(create_si_formatter('V²/K'))
+        self.t_result_sheet['E'].format(create_si_formatter(''))
+ 
         self.t_result_sheet.headers(tab_result_heading)
         self.t_result_sheet.set_all_column_widths(70)
 
