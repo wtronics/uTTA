@@ -26,18 +26,25 @@ The full license text can be found at:
 https://creativecommons.org/licenses/by-nc-sa/4.0/
 --------------------------------------------------------------------------
 """
-
+from typing import List, Union
+from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, Undefined, Template
 import plotly.graph_objects as go
+from tkinter import messagebox as mb
+from tkinter import filedialog as fd
+import ttkbootstrap as ttk
 import os
 import pandas as pd
 import numpy as np
 import numpy.dtypes 
 import library.uTTA_data_processing as udpc
+import library.uTTA_Reporting_Annotation as utta_report
 from quantiphy import Quantity
 import base64
+from PIL import Image
+import io
 
-def export(utta_data, outfilename:str) -> None:
+def export(utta_data, outfilename:str, root_window:ttk.Window) -> None:
     ''' Generates an HTML measurement report for a Zth measurement. 
     The report contains all measurement relevant information, including interactive plots
     as plotly graph object. In addition the Zth curves are represented in tables with reduced resolution.
@@ -56,6 +63,26 @@ def export(utta_data, outfilename:str) -> None:
     filename = outfilename
 
     utta_dict = {}
+
+    add_img = mb.askquestion('Add Image of Test Setup', 'Do you want to add some images of your test setup to the report?')
+    if add_img == 'yes':
+
+        photo_pathes = fd.askopenfilenames(filetypes=(('JPEG-Images', '*.jpg'), ('PNG-Images', '*.png'), ('All files', '*.*')))
+
+        utta_dict['Test_Setup_Photo'] = False
+
+        if photo_pathes:
+
+            # Open the Report Image Annotation Dialog
+            dialog = utta_report.ImageLayoutDialog(root_window, list(photo_pathes))
+            root_window.wait_window(dialog)  # Wait until dialog is closed
+
+            if dialog.confirmed:
+                utta_dict['Test_Setup_Layout'] = dialog.result_layout
+                utta_dict['Test_Setup_HTML'] = "".join(dialog.processed_images_html)
+                utta_dict["Test_Setup_Images"] =  process_and_resize_images(list(photo_pathes), max_width=900, quality=70)
+                utta_dict['Test_Setup_Photo'] = True
+
 
     # entries to style the report
     utta_dict["TitleImageLeft"] = encode_png2html_string(os.path.abspath(r'Report_Templates/uTTA_Logo.png'))
@@ -138,6 +165,8 @@ def export(utta_data, outfilename:str) -> None:
 
     print("\033[94mReport written\033[0m")
 
+    os.startfile(filename)
+
 def encode_png2html_string(imagepath:str) -> str:
     ''' Encodes a given png-file into a base64 encoded string which is then returned.
     Args:
@@ -146,13 +175,59 @@ def encode_png2html_string(imagepath:str) -> str:
         (string) The base64 encoded png file
     '''
 
-    if imagepath.endswith('.png'):
+    if imagepath.lower().endswith('.png'):
         img_base64 = base64.b64encode(open(imagepath,'rb').read())
         img_base64 = img_base64.decode()
 
         return '<img src="data:image/png;base64,' + img_base64 + '", height=70></img>'
+    elif imagepath.lower().endswith('.jpg'):
+        print("Encoding JPEG Image")
+        img_base64 = base64.b64encode(open(imagepath,'rb').read())
+        img_base64 = img_base64.decode()
+
+        return '<img src="data:image/jpeg;base64,' + img_base64 + '"</img>'
     else:
         return '<p> No PNG-Image found! </p>'
+
+
+def process_and_resize_images(image_paths: List[Union[str, Path]], max_width: int = 1200, quality: int = 75) -> List[str]:
+    """Reads multiple images, resizes them proportionally if they exceed max_width,
+    compresses them using the WebP format, and returns a list of ready-to-use 
+    HTML <img> tags with Base64-encoded source strings.
+    """
+    html_snippets: List[str] = []
+    
+    for path in image_paths:
+        # Open the image using Pillow
+        try:
+            with Image.open(path) as img:
+                
+                # WebP standard RGB mode is safer if no transparency is required.
+                # Convert palette ('P') or transparent ('RGBA') images to standard 'RGB'.
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                
+                # Proportional scaling: check if the image width exceeds the container limit
+                if img.width > max_width:
+                    w_percent: float = max_width / float(img.width)
+                    h_size: int = int(float(img.height) * w_percent)
+                    # Resize using high-quality LANCZOS resampling
+                    img = img.resize((max_width, h_size), Image.Resampling.LANCZOS)
+                
+                # Create an in-memory byte buffer to avoid writing files to disk
+                buffer: io.BytesIO = io.BytesIO()
+                
+                # Save the image into the buffer using WebP format and the specified quality
+                img.save(buffer, format="WEBP", quality=quality)
+                
+                # Retrieve byte data from buffer and encode it to a Base64 ASCII string
+                base64_encoded: str = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                
+                # Append the fully formatted HTML string to the results list
+                html_snippets.append(f'<img src="data:image/webp;base64,{base64_encoded}" alt="Test Setup Image" />')
+        except Exception as e:
+            print(f"ERROR: Problem when resizing images: {e}")
+    return html_snippets
 
 def compress_curve(timebase:np.ndarray, data:np.ndarray, samples_decade:int) -> np.ndarray:
     ''' Compresses the measurement data to an array with a selectable number of points per decade.
