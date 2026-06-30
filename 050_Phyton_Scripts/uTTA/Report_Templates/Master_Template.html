@@ -30,9 +30,9 @@
 		
 		
         /**
-         * Converts the content of an HTML-table into a csv-formatted string and copies it to clipboard
-         * @param {string} tableId --> ID of the table
-         */
+          Converts the content of an HTML-table into a csv-formatted string and copies it to clipboard
+          @param {string} tableId->ID of the table
+         **/
         function copyTableToClipboard(tableId) {
             const table = document.getElementById(tableId);
             if (!table) {
@@ -173,6 +173,61 @@
             margin: 15px 0;
             border: 1px solid #ddd;
             box-sizing: border-box; /* Stellt sicher, dass border innerhalb der 100% Breite liegt */
+        }
+        /* Sorgt dafür, dass jedes Bild innerhalb von #test-setup-container die volle Breite nutzt */
+        .image-scaler img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+
+        /* Flexbox weicht einem extrem mächtigen CSS-Grid */
+        .image-scaler {
+            display: grid;
+            gap: 20px; /* Abstand zwischen den Spalten/Zeilen im Grid */
+            margin: 15px 0;
+            width: 100%;
+        }
+
+        /* Die 3 wählbaren Layout-Klassen */
+        .image-scaler.grid-1 { 
+            grid-template-columns: 1fr; 
+            gap: 40px; /* Größerer Abstand zwischen den Zeilen im 1-spaltigen Layout */
+        }
+        .image-scaler.grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .image-scaler.grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+        /* Styling für die Bild-Karten im Report */
+        .report-figure {
+            margin: 0;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            background-color: #fcfcfc; /* Ganz leichter Hintergrund zur optischen Gruppierung */
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Minimaler Schatten für bessere Abgrenzung */
+        }
+
+        .report-figure img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px; /* Rundet auch die Ecken des Bildes leicht ab */
+        }
+
+        /* Styling für die Bildunterschrift im Report */
+        .report-figure figcaption {
+            margin-top: 10px;
+            font-size: 0.9em;
+            font-style: italic;
+            color: #444;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
         }
         
         .report-content p {
@@ -418,6 +473,17 @@
 				{% endif %}
 			</div>	
         </details>
+
+        {% if Test_Setup_Photo == True%}
+        <details open>
+            {% set chapter_no = chapter_no + 1 %}
+            <summary>{{chapter_no}}. Test Setup</summary>
+            
+            <div class="image-scaler {{ Test_Setup_Layout }}">
+                {{ Test_Setup_HTML | safe }}
+            </div>
+        </details>
+		{% endif %}
 		
     </div>
 </div>
