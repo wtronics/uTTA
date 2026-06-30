@@ -8,6 +8,7 @@ import library.uTTA_Deconvolution as uDeconv
 import library.uTTA_Postprocess_Measurement_Interpol_Widget as uttaInterpolWidget
 import library.uTTA_Postprocess_Measurement_Widgets as uttaWidgets
 import logging
+from datetime import datetime
 
 matplotlib.use("TkAgg")
 
@@ -17,13 +18,13 @@ Debug_AutoExportHTML = False
 Debug_LoggingLevel = logging.INFO
 Debug_AutoLoadFile = os.path.abspath(r"..\..\060_Example_Measurement_Data\Example_Measurement.umf")
 
-WINDOW_WIDTH = 1480
+WINDOW_WIDTH = 1580
 WINDOW_HEIGHT = 960
 
 
 class UmfViewerApp(ttk.Window):
     def __init__(self):
-        super().__init__()
+        super().__init__(themename="flatly")
 
         self.logger = logging.getLogger(__name__)
         logging.basicConfig(filename=f'test.log', level=logging.WARNING, format='%(asctime)s  %(levelname)s | %(message)s')     # %(module)s::%(funcName)s |
@@ -207,7 +208,6 @@ class UmfViewerApp(ttk.Window):
         self.update_widgets()
         self.logger.info("Update of widgets completed")
 
-
     def read_measurement_file_callback(self):
 
         if not Debug_AutoLoadEnable:
@@ -274,8 +274,8 @@ class UmfViewerApp(ttk.Window):
                                         mustexist=True)
         
         if report_folder:
-            outfilename = f"{report_folder}/{self.FileName}_Measurement_Report.html"
-            self.utta_data.report_html(outfilename)
+            outfilename = f"{report_folder}/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{self.FileName}_Measurement_Report.html"
+            self.utta_data.report_html(outfilename, self)
 
             if Debug_AutoExportHTML:
                 self.on_closing()
@@ -318,7 +318,6 @@ class UmfViewerApp(ttk.Window):
         # if messagebox.askokcancel("Quit", "Do you want to quit?"):
         self.utta_data.save_settings(__file__)
         self.destroy()
-
 
 if __name__ == "__main__":
 
