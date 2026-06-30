@@ -55,7 +55,7 @@ class ModernNavSidebar(tb.Frame):
         self.pack(side=LEFT, fill=Y)
         
         self.callback = callback  
-        self.EXPANDED_WIDTH = 280    
+        self.EXPANDED_WIDTH = 180    
         self.COLLAPSED_WIDTH = 60    
         self.ANIMATION_DURATION = 300  
         
