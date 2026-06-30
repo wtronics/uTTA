@@ -27,6 +27,7 @@ https://creativecommons.org/licenses/by-nc-sa/4.0/
 """
 
 import tkinter.filedialog as fd
+import ttkbootstrap as ttk
 import os
 import numpy as np              
 import numpy.dtypes  
@@ -640,8 +641,8 @@ class UttaZthProcessing:
     ###################################################
     ######## REPORT OUTPUT ############################
     ###################################################      
-    def report_html(self, outfilename: str):
-        utta_report.export(self, outfilename)
+    def report_html(self, outfilename: str, root_window:ttk.Window):
+        utta_report.export(self, outfilename, root_window)
     
     ###################################################
     ######## PLOTTING #################################
