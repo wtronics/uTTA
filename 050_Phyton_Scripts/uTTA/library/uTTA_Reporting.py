@@ -63,11 +63,11 @@ def export(utta_data, outfilename:str) -> None:
     utta_dict["PDF_Printable_Report"] = False
 
     # transfer of information inside utta_data into the jinja2 information dict
-    utta_dict["adc_timebase"] = utta_data.adc_timebase
-    utta_dict["adc"] = utta_data.adc
-    utta_dict["cooling_start_index"] = utta_data.cooling_start_index
+    utta_dict["adc_timebase"] = utta_data.time_full
+    utta_dict["adc"] = utta_data.udiode_full
+    utta_dict["cooling_start_index"] = utta_data.cooling_start_idx
     utta_dict["Channels"] = utta_data.meta_data.Channels
-    utta_dict["Zth_Table"] = compress_curve(utta_data.adc_timebase_cooling, utta_data.zth, 6)
+    utta_dict["Zth_Table"] = compress_curve(utta_data.time_cooling, utta_data.zth, 6)
 
     utta_dict["Measurement_Info"] = utta_data.meta_data.Measurement
     utta_dict["Cal_Data"] = utta_data.meta_data.CalData
@@ -86,7 +86,7 @@ def export(utta_data, outfilename:str) -> None:
     utta_dict["InterpolDieSize"] = utta_data.EstimatedDieSize
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=utta_data.adc_timebase_cooling, y=utta_data.zth[0,:], name=utta_dict["Channels"]['TSP0']['Name']))
+    fig.add_trace(go.Scatter(x=utta_data.time_cooling, y=utta_data.zth[0,:], name=utta_dict["Channels"]['TSP0']['Name']))
     fig.update_xaxes(type="log", exponentformat="SI")
     fig.update_yaxes(type="log")
     fig.update_layout(width=1100, height=600, xaxis_title=r'Time / [s]', yaxis_title=r'Z<sub>th</sub> / [K/W]')
@@ -97,9 +97,9 @@ def export(utta_data, outfilename:str) -> None:
     if utta_dict["Channels"]["TSP1"]["Name"]!="OFF" or utta_dict["Channels"]["TSP2"]["Name"]!="OFF":
         fig = go.Figure()
         if utta_dict["Channels"]["TSP1"]["Name"]!="OFF":
-            fig.add_trace(go.Scatter(x=utta_data.adc_timebase_cooling, y=utta_data.zth[1,:], name=utta_dict["Channels"]['TSP1']['Name']))
+            fig.add_trace(go.Scatter(x=utta_data.time_cooling, y=utta_data.zth[1,:], name=utta_dict["Channels"]['TSP1']['Name']))
         if utta_dict["Channels"]["TSP2"]["Name"]!="OFF":
-            fig.add_trace(go.Scatter(x=utta_data.adc_timebase_cooling, y=utta_data.zth[2,:], name=utta_dict["Channels"]['TSP2']['Name']))
+            fig.add_trace(go.Scatter(x=utta_data.time_cooling, y=utta_data.zth[2,:], name=utta_dict["Channels"]['TSP2']['Name']))
 
         fig.update_xaxes(type="log", exponentformat="SI")
         if np.min(utta_data.zth[1:2,:]) > 0.0:
@@ -108,23 +108,23 @@ def export(utta_data, outfilename:str) -> None:
         utta_dict["PlotZthCouplingCurves"] = fig.to_html(full_html=False, include_plotlyjs=False)
     
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=utta_data.adc_timebase, y=utta_data.adc[0,:], name=utta_dict["Channels"]['TSP0']['Name'], yaxis='y1'))
+    fig.add_trace(go.Scatter(x=utta_data.time_full, y=utta_data.udiode_full[0,:], name=utta_dict["Channels"]['TSP0']['Name'], yaxis='y1'))
     if utta_dict["Channels"]["TSP1"]["Name"]!="OFF":
-        fig.add_trace(go.Scatter(x=utta_data.adc_timebase, y=utta_data.adc[1,:], name=utta_dict["Channels"]['TSP1']['Name'], yaxis='y1'))
+        fig.add_trace(go.Scatter(x=utta_data.time_full, y=utta_data.udiode_full[1,:], name=utta_dict["Channels"]['TSP1']['Name'], yaxis='y1'))
     if utta_dict["Channels"]["TSP2"]["Name"]!="OFF":
-        fig.add_trace(go.Scatter(x=utta_data.adc_timebase, y=utta_data.adc[2,:], name=utta_dict["Channels"]['TSP2']['Name'], yaxis='y1'))
-    fig.add_trace(go.Scatter(x=utta_data.adc_timebase, y=utta_data.adc[3,:], name="Current", yaxis='y2'))
+        fig.add_trace(go.Scatter(x=utta_data.time_full, y=utta_data.udiode_full[2,:], name=utta_dict["Channels"]['TSP2']['Name'], yaxis='y1'))
+    fig.add_trace(go.Scatter(x=utta_data.time_full, y=utta_data.current_full, name="Current", yaxis='y2'))
     fig.update_xaxes(exponentformat="SI")
     fig.update_layout(width=1100, height=600, xaxis_title="Time / [s]", yaxis_title="Diode Voltage / [V]",  
                       yaxis2=dict(title='Current / [A]',overlaying='y',side='right'))
     utta_dict["PlotFullMeasDiode"] = fig.to_html(full_html=False, include_plotlyjs=False)
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=utta_data.adc_timebase_cooling, y=utta_data.adc_cooling[0,:], name=utta_dict["Channels"]['TSP0']['Name']))
+    fig.add_trace(go.Scatter(x=utta_data.time_full, y=utta_data.udiode_cooling[0,:], name=utta_dict["Channels"]['TSP0']['Name']))
     if utta_dict["Channels"]["TSP1"]["Name"]!="OFF":
-        fig.add_trace(go.Scatter(x=utta_data.adc_timebase_cooling, y=utta_data.adc_cooling[1,:], name=utta_dict["Channels"]['TSP1']['Name']))
+        fig.add_trace(go.Scatter(x=utta_data.time_full, y=utta_data.udiode_cooling[1,:], name=utta_dict["Channels"]['TSP1']['Name']))
     if utta_dict["Channels"]["TSP2"]["Name"]!="OFF":
-        fig.add_trace(go.Scatter(x=utta_data.adc_timebase_cooling, y=utta_data.adc_cooling[2,:], name=utta_dict["Channels"]['TSP2']['Name']))
+        fig.add_trace(go.Scatter(x=utta_data.time_full, y=utta_data.udiode_cooling[2,:], name=utta_dict["Channels"]['TSP2']['Name']))
     fig.update_xaxes(type="log", exponentformat="SI")
 
     fig.update_layout(width=1100, height=600, xaxis_title="Time / [s]", yaxis_title="Diode Voltage / [V]")
@@ -210,8 +210,8 @@ def interpol_plot(utta_data, utta_dict):
 
     fig = go.Figure()
 
-    interpol_plot_cutoff_idx = udpc.find_nearest(utta_data.adc_timebase_cooling, 0.1)
-    tb_show = np.sqrt(utta_data.adc_timebase_cooling[0:interpol_plot_cutoff_idx])
+    interpol_plot_cutoff_idx = udpc.find_nearest(utta_data.time_cooling, 0.1)
+    tb_show = np.sqrt(utta_data.time_cooling[0:interpol_plot_cutoff_idx])
 
     diode_temp_values = utta_data.t_dio_raw[0,:]
 
@@ -221,7 +221,7 @@ def interpol_plot(utta_data, utta_dict):
 
     min_y = np.min(diode_temp_values[0:interpol_plot_cutoff_idx])
 
-    interp_start = (np.sqrt(utta_data.adc_timebase_cooling[0:interpol_plot_cutoff_idx]) * utta_data.InterpolationFactorM +
+    interp_start = (np.sqrt(utta_data.time_cooling[0:interpol_plot_cutoff_idx]) * utta_data.InterpolationFactorM +
                     utta_data.InterpolationOffset)
     
     interp_cutoff_idx = udpc.find_nearest(interp_start, min_y)
