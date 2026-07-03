@@ -4,24 +4,30 @@ import ttkbootstrap as ttk
 import library.uTTA_data_processing as udProc
 import library.uTTA_data_plotting as udPlot
 import tkinter.messagebox as messagebox
+import logging
 
 matplotlib.use("TkAgg")
 
 DataFile = ''
+Debug_LoggingLevel = logging.INFO
 
 class UmfViewerApp(ttk.Window):
     def __init__(self):
         super().__init__()
         # self.hdpi = False
+
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(filename=f'{__file__.replace('.pyw','.log')}', level=logging.WARNING, format='%(asctime)s  %(levelname)s | %(message)s')     # %(module)s::%(funcName)s |
+        logging.getLogger('__main__').setLevel(Debug_LoggingLevel)
         self.title("uTTA umf-Viewer")
-        self.geometry("1480x960")
-        self.minsize(1480, 960)
+        self.geometry("1480x1000")
+        self.minsize(1480, 1000)
         screen_dpi = self.winfo_fpixels('1i')
         geometry = self.winfo_geometry()
         print(f"DPI: {screen_dpi}, Geometry: {geometry}")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
-        self.utta_data = udProc.UttaZthProcessing()
+        self.utta_data = udProc.UttaZthProcessing(self.logger)
 
         matplotlib.rcParams['axes.labelsize'] = 9
         matplotlib.rcParams['legend.fontsize'] = 9
@@ -82,7 +88,7 @@ class UmfViewerApp(ttk.Window):
         matplotlib.rcParams['xtick.labelsize'] = 8
         matplotlib.rcParams['ytick.labelsize'] = 8
 
-        self.view_plots = udPlot.UttaPlotData(self.frm_plot_area, (990, 650), 3, 2)
+        self.view_plots = udPlot.UttaPlotData(self.frm_plot_area, (990, 850), 3, 2)
         self.paned.add(self.frm_right)
         self._setup_plot_mapping()
 
@@ -110,8 +116,7 @@ class UmfViewerApp(ttk.Window):
     def update_all_plots(self):
 
         if self.utta_data.flag_import_successful:
-            # Updates all Plots based on their PlotConfiguration.
-            self.view_plots.update_plots()
+
 
             MetaString = f"File Name: {DataFile}\n"
             MetaString += f"Measurement started: {self.utta_data.meta_data.Measurement["StartDate"]} {self.utta_data.meta_data.Measurement["StartTime"]}\n\n"
@@ -142,6 +147,12 @@ class UmfViewerApp(ttk.Window):
             if not self.utta_data.meta_data.FlagTSPCalibrationFile:
                 MetaString += f"Heating Current:\t{self.utta_data.i_heat:.3f} A\n"
                 MetaString += f"Heating Power:\t{self.utta_data.p_heat:.3f} W\n"
+            
+            # Updates all Plots based on their PlotConfiguration.
+            self.view_plots.update_plots()
+
+
+
 
             self.meas_meta_data.configure(text=MetaString)
 
@@ -157,12 +168,16 @@ class UmfViewerApp(ttk.Window):
                 self.lbl_helpbar.configure(text=f"File: {DataFile} was successfully imported.", bootstyle="inverse-success")
                 self.frm_help_bar.configure(bootstyle="success")
 
+                self.view_plots.clear_decorations()
+
                 if not self.utta_data.meta_data.FlagTSPCalibrationFile:
                     self.utta_data.calculate_cooling_curve()
 
                     self.utta_data.calculate_tsp_start_voltages()
 
                     self.utta_data.interpolate_zth_curve_start()
+
+                    self.view_plots.add_vertical_line(row=2, col=1, x=0.0, color='red', linestyle='--', linewidth=2, label='Zero Current Time')
                     
                 self._setup_plot_mapping()
 
