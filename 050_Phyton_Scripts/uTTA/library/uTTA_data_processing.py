@@ -315,6 +315,7 @@ class UttaZthProcessing:
         if self.flag_import_successful:
             # Cut Timebase and measurement to cooling section
             pre_cooling_samples = self.meta_data.CoolingStartBlock * self.meta_data.SamplesPerDecade
+            self.logger.info(f"Total Samples: {len(self.time_full)} ,Pre Cooling Samples:  {pre_cooling_samples}")
             time_base_cooling = (self.time_full[pre_cooling_samples:] -
                                  self.time_full[pre_cooling_samples - 1])
             self.udiode_cooling = self.udiode_full[:, pre_cooling_samples:]
@@ -325,18 +326,18 @@ class UttaZthProcessing:
             self.jut_imax = max(self.current_cooling)
             zero_current_trsh = self.jut_imin
 
-            self.logger.debug(f"Min Diode Current:  {self.jut_imin:.2f}A; Max Diode current: {self.jut_imax:.2f}A")
-            self.logger.debug(f"Zero Current Detection Mode: {self.zero_current_detection_mode}.")
+            self.logger.info(f"Min Diode Current:  {self.jut_imin:.2f}A; Max Diode current: {self.jut_imax:.2f}A")
+            self.logger.info(f"Zero Current Detection Mode: {self.zero_current_detection_mode}.")
 
             if self.zero_current_detection_mode == "Ratio":
                 zero_current_trsh = (self.jut_imax - self.jut_imin) * self.zero_current_detection_ratio
                 self.cooling_start_idx = find_nearest(self.current_cooling, zero_current_trsh)
 
-                self.logger.debug(f"Zero Current Detection Ratio: {self.zero_current_detection_ratio}. Threshold: {zero_current_trsh:.2f}A")
+                self.logger.info(f"Zero Current Detection Ratio: {self.zero_current_detection_ratio}. Threshold: {zero_current_trsh:.2f}A")
             else:
                 self.cooling_start_idx = (np.where(np.isclose(self.current_cooling, zero_current_trsh)))[0][0]
 
-                self.logger.debug(f"Index of closest value: {self.cooling_start_idx}")
+                self.logger.info(f"Index of closest value: {self.cooling_start_idx} at time {self.time_full[pre_cooling_samples + self.cooling_start_idx]}")
 
             if self.cooling_start_idx > self.cooling_start_idx_max_trsh:      # An Index larger than that is an indicator of an unusual behaviour of the system
                                                     # The user should review the test setup and the system
@@ -359,7 +360,7 @@ class UttaZthProcessing:
             u_dio_heated = float(np.mean(self.udiode_full[0, t_calc_start_idx : t_calc_end_idx]))
             p_dio_heat = i_heat * u_dio_heated
 
-            self.logger.debug(f"HEATING VALUES: Range: {self.time_full[t_calc_start_idx]:.2f}s to {self.time_full[t_calc_end_idx]:.2f}s,"
+            self.logger.info(f"HEATING VALUES: Range: {self.time_full[t_calc_start_idx]:.2f}s to {self.time_full[t_calc_end_idx]:.2f}s,"
                             f"Current: {i_heat:.2f}A, Voltage: {u_dio_heated:.2f}V, Power: {p_dio_heat:.2f}W")
             self.i_heat = i_heat
             self.p_heat = p_dio_heat
@@ -399,11 +400,11 @@ class UttaZthProcessing:
                                         + chan_cal_data["Offset"]) / chan_cal_data["LinGain"]
                 
                 if Ch == 0:
-                    self.logger.debug(f"COLD VOLTAGE: DUT{Ch} at Start: {u_dio_cold_start[Ch]: 3.4f}V; at End: {u_dio_cold_end[Ch]: 3.4f}V;" 
+                    self.logger.info(f"COLD VOLTAGE: DUT{Ch} at Start: {u_dio_cold_start[Ch]: 3.4f}V; at End: {u_dio_cold_end[Ch]: 3.4f}V;" 
                                      f" Delta U: {u_dio_cold_start[Ch] - u_dio_cold_end[Ch]: 3.4f}V;"
                                      f" Delta T: {((u_dio_cold_end[Ch] - u_dio_cold_start[Ch]) / chan_cal_data["LinGain"]): 3.4f}°C")
                 else:
-                    self.logger.debug(f"COLD VOLTAGE: DUT{Ch} at Start: {u_dio_cold_start[Ch]: 3.4f}V; at End: {u_dio_cold_end[Ch]: 3.4f}V;"
+                    self.logger.info(f"COLD VOLTAGE: DUT{Ch} at Start: {u_dio_cold_start[Ch]: 3.4f}V; at End: {u_dio_cold_end[Ch]: 3.4f}V;"
                                      f" Delta U: {u_dio_cold_start[Ch] - u_dio_cold_end[Ch]: 3.4f}V;"
                                      f" Delta T: {((u_dio_cold_end[Ch] - u_dio_cold_start[Ch]) /chan_cal_data["LinGain"]): 3.4f}°C; "
                                      f"Heated Temp: {t_monitor_heated[Ch]: 3.4f}°C")
@@ -420,7 +421,7 @@ class UttaZthProcessing:
         interp_idx_start = find_nearest(self.time_cooling, self.InterpolationTStart)
         interp_idx_end = find_nearest(self.time_cooling, self.InterpolationTEnd)
 
-        self.logger.debug(f"INTERPOLATION: Start: {self.InterpolationTStart:.6f}s; Index: {self.InterpolationTEnd:.0f};"
+        self.logger.info(f"INTERPOLATION: Start: {self.InterpolationTStart:.6f}s; Index: {self.InterpolationTEnd:.0f};"
                          f" End: {interp_idx_start:.6f}s; Index: {interp_idx_end:.0f}")
 
         interpol_sq_t_start = np.sqrt(self.InterpolationTStart)
@@ -513,8 +514,7 @@ class UttaZthProcessing:
     ###################################################
 
     def zth_deconvolution_bayes(self):
-        """
-        Prepares data for the upcoming deconvolution and does the deconvolution using the bayes / Lucy-Richardson method:
+        """Prepares data for the upcoming deconvolution and does the deconvolution using the bayes / Lucy-Richardson method:
             - prepares a new, evenly spaced timebase in ln(t)-space
             - adds padding to the timebase and extrapolates the measure curve (to improve the bayes algorithm)
             - do the differentiation (da/dz) of the input curve
@@ -609,11 +609,24 @@ class UttaZthProcessing:
     ###################################################
 
     def export_diode_voltages(self, filename: str):
+        """Exports a text based file with time and voltage series of the heated JUT.
+
+        Args:
+            filename (str): Filename of the file to be exported
+        """        
         uTTA_data_export.write_diode_voltages(self.time_cooling, self.udiode_cooling,
                                               self.meta_data.Channels[str('TSP0')]["Name"],
                                               filename,)
 
     def export_t3i_file(self, filename: str):
+        """Exports an preprocessed measurement file as *.t3i-file (intermediate file). 
+        This file can be used the uTTA Zth Comparison GUI to analyze differences between measurements.
+        The *.t3i file contains postprocessed Zth curves of all channels (even if they are turned off). 
+        Measurement data of monitored channels will be set to NAN during the interpolation period at the start of the curve.
+
+        Args:
+            filename (str): Filename and path of the file to be exported.
+        """        
         if not self.flag_zero_current_unfeasible:
 
             uTTA_data_export.export_t3i_file(self.time_cooling, self.zth,
@@ -623,6 +636,11 @@ class UttaZthProcessing:
                                              filename=filename)
 
     def export_tdim_master(self,fname: str):
+        """Exports a text file which is compatible with the TDIM Master software supplied together with JESD51-14
+
+        Args:
+            fname (str): Filename and path of the file to be exported.
+        """        
         uTTA_data_export.export_tdim_master_file(self.time_cooling,
                                                  self.udiode_cooling,
                                                  self.meta_data,
@@ -631,6 +649,13 @@ class UttaZthProcessing:
                                                  t_reduce_data=self.export_tdim_reduce_time)
 
     def export_zth_curve(self,fname: str):
+        """Exports the preprocessed Zth measurement as text file 
+        The file contains the postprocessed Zth curves of all channels (even if they are turned off). 
+        Furthermore, meta data generated during the measurement are added within the files header.
+
+        Args:
+            fname (str): Filename and path of the file to be exported.
+        """   
         uTTA_data_export.export_zth_curve(self.time_cooling,
                                           self.zth,
                                           self.meta_data,
@@ -642,13 +667,30 @@ class UttaZthProcessing:
     ######## REPORT OUTPUT ############################
     ###################################################      
     def report_html(self, outfilename: str, root_window:ttk.Window):
+        ''' Generates an HTML measurement report for a Zth measurement. 
+
+        Args:
+            outfilename (string)    : Path of the final report file
+            parent (ttk.Window): The reference to the parent GUI
+        Returns:
+            None
+            '''
         utta_report.export(self, outfilename, root_window)
     
     ###################################################
     ######## PLOTTING #################################
     ###################################################
 
-    def add_cooling_curve_start_plot(self):
+    def add_cooling_curve_start_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot of the start of the cooling curve to allow the user the inspect the switch off of the heating current
+        and the electrical transient.
+        X-Axis: linear, Y-Axis: linear
+        Uses a secondary Y-Axis
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """    
         pre_cooling_samples = self.meta_data.CoolingStartBlock * self.meta_data.SamplesPerDecade
         addon_samples = 100
         start = self.cooling_start_idx + pre_cooling_samples
@@ -693,7 +735,14 @@ class UttaZthProcessing:
                                                    secondary_y_label='Heating Current  / [A]',
                                                    title="Cooling Curve Start section")
 
-    def add_input_tsp_measure_curve_plot(self):
+    def add_input_tsp_measure_curve_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the diode voltages of the heated JUT over the duration the measurement.
+        X-Axis: linear, Y-Axis: linear
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """        
 
         lines = []
         for Ch in range(0, self.no_of_tsp):
@@ -712,7 +761,14 @@ class UttaZthProcessing:
                                              y_label='Diode Voltage / [V]',
                                              title="Diode Voltages of the full measurement")
 
-    def add_tsp_measure_cooling_curve_plot(self):
+    def add_tsp_measure_cooling_curve_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the diode voltages of the heated JUT over the duration the cooling phase.
+        X-Axis: log, Y-Axis: linear
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """        
 
         prim_lines = []
         for Ch in range(0, self.no_of_tsp):
@@ -732,7 +788,14 @@ class UttaZthProcessing:
                                              y_label='Diode Voltage / [V]',
                                              title="Diode Voltages of the cooling section")
 
-    def add_input_current_measure_curve_plot(self):
+    def add_input_current_measure_curve_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the heating current through the heated JUT over the duration the measurement.
+        X-Axis: linear, Y-Axis: linear
+        
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """       
 
         lines = [
             {'x_data': self.time_full,
@@ -747,7 +810,14 @@ class UttaZthProcessing:
                                              y_label='Current / [A]',
                                              title="Drive current")
 
-    def add_current_measure_cooling_curve_plot(self):
+    def add_current_measure_cooling_curve_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the heating current through the heated JUT during the cooling phase.
+        X-Axis: log, Y-Axis: linear
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """       
         lines = [
             {'x_data': self.time_cooling,
              'y_data': self.current_cooling,
@@ -761,7 +831,14 @@ class UttaZthProcessing:
                                              y_label='Current / [A]',
                                              title="Drive current in the cooling section")
 
-    def add_diode_dt_curve_plot(self):
+    def add_diode_dt_curve_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the calculated temperature change of each TSP (when enabled) during the cooling phase.
+        X-Axis: log, Y-Axis: linear
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """  
 
         lines = []
         for Ch in range(0, self.no_of_tsp):
@@ -781,7 +858,14 @@ class UttaZthProcessing:
                                              y_label=r'$\Delta$T Diode / [K]',
                                              title=r'Calculated Diode $\Delta$T of the cooling section')
 
-    def add_thermocouple_plot(self):
+    def add_thermocouple_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the measure values of all thermocouples during the whole measurement.
+        X-Axis: linear, Y-Axis: linear.
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """  
         lines = []
         n_samples = len(self.tc[0])
         for Ch in range(0, 4):
@@ -798,7 +882,14 @@ class UttaZthProcessing:
                                              y_label='Temperature / [°C]',
                                              title=r'Measured thermocouple temperatures during the full measurement')
 
-    def add_zth_curve_plot(self):
+    def add_zth_curve_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot of the Zth curve for the heated JUT.
+        X-Axis: log, Y-Axis: log
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """  
         lines = [
             {'x_data': self.time_cooling,
              'y_data': self.zth[0, :],
@@ -814,7 +905,14 @@ class UttaZthProcessing:
                                              y_label='Thermal Impedance / [K/W]',
                                              title=r'Thermal Impedance of the driven JUT')
 
-    def add_zth_coupling_curve_plot(self):
+    def add_zth_coupling_curve_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the Zth coupling curves for all monitored channels relative to the heated channel.
+        X-Axis: log, Y-Axis: log
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """  
         lines = []
 
         for Ch in range(1, self.no_of_tsp):
@@ -839,7 +937,14 @@ class UttaZthProcessing:
     ######## DECONVOLUTION RELATED PLOTTING ###########
     ###################################################
 
-    def add_deconv_tau_output_plot(self):
+    def add_deconv_tau_output_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the spectrum of the Zth curve after deconvolution. The spectrum is drawn on a ln(t)-Axis 
+        X-Axis: linear, Y-Axis: linear
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """  
         lines = [
                 {'x_data': self.z,
                  'y_data': self.deconvolved_spectrum,
@@ -852,7 +957,14 @@ class UttaZthProcessing:
                                              y_label='Zth / [K/W]',
                                              title='Deconvolved Spectrum')
  
-    def add_zth_deconvolution_error_plot(self):
+    def add_zth_deconvolution_error_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the difference (error) between the measured input Zth curve and the deconvolved and reconstructed Zth curve.
+        X-Axis: linear, Y-Axis: linear
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """  
         lines = [
                 {'x_data': self.z,
                  'y_data': self.zth_deconvolved - self.a_z,
@@ -865,7 +977,14 @@ class UttaZthProcessing:
                                              y_label='Thermal Impedance / [K/W]',
                                              title='Deconvolved Thermal Impedance Error')
 
-    def add_deconv_zth_output_plot(self):
+    def add_deconv_zth_output_plot(self) -> ud_plot.UttaPlotConfiguration:
+        """Plot Configuration:
+        Generates a plot that shows the deconvolved and reconstructed Zth curve
+        X-Axis: log, Y-Axis: linear
+
+        Returns:
+            ud_plot.UttaPlotConfiguration: Plot Configuration for the uTTA_data_plotting module
+        """  
         lines = [{'x_data': np.exp(self.z),
                   'y_data': self.zth_deconvolved,
                   'label': f"Reconstructed Zth {self.lr_iterations} Iterations",
@@ -885,6 +1004,7 @@ class UttaZthProcessing:
 
 def find_static_states(indata:list|np.ndarray, threshold: float=0.01, min_length: int=5):
     """ Detects static areas within a numpy-array where values stay within a certain threshold and have a minimum length.
+    Search is done by iterating through the array and checking over the whole length of 'min_length'. As soon as a matching area is found the search is continioued with an offset of half the min_length width.
 
     Args:
         indata (numpy.ndarray): Input data array
@@ -912,13 +1032,22 @@ def find_static_states(indata:list|np.ndarray, threshold: float=0.01, min_length
             end_idx +=1
     return ranges
 
-
 def find_nearest(arr: np.ndarray, value: float):
-    # Element in nd array `arr` closest to the scalar value `value`
-    idx = np.abs(arr - value).argmin()
+    """Find the index of the closed element witin an numpy array which matches the searched value
+
+    Args:
+        arr (np.ndarray): The array to be searched through
+        value (float): The value to be searched for
+
+    Returns:
+        int: The index of the closest value
+    """    
+
+    idx = int(np.abs(arr - value).argmin())
     return idx
 
 def select_file(heading: str, file_filter: tuple):
+ 
     filename = fd.askopenfilename(
         title=heading,
         initialdir=os.path.realpath(__file__),
