@@ -116,6 +116,10 @@ class UttaPlotData:
         # Save grid dimensions as state for later
         self.rows = rows
         self.cols = cols
+
+        # Independant plot annotations
+        self.vertical_lines = []  # List of dicts with vertical lines
+        self.plot_labels = []     # List of dicts with text labels
         
         # Axis mapping: List if Dicts/tuples: [{"row": r, "col": c, "func": config_func, "ax": ax}, ...]
         self.plot_mapping: List[Dict[str, Any]] = []
@@ -141,10 +145,10 @@ class UttaPlotData:
             fig_size_inch = (size[0] / dpi, size[1] / dpi)
             self.figure = plt.figure(figsize=fig_size_inch, dpi=dpi)
         else:
-            self.figure = Figure(figsize=(size[0] / dpi, (size[1]-10) / dpi), dpi=96)
+            self.figure = Figure(figsize=(size[0] / dpi, (size[1]) / dpi), dpi=96)
             # Initialize Canvas
             self.canvas = FigureCanvasTkAgg(self.figure, master=parent)
-            self.canvas.get_tk_widget().pack(fill=tk.BOTH, padx=10, pady=10)
+            self.canvas.get_tk_widget().pack(fill=tk.BOTH, padx=5, pady=5)
 
             # Toolbar Frame
             toolbar_frame = ttk.Frame(master=parent)
@@ -239,6 +243,25 @@ class UttaPlotData:
                     ax.grid(True, axis='x', which='major', ls="-", color='grey') 
                     ax.grid(True, axis='x', which="minor", alpha=0.7)
 
+            # ==========================================================
+            # Plot independant markers and labels
+            # ==========================================================
+            current_row = item['row']
+            current_col = item['col']
+
+            # Vertikale Linien für diesen spezifischen Plot einzeichnen
+            for vline in self.vertical_lines:
+                if vline['row'] == current_row and vline['col'] == current_col:
+                    ax.axvline(x=vline['x'], **vline['kwargs'])
+                    # Falls ein Label für die Legende definiert wurde, triggern wir num_plots an
+                    if 'label' in vline['kwargs']:
+                        num_plots += 1
+
+            # Text-Labels für diesen spezifischen Plot einzeichnen
+            for label in self.plot_labels:
+                if label['row'] == current_row and label['col'] == current_col:
+                    ax.text(label['x'], label['y'], label['text'], **label['kwargs'])
+
             # Common settings for all plots + the legend
             if num_plots > 0:       # check if anything was printed into the plot. Otherwise mpl will generate an error
                 legend = ax.legend(loc='best', fontsize='small')
@@ -299,13 +322,20 @@ class UttaPlotData:
             col (int): The colum the plot shall be drawn in. Index starts a 0
             config_func (Callable): The callback function generating the data and styling for the plot 
         """  
-        self.plot_mapping.append({
-            'row': row,
-            'col': col,
-            'func': config_func,
-            'ax': None
-        })
-        self._grid_needs_rebuild = True
+        # check if the selected position is already mapped
+        existing_item = next((item for item in self.plot_mapping if item['row'] == row and item['col'] == col), None)
+        
+        if existing_item:
+            # Update the plot function in case the mapping existed
+            existing_item['func'] = config_func
+        else:
+            self.plot_mapping.append({
+                'row': row,
+                'col': col,
+                'func': config_func,
+                'ax': None
+            })
+            self._grid_needs_rebuild = True
 
     def delete_column(self, col_index: int) -> None:
         """Deletes a while column on runtime and moves the remaining plots to fill the gap
@@ -370,6 +400,71 @@ class UttaPlotData:
         self.rows += 1
         self._grid_needs_rebuild = True
         self.update_plots()
+
+    def add_vertical_line(self, row: int, col: int, x: float, **kwargs):
+        """ Adds a vertical line at a defined position to the plot.
+        Args:
+            row (int): The row the plot shall be drawn in. Index starts a 0
+            col (int): The colum the plot shall be drawn in. Index starts a 0
+            x (float): The x-position where the vertical line shall be added
+            text (str): The text label to be added to the legend.
+        kwargs example:  color='red', linestyle='--', linewidth=1.5, label='Threshold'
+        """
+
+        line_item = {
+                'row': row,
+                'col': col,
+                'x': x,
+                'kwargs': kwargs
+            }
+
+        # check if the selected position is already mapped
+        existing_item = next((item for item in self.vertical_lines if item['row'] == row 
+                              and item['col'] == col 
+                              and item['x'] == x), None)
+
+        if existing_item:
+            # Update the existing vertical line in case the definition existed
+            existing_item = line_item
+        else:
+            self.vertical_lines.append(line_item)
+
+    def add_plot_label(self, row: int, col: int, x: float, y: float, text: str, **kwargs):
+        """ Adds text a a certain X-Y coordinate to the plot. 
+        Args:
+            row (int): The row the plot shall be drawn in. Index starts a 0
+            col (int): The colum the plot shall be drawn in. Index starts a 0
+            x (float): The x-position where the label shall be added
+            y (float): The y-position where the label shall be added
+            text (str): The text label to be added.
+        kwargs example: fontsize=10, color='blue', weight='bold'
+        """
+
+        label_item = {
+            'row': row,
+            'col': col,
+            'x': x,
+            'y': y,
+            'text': text,
+            'kwargs': kwargs
+        }
+        existing_item = next((item for item in self.plot_labels if item['row'] == row 
+                              and item['col'] == col 
+                              and item['x'] == x
+                              and item['y'] == y), None)
+
+        if existing_item:
+            # Update the existing label in case the definition existed
+            existing_item = label_item
+        else:
+            self.plot_labels.append(label_item)
+
+    def clear_decorations(self):
+        """Deletes all manually added lines and labels.
+        """
+        self.vertical_lines.clear()
+        self.plot_labels.clear()
+
     
     def _on_legend_pick(self, event: Any) -> None:
         """Internal event handler that toggles line visibility when a legend item is clicked.
