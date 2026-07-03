@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-Module Name:    utta_Reporting.py
-Description:    An HTML report generation service for uTTA Measurements.
-                This module uses jinja2 and plotly to generate HTML reports with
-                interactive graphs the user can zoom in and use cursors to extract meausrement data.
+Module Name:    utta_Reporting_Annotation.py
+Description:    An Add-On Gui to uTTA_Reporting.py.
+                This GUI features an Annotation tool to add images with captions to the generated report.
+                Images can be arranged in one of the possible layouts (1, 2 or 3 columns). 
+                Each image will get its own caption for documentation purposes.
 
 Author:         wtronics
 Email:          169440509+wtronics@users.noreply.github.com
@@ -41,9 +42,13 @@ from PIL import Image, ImageTk
 
 class ImageLayoutDialog(tb.Toplevel):
     def __init__(self, parent: tb.Window, image_paths: List[Union[str, Path]]):
-        """ An interactive dialog using ttkbootstrap to preview images, 
+        """An interactive dialog using ttkbootstrap to preview images, 
         add captions, and select a report layout.
-        """
+
+        Args:
+            parent (tb.Window): The reference to the parent GUI
+            image_paths (List[Union[str, Path]]): A list of paths to image files
+        """        
         super().__init__(title="Process Images & Select Layout", size=(900, 700), resizable=(False, False))
         self.position_center()
         self.grab_set()  # Make dialog modal
@@ -52,6 +57,10 @@ class ImageLayoutDialog(tb.Toplevel):
         self.image_paths = image_paths
         
         # Result data that will be collected on confirmation
+        self.layout_mapping = {"1 Column (Stacked)": "grid-1",
+                               "2 Columns (Side-by-Side)": "grid-2",
+                               "3 Columns (Grid)": "grid-3"
+                               }
         self.result_layout: str =  "1 Column (Stacked)"
         self.processed_images_html: List[str] = []
         self.confirmed: bool = False
@@ -63,13 +72,14 @@ class ImageLayoutDialog(tb.Toplevel):
         self._load_and_render_previews()
 
     def _build_ui(self) -> None:
-        """Constructs the main layout of the dialog."""
+        """Constructs the main layout of the dialog.
+        """
         # Main container with padding
-        main_frame = tb.Frame(self, padding=20)
+        main_frame = tb.Frame(self, padding=10)
         main_frame.pack(fill=BOTH, expand=YES)
 
         # --- Top Section: Scrollable Preview Area ---
-        preview_label_frame = tb.Labelframe(main_frame, text="Image Captions & Preview", padding=10)
+        preview_label_frame = tb.Labelframe(main_frame, text="Image Captions & Preview", padding=5)
         preview_label_frame.pack(fill=BOTH, expand=YES, padx=5, pady=5)
 
         # Scrollable Frame using ttkbootstrap's ScrolledFrame
@@ -87,7 +97,7 @@ class ImageLayoutDialog(tb.Toplevel):
         self.btn_confirm.pack(side=RIGHT, padx=5)
 
         # --- Bottom Section: Layout Selection ---
-        top_frame = tb.Labelframe(main_frame, text="Image Layout Settings", padding=15)
+        top_frame = tb.Labelframe(main_frame, text="Image Layout Settings", padding=10)
         top_frame.pack(fill=X, side=TOP, padx=5, pady=5)
 
         tb.Label(top_frame, text="Choose Column Layout:").pack(side=LEFT, padx=(0, 10))
@@ -141,7 +151,12 @@ class ImageLayoutDialog(tb.Toplevel):
 
     def _create_image_row_ui(self, idx: int, filename: str, tk_thumb: ImageTk.PhotoImage) -> None:
         """Creates a single item row inside the scrollable container.
-        """
+
+        Args:
+            idx (int): The index of the current image item row
+            filename (str): The name of the file showed on the GUI
+            tk_thumb (ImageTk.PhotoImage): The thumbnail of the image
+        """        
         row_card = tb.Frame(self.scroll_frame, padding=10, bootstyle=SECONDARY)
         row_card.pack(fill=X, pady=5, padx=5)
 
@@ -157,7 +172,7 @@ class ImageLayoutDialog(tb.Toplevel):
         tb.Label(info_frame, text="Caption:", bootstyle='inverse-secondary').pack(anchor=W)
         
         caption_entry = tb.Entry(info_frame)
-        caption_entry.pack(fill=X, pady=(2, 0))
+        caption_entry.pack(fill=BOTH, pady=2)
 
         # Save reference to the entry field to read it out later
         self.image_data_store[idx]["entry_widget"] = caption_entry
@@ -165,12 +180,8 @@ class ImageLayoutDialog(tb.Toplevel):
     def _on_layout_change(self, event) -> None:
         """Maps the combobox text string to the HTML grid class name.
         """
-        mapping = {
-            "1 Column (Stacked)": "grid-1",
-            "2 Columns (Side-by-Side)": "grid-2",
-            "3 Columns (Grid)": "grid-3"
-        }
-        self.result_layout = mapping.get(self.layout_var.get(), "grid-1")
+
+        self.result_layout = self.layout_mapping.get(self.layout_var.get(), "grid-1")
 
     def confirm_selection(self) -> None:
         """Assembles the final HTML snippets when user clicks confirm.
@@ -197,7 +208,8 @@ class ImageLayoutDialog(tb.Toplevel):
         self.close_dialog()
 
     def close_dialog(self) -> None:
-        """Closes the modal window."""
+        """Closes the modal window.
+        """
         self.grab_release()
         self.destroy()
 
