@@ -496,15 +496,17 @@ class CalApp(ttk.Window):
             tsp_cal_value = {}
 
             for ChIdx in range(0, 4):  # iterate through all the 4 channels viewed
-                tsp_name = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_ChName)
-                if tsp_name != "OFF":
+                row_data = self.t_result_sheet.get_row_data(ChIdx)
+                tsp_name = row_data[ColInterp_ChName]
+                if tsp_name != "OFF" and  all(v is not None for v in row_data):
                     abort_save = False
 
-                    tsp_offs = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_Offset)
-                    tsp_lin = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_Lin)
-                    tsp_quad = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_Quad)
-                    r_sq = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_R2)
-                    if r_sq < 0.98:
+                    tsp_offs = row_data[ColInterp_Offset]
+                    tsp_lin = row_data[ColInterp_Lin]
+                    tsp_quad = row_data[ColInterp_Quad]
+                    r_sq = row_data[ColInterp_R2]
+                    print(f"R²: {r_sq}")
+                    if float(r_sq) < 0.98:
                         msg_box = messagebox.askquestion("Low confidence results",
                                                             f"The R² of channel '{tsp_name}'only {np.min(r_sq):.3f}" +
                                                             ", this seems to low to provide a good calibration.\n" +
