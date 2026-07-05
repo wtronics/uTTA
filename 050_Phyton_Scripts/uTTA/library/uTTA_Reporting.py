@@ -201,9 +201,9 @@ def export_calibration_report(utta_data, outfilename:str, root_window:ttk.Window
     report_dict['Step_Table_Header'] = cal_results['Step_Table_Header']
     report_dict['Step_Table'] = cal_results['Step_Table']
 
-    ColStep_StepTemp = report_dict['Col_Temp']
-    ColStep_StableStart = report_dict['Col_Start']
-    ColStep_StableEnd = report_dict['Col_End']
+    ColStep_StepTemp = cal_results['Col_Temp']
+    ColStep_StableStart = cal_results['Col_Start']
+    ColStep_StableEnd = cal_results['Col_End']
 
     step_data = np.array(cal_results['Step_Data'])        
 
