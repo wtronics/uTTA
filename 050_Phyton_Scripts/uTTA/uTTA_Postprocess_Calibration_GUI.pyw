@@ -38,18 +38,37 @@ from matplotlib.figure import Figure
 from tksheet import (Sheet, float_formatter, num2alpha, formatter)
 from quantiphy import Quantity      
 from typing import Any, Callable
+from datetime import datetime as dt
 import os
 import configparser
 import library.uTTA_data_processing as udpc
 import numpy as np                  
 import matplotlib 
-import tkinter as tk  
+import tkinter as tk 
+import tkinter.filedialog as fd 
 from tkinter import messagebox               
 import ttkbootstrap as ttk
+
+import pprint as pp
 
 matplotlib.use("TkAgg")
 
 MaxJUT_Channels = 3
+
+# Global definitions of column numbers. To easily adapt if needed
+# ["Step Temp", "CH0 Avg.", "CH1 Avg.", "CH2 Avg.", "Temp Avg.", "Start", "End"]
+ColStep_StepTemp = 0
+ColStep_TSP_Voltages = range(1,1 + MaxJUT_Channels)
+ColStep_TempAvg = 2 + MaxJUT_Channels
+ColStep_StableStart = ColStep_TempAvg + 1
+ColStep_StableEnd = ColStep_StableStart + 1
+
+# ["Channel", "Offset", "Lin.", "Quad.", "R²"]
+ColInterp_ChName = 0
+ColInterp_Offset = ColInterp_ChName + 1
+ColInterp_Lin = ColInterp_Offset + 1
+ColInterp_Quad = ColInterp_Lin + 1
+ColInterp_R2 = ColInterp_Quad + 1
 
 WINDOW_WIDTH = 1580
 WINDOW_HEIGHT = 960
@@ -84,7 +103,6 @@ def convert_SI_to_float(val: Any, **kwargs: Any) -> float:
         
     return float(val_str)
 
-
 def create_quantiphy_to_str(unit: str = "") -> Any:
     """ Factory that returns a string-formatting function bound to a specific unit.
     """
@@ -102,7 +120,6 @@ def create_quantiphy_to_str(unit: str = "") -> Any:
             return str(val)
 
     return to_str_function
-
 
 def create_si_formatter(unit: str = "") -> TksheetFormatterInstance:
     """ Creates a tksheet generic formatter instance configured for SI units.
@@ -122,30 +139,42 @@ class CalApp(ttk.Window):
         """        
         super().__init__()
 
-        self.title("uTTA Calibration Factor Calculation Tool")
-        self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
-        self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
-        screen_dpi = self.winfo_fpixels('1i')
-        geometry = self.winfo_geometry()
-        print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
-
-        self.utta_data = udpc.UttaZthProcessing()
         fileext = __file__.split(".")[-1]
         self.ini_filename = __file__.replace(fileext, "ini")
 
+        self.utta_data = udpc.UttaZthProcessing()
+        
         self.Interpolation_Degrees = tk.IntVar()
         self.steady_state_min_duration = tk.DoubleVar()
         self.steady_state_max_pp_diode = tk.DoubleVar()
         self.steady_state_max_pp_tc_k = tk.DoubleVar()
-
+        
         self.load_settings()
 
         self.meas_file_path:str = ''
+        self.meas_file_name:str = ''
+        self.meas_file_dirname:str = ''
         self.g_plots:list = []
         self.detected_static_states = []
         self.highlight_static_state:int = -1
 
+        self.title("uTTA Calibration Factor Calculation Tool")
+        self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
+        self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
+        
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
+
+        self.__build_ui()
+
+        self.update_plots()
+        self.update()
+
+    def __build_ui(self):
+
+        screen_dpi = self.winfo_fpixels('1i')
+        geometry = self.winfo_geometry()
+        print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
+        
         self.paned = ttk.Panedwindow(self, orient=tk.HORIZONTAL)
         self.paned.pack(fill=tk.BOTH, expand=True)
 
@@ -201,9 +230,9 @@ class CalApp(ttk.Window):
         self.t_step_sheet = Sheet(frm_step_table, startup_select=(0, 1, "rows"),
                                   page_up_down_select_row=True)
 
-        self.t_step_sheet['A'].format(create_si_formatter('°C'))
+        self.t_step_sheet[num2alpha(ColStep_StepTemp)].format(create_si_formatter('°C'))
         self.t_step_sheet['B:D'].format(create_si_formatter('V'))
-        self.t_step_sheet['E'].format(create_si_formatter('°C'))
+        self.t_step_sheet[num2alpha(ColStep_TempAvg)].format(create_si_formatter('°C'))
 
         self.t_step_sheet.grid(row=3, column=0, columnspan=2)
         self.t_step_sheet.enable_bindings(('single_select', 'edit_cell')) # type: ignore
@@ -216,15 +245,15 @@ class CalApp(ttk.Window):
 
         tab_result_heading = ["Channel", "Offset", "Lin.", "Quad.", "R²"]
         self.t_result_sheet = Sheet(frm_result_table, show_y_scrollbar=False, row_index_width=30)
-        self.t_result_sheet.grid(row=1, rowspan=3, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
+        self.t_result_sheet.grid(row=2, rowspan=3, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
         self.t_result_sheet.insert_columns(columns=4)
         self.t_result_sheet.insert_rows(rows=3)
         self.t_result_sheet.enable_bindings()
         self.t_result_sheet.sheet_data_dimensions(total_rows=4, total_columns=4)
-        self.t_result_sheet['B'].format(create_si_formatter('V'))
-        self.t_result_sheet['C'].format(create_si_formatter('V/K'))
-        self.t_result_sheet['D'].format(create_si_formatter('V²/K'))
-        self.t_result_sheet['E'].format(create_si_formatter(''))
+        self.t_result_sheet[num2alpha(ColInterp_Offset)].format(create_si_formatter('V'))
+        self.t_result_sheet[num2alpha(ColInterp_Lin)].format(create_si_formatter('V/K'))
+        self.t_result_sheet[num2alpha(ColInterp_Quad)].format(create_si_formatter('V²/K'))
+        self.t_result_sheet[num2alpha(ColInterp_R2)].format(create_si_formatter(''))
  
         self.t_result_sheet.headers(tab_result_heading)
         self.t_result_sheet.set_all_column_widths(70)
@@ -232,6 +261,10 @@ class CalApp(ttk.Window):
         self.btn_save_result = ttk.Button(master=frm_result_table, text="Save Calibration", width=12,
                                           command=self.save_calibration_results, state="disabled")
         self.btn_save_result.grid(row=0, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
+
+        self.btn_generate_report = ttk.Button(master=frm_result_table, text="Report", width=12,
+                                          command=self.save_calibration_report, state="disabled")
+        self.btn_generate_report.grid(row=1, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
 
         # 2nd Page: Settings
         self.frm_settings = ttk.Frame(master=self)
@@ -297,9 +330,6 @@ class CalApp(ttk.Window):
         self.toolbar.update()
 
         self.paned.add(self.frm_right)
-
-        self.update_plots()
-        self.update()
 
     def load_settings(self):
             """Loads GUI settings from the ini-File into the class itself
@@ -390,9 +420,9 @@ class CalApp(ttk.Window):
         if len(tbl) >= 1:
             self.btn_rem_steps.configure(state='normal')
 
-            times = np.transpose([np.array(self.t_step_sheet.get_column_data(5), dtype=np.float32), # starttime
-                                  np.array(self.t_step_sheet.get_column_data(6), dtype=np.float32), # endtime
-                                  np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)]) # temperature
+            times = np.transpose([np.array(self.t_step_sheet.get_column_data(ColStep_StableStart), dtype=np.float32), # starttime
+                                  np.array(self.t_step_sheet.get_column_data(ColStep_StableEnd), dtype=np.float32), # endtime
+                                  np.array(self.t_step_sheet.get_column_data(ColStep_StepTemp), dtype=np.float32)]) # temperature
 
             ylims = self.g_plots[0].axes.get_ylim()
             ypos = ylims[0] + (ylims[1] - ylims[0]) * 0.05
@@ -424,6 +454,37 @@ class CalApp(ttk.Window):
 
         self.canvas.draw()
 
+    def save_calibration_report(self):
+        report_file_name = fd.asksaveasfilename(initialdir=self.meas_file_dirname, initialfile=f"{dt.now().strftime('%Y%m%d_%H%M%S')}_{self.meas_file_name}.html",defaultextension="*.html",filetypes=(('HTML-Files', '*.html'), ('All files', '*.*')))
+        
+        print(report_file_name)
+        if report_file_name: 
+            tsp_cal_results = {}
+            cal_data = {}
+
+            for idx, row  in enumerate(self.t_result_sheet.data):
+                if all(v is not None for v in row):
+                    if not str(row[0]).startswith("TC"):
+                        tsp_cal_results[f"TSP{idx}"]= {"Name": row[ColInterp_ChName],
+                                            "Offset": row[ColInterp_Offset],
+                                            "LinGain": row[ColInterp_Lin],
+                                            "QuadGain": row[ColInterp_Quad],
+                                            'R2': row[ColInterp_R2]
+                                            }
+            cal_data['Interpolation_Results'] = tsp_cal_results           
+
+            cal_data['Col_Temp'] = ColStep_StepTemp
+            cal_data['Col_Start'] = ColStep_StableStart
+            cal_data['Col_End'] = ColStep_StableEnd
+
+            cal_data['Step_Data'] = self.t_step_sheet.get_sheet_data(get_displayed=False)
+            cal_data['Step_Table'] = self.t_step_sheet.get_sheet_data(get_displayed=True)
+            cal_data['Step_Table_Header'] = self.t_step_sheet.headers()
+            self.utta_data.html_calibration_report(report_file_name, self, cal_data)
+                        
+        else:
+            self.lbl_helpbar.configure(text="File: " + self.meas_file_path + " was not imported.", style='warning.Inverse.TLabel')
+
     def save_calibration_results(self):
         """Saves calibration results to an existing *.ucf calibration file
         """        
@@ -435,14 +496,14 @@ class CalApp(ttk.Window):
             tsp_cal_value = {}
 
             for ChIdx in range(0, 4):  # iterate through all the 4 channels viewed
-                tsp_name = self.t_result_sheet.get_cell_data(ChIdx, 0)
+                tsp_name = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_ChName)
                 if tsp_name != "OFF":
                     abort_save = False
 
-                    tsp_offs = self.t_result_sheet.get_cell_data(ChIdx, 1)
-                    tsp_lin = self.t_result_sheet.get_cell_data(ChIdx, 2)
-                    tsp_quad = self.t_result_sheet.get_cell_data(ChIdx, 3)
-                    r_sq = self.t_result_sheet.get_cell_data(ChIdx, 4)
+                    tsp_offs = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_Offset)
+                    tsp_lin = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_Lin)
+                    tsp_quad = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_Quad)
+                    r_sq = self.t_result_sheet.get_cell_data(ChIdx, ColInterp_R2)
                     if r_sq < 0.98:
                         msg_box = messagebox.askquestion("Low confidence results",
                                                             f"The R² of channel '{tsp_name}'only {np.min(r_sq):.3f}" +
@@ -485,7 +546,7 @@ class CalApp(ttk.Window):
         measfilename = udpc.select_file("Select the measurement file",
                                                     (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
         if len(measfilename) > 0:    # check if string is not empty
-            self.meas_file_path, data_file_no_ext, file_path = udpc.split_file_path(measfilename)
+            self.meas_file_path, self.meas_file_name, self.meas_file_dirname = udpc.split_file_path(measfilename)
             self.utta_data.import_data(measfilename)
             
             self.detected_static_states = []
@@ -579,13 +640,13 @@ class CalApp(ttk.Window):
             temp_step (float): The average thermocouple temperature calculated for this step
         """             
         self.t_step_sheet.insert_row(idx=0)
-        self.t_step_sheet["A1"].data = float(temp_step)
-        self.t_step_sheet["B1"].data = np.mean(self.utta_data.adc_interp[0, starttime:endtime]) # type: ignore
-        self.t_step_sheet["C1"].data = np.mean(self.utta_data.adc_interp[1, starttime:endtime]) # type: ignore
-        self.t_step_sheet["D1"].data = np.mean(self.utta_data.adc_interp[2, starttime:endtime]) # type: ignore
-        self.t_step_sheet["E1"].data = np.mean(self.utta_data.tc_interp[0, starttime:endtime]) # type: ignore
-        self.t_step_sheet["F1"].data = starttime
-        self.t_step_sheet["G1"].data = endtime
+        self.t_step_sheet[f"A{num2alpha(ColStep_StepTemp)}"].data = float(temp_step)
+        self.t_step_sheet[f"B1"].data = np.mean(self.utta_data.adc_interp[0, starttime:endtime])
+        self.t_step_sheet[f"C1"].data = np.mean(self.utta_data.adc_interp[1, starttime:endtime])
+        self.t_step_sheet[f"D1"].data = np.mean(self.utta_data.adc_interp[2, starttime:endtime])
+        self.t_step_sheet[f"E{num2alpha(ColStep_TempAvg)}"].data = np.mean(self.utta_data.tc_interp[0, starttime:endtime])
+        self.t_step_sheet[f"F{num2alpha(ColStep_StableStart)}"].data = starttime
+        self.t_step_sheet[f"G{num2alpha(ColStep_StableEnd)}"].data = endtime
 
         self.consolidate_cal_step_entries()
 
@@ -601,21 +662,21 @@ class CalApp(ttk.Window):
         
         # Sort the table by start time (column index 5)
         # This way the overlapping intervall are next to each other.
-        sorted_data = sorted(tbl, key=lambda x: x[5])
+        sorted_data = sorted(tbl, key=lambda x: x[ColStep_StableStart])
 
         # Initialisation with the first intervall
         # Saved values: [[Summe_der_Werte], Start, End, , Number of values]
-        current_start = sorted_data[0][5+0]
-        current_end = sorted_data[0][5+1]
-        current_value_sum = sorted_data[0][0:5]
+        current_start = sorted_data[0][ColStep_StableStart]
+        current_end = sorted_data[0][ColStep_StableEnd]
+        current_value_sum = sorted_data[0][ColStep_StepTemp:ColStep_TempAvg+1] 
         current_count = 1
 
         merged = []
 
         for i in range(1, len(sorted_data)):
-            next_start= sorted_data[i][5+0]
-            next_end  = sorted_data[i][5+1]
-            next_value = sorted_data[i][0:5]
+            next_start= sorted_data[i][ColStep_StableStart]
+            next_end  = sorted_data[i][ColStep_StableEnd]
+            next_value = sorted_data[i][ColStep_StepTemp:ColStep_TempAvg+1]
 
             # Check if the next intervall overlaps the the current one
             if next_start <= current_end:
@@ -683,7 +744,7 @@ class CalApp(ttk.Window):
 
             for ChIdx in range(0, MaxJUT_Channels):  # iterate through all the 4 channels viewed
                 ch_tsp = f"TSP{ChIdx}"
-                x_data = np.array(self.t_step_sheet.get_column_data(0), dtype=np.float32)
+                x_data = np.array(self.t_step_sheet.get_column_data(ColStep_StepTemp), dtype=np.float32)
                 y_data = np.array(self.t_step_sheet.get_column_data(ChIdx + 1), dtype=np.float32)
 
                 interp_deg = self.Interpolation_Degrees.get()
@@ -704,15 +765,16 @@ class CalApp(ttk.Window):
                     r_sq = 1.0
                 print(f"Fitting Channel {ChIdx} with interpolation degree n={interp_deg}: Offset: {offs:.4f} ,Linear: {slope:.4f}, Quad: {quad:.7f}, R²: {r_sq:.4f}")
                 if ChIdx < MaxJUT_Channels:
-                    self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value=self.utta_data.meta_data.Channels[ch_tsp]["Name"])
+                    self.t_result_sheet.set_cell_data(r=ChIdx, c=ColInterp_ChName, value=self.utta_data.meta_data.Channels[ch_tsp]["Name"])
                 # else:
                     #self.t_result_sheet.set_cell_data(r=ChIdx, c=0, value="TC0")
-                self.t_result_sheet.set_cell_data(r=ChIdx, c=1, value=offs)
-                self.t_result_sheet.set_cell_data(r=ChIdx, c=2, value=slope)
-                self.t_result_sheet.set_cell_data(r=ChIdx, c=3, value=quad)
-                self.t_result_sheet.set_cell_data(r=ChIdx, c=4, value=r_sq)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=ColInterp_Offset, value=offs)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=ColInterp_Lin, value=slope)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=ColInterp_Quad, value=quad)
+                self.t_result_sheet.set_cell_data(r=ChIdx, c=ColInterp_R2, value=r_sq)
 
             self.btn_save_result.configure(state='normal')
+            self.btn_generate_report.configure(state='normal')
 
     def on_closing(self):
         """On Closing event. Triggered as soon as the application window is closed
