@@ -26,7 +26,7 @@ The full license text can be found at:
 https://creativecommons.org/licenses/by-nc-sa/4.0/
 --------------------------------------------------------------------------
 """
-from typing import List, Union
+from typing import List, Union, Any
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, Undefined, Template
 import plotly.graph_objects as go
@@ -154,9 +154,91 @@ def export(utta_data, outfilename:str, root_window:ttk.Window) -> None:
     fig.update_layout(width=1100, height=600, xaxis_title="Time / [s]", yaxis_title="Diode Voltage / [V]")
     utta_dict["PlotCoolingMeasDiode"] = fig.to_html(full_html=False, include_plotlyjs=False)
 
-    utta_dict["PlotStartInterpolation"] = interpol_plot(utta_data, utta_dict)
+    utta_dict["PlotStartInterpolation"] = __interpol_plot(utta_data, utta_dict)
 
     report = template.render(utta_dict)
+    with open(filename, mode="w", encoding="utf-8") as output:
+        output.write(report)
+
+    print("\033[94mReport written\033[0m")
+
+    os.startfile(filename)
+
+def export_calibration_report(utta_data, outfilename:str, root_window:ttk.Window, cal_results:dict[str,Any]) -> None:
+    ''' Generates an HTML measurement report for a Zth measurement. 
+    The report contains all measurement relevant information, including interactive plots
+    as plotly graph object. In addition the Zth curves are represented in tables with reduced resolution.
+    For improved traceability the calibration data of each TSP are also stored in a separate section.
+    The template used is stored in >050_Phyton_Scripts/uTTA/Report_Templates/Master_Template.html<
+
+    Args:
+        utta_data (utta_data)   : uTTA measurement data
+        outfilename (string)    : Path of the final report file
+    Returns:
+        None
+        '''
+    print('starting calibration report')
+    environment = Environment(loader=FileSystemLoader("Report_Templates/"))
+    template = environment.get_template("Calibration_Template.html")
+    filename = outfilename
+
+    report_dict = {}
+
+    # entries to style the report
+    report_dict["TitleImageLeft"] = encode_png2html_string(os.path.abspath(r'Report_Templates/uTTA_Logo.png'))
+    report_dict["TitleImageRight"] = encode_png2html_string(os.path.abspath(r'Report_Templates/Your_Logo.png'))
+    report_dict["PDF_Printable_Report"] = False
+    report_dict['Channels'] = cal_results['Interpolation_Results'] 
+
+    # transfer of information inside utta_data into the jinja2 information dict
+    report_dict["Measurement_Info"] = utta_data.meta_data.Measurement
+
+    report_dict["I_Sense"] = utta_data.meta_data.Isense
+    report_dict["T_Preheat"] = utta_data.meta_data.TPreheat
+    report_dict["T_Heating"] = utta_data.meta_data.THeating
+    report_dict["T_Cooling"] = utta_data.meta_data.TCooling
+
+    report_dict['Step_Table_Header'] = cal_results['Step_Table_Header']
+    report_dict['Step_Table'] = cal_results['Step_Table']
+
+    ColStep_StepTemp = report_dict['Col_Temp']
+    ColStep_StableStart = report_dict['Col_Start']
+    ColStep_StableEnd = report_dict['Col_End']
+
+    step_data = np.array(cal_results['Step_Data'])        
+
+    # Generate the plot with the raw measurement data of the TSPs
+    fig_tsp = go.Figure()
+    for ch_idx in range(0, utta_data.no_of_tsp):
+        if report_dict["Channels"][f'TSP{ch_idx}']['Name'] != "OFF":
+            fig_tsp.add_trace(go.Scatter(x=utta_data.time_interp, y=utta_data.adc_interp[ch_idx], name=report_dict["Channels"][f'TSP{ch_idx}']['Name']))
+
+            # Generate the interpolation plot for each active channel
+            fig_interpol = go.Figure()
+            fig_interpol.add_trace(go.Scatter(x=step_data[:, 0], y=step_data[:, 1+ch_idx], name=report_dict["Channels"][f'TSP{ch_idx}']['Name']))
+            fig_interpol.update_layout(width=1100, height=600, xaxis_title=r'Ambient Temperature / [°C]', yaxis_title=r'V<sub>TSP</sub> / [V]')
+            report_dict["Channels"][f'TSP{ch_idx}']['Temp_Plot'] = fig_interpol.to_html(full_html=False, include_plotlyjs=False)
+
+    fig_tsp.update_layout(width=1100, height=600, xaxis_title=r'Time / [s]', yaxis_title=r'V<sub>TSP</sub> / [V]')
+
+    # Generate the second plot with the raw measurement data of the Thermocouples
+    fig_tck = go.Figure()
+    fig_tck.add_trace(go.Scatter(x=utta_data.time_interp, y=utta_data.tc_interp[0], name='TC0'))
+    fig_tck.update_layout(width=1100, height=600, xaxis_title=r'Time / [s]', yaxis_title=r'T<sub>Thermocouple</sub> / [°C]')
+    
+    # Add highlighting to the marked "stable" regions to both diagrams
+    for t_step in step_data:
+        fig_tsp.add_vrect(x0=t_step[ColStep_StableStart], x1=t_step[ColStep_StableEnd], line_width=0, fillcolor='MediumTurquoise', opacity=0.5 , 
+                      label=dict(text=f"{t_step[ColStep_StepTemp]:.1f}°C", textangle=-90))
+        fig_tck.add_vrect(x0=t_step[ColStep_StableStart], x1=t_step[ColStep_StableEnd], line_width=0, fillcolor='MediumTurquoise', opacity=0.5 , 
+                      label=dict(text=f"{t_step[ColStep_StepTemp]:.1f}°C", textangle=-90))
+
+    report_dict["U_Diode_Plot"] = fig_tsp.to_html(full_html=False, include_plotlyjs=False)       
+    report_dict["Temperature_Plot"] = fig_tck.to_html(full_html=False, include_plotlyjs=False)
+
+    # TODO: Add graph lines for interpolated curves
+
+    report = template.render(report_dict)
     with open(filename, mode="w", encoding="utf-8") as output:
         output.write(report)
 
@@ -231,7 +313,7 @@ def compress_curve(timebase:np.ndarray, data:np.ndarray, samples_decade:int) -> 
 
     return data_output
 
-def interpol_plot(utta_data, utta_dict):
+def __interpol_plot(utta_data, utta_dict):
     ''' Generates a nice looking plotly plot to show the starting point interpolation of the
     heated TSP. The plot includes two cursors to show where the interpolation start and endpoints were placed.
     Args:
