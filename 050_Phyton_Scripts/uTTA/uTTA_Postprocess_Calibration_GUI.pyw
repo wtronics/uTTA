@@ -59,7 +59,7 @@ MaxJUT_Channels = 3
 # ["Step Temp", "CH0 Avg.", "CH1 Avg.", "CH2 Avg.", "Temp Avg.", "Start", "End"]
 ColStep_StepTemp = 0
 ColStep_TSP_Voltages = range(1,1 + MaxJUT_Channels)
-ColStep_TempAvg = 2 + MaxJUT_Channels
+ColStep_TempAvg = 1 + MaxJUT_Channels
 ColStep_StableStart = ColStep_TempAvg + 1
 ColStep_StableEnd = ColStep_StableStart + 1
 
@@ -640,13 +640,13 @@ class CalApp(ttk.Window):
             temp_step (float): The average thermocouple temperature calculated for this step
         """             
         self.t_step_sheet.insert_row(idx=0)
-        self.t_step_sheet[f"A{num2alpha(ColStep_StepTemp)}"].data = float(temp_step)
+        self.t_step_sheet[f"{num2alpha(ColStep_StepTemp)}1"].data = float(temp_step)
         self.t_step_sheet[f"B1"].data = np.mean(self.utta_data.adc_interp[0, starttime:endtime])
         self.t_step_sheet[f"C1"].data = np.mean(self.utta_data.adc_interp[1, starttime:endtime])
         self.t_step_sheet[f"D1"].data = np.mean(self.utta_data.adc_interp[2, starttime:endtime])
-        self.t_step_sheet[f"E{num2alpha(ColStep_TempAvg)}"].data = np.mean(self.utta_data.tc_interp[0, starttime:endtime])
-        self.t_step_sheet[f"F{num2alpha(ColStep_StableStart)}"].data = starttime
-        self.t_step_sheet[f"G{num2alpha(ColStep_StableEnd)}"].data = endtime
+        self.t_step_sheet[f"{num2alpha(ColStep_TempAvg)}1"].data = np.mean(self.utta_data.tc_interp[0, starttime:endtime])
+        self.t_step_sheet[f"{num2alpha(ColStep_StableStart)}1"].data = starttime
+        self.t_step_sheet[f"{num2alpha(ColStep_StableEnd)}1"].data = endtime
 
         self.consolidate_cal_step_entries()
 
