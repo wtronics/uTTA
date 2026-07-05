@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdn.plot.ly/plotly-3.1.1.min.js" charset="utf-8"></script>
+	<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"></script>
+	<script>
+	    // Find out which decimal separator the system uses
+        function getDecimalSeparator() {
+            try {
+                // Generates a formatted string with decimals tho see which output the system creates
+                // The empty parameter on NumberFormat lets the system use the standard locale of the browser
+                const number = 1.1;
+                // 'formatToParts' splits the string and allows the read out the decimal separator
+                const parts = new Intl.NumberFormat().formatToParts(number);
+                const decimalPart = parts.find(part => part.type === 'decimal');
+                return decimalPart ? decimalPart.value : '.'; // Fallback to colon
+            } catch (e) {
+                console.warn('Intl.NumberFormat not available. Will use the standard colon as decimal separator.', e);
+                return '.'; 
+            }
+        }
+        
+        const LOCAL_DECIMAL_SEPARATOR = getDecimalSeparator();
+		const delimiter = ";"  // Field delimiter is semicolon
+		
+		// RegEx to detect numbers including numbers in exponential notation
+        const NUMERIC_REGEX = /^-?\d+([.,]\d+)?([Ee][+-]?\d+)?$/;
+		
+		
+        /**
+          Converts the content of an HTML-table into a csv-formatted string and copies it to clipboard
+          @param {string} tableId->ID of the table
+         **/
+        function copyTableToClipboard(tableId) {
+            const table = document.getElementById(tableId);
+            if (!table) {
+                console.error('Table ID ' + tableId + ' not found!');
+                return;
+            }
+			
+			
+            let csv = '';
+            const rows = table.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('th, td');
+                const rowData = Array.from(cells).map(cell => {
+                    // get the content of the field and remove spaces
+                    let text = cell.innerText.trim();
+					
+					
+                    // Test if the field value is a number
+                    // just a simple test to check if it is a number with decimal separator
+                    const isNumeric = NUMERIC_REGEX.test(text);
+					
+					if (isNumeric) {
+                        // Convert to JavaScript standard format (. as decimal separator)
+                        let valueAsNumber = parseFloat(text.replace(',', '.')); 
+                        
+						// check if the conversion to float was successful
+						if (!isNaN(valueAsNumber)) {
+                            // Convert the number to the standard string format without exponential notation with a fixed length of 20 to make sure there are enough decimal digits.
+							// and remove trailing zeros
+                            let valueAsString = valueAsNumber.toFixed(20).replace(/\.?0+$/, '');
+
+                            // replace the standard decimal separator with the locale separator
+                            return valueAsString.replace('.', LOCAL_DECIMAL_SEPARATOR);
+                        } else {
+                            // Conversion failed. Treat number as text
+                            console.warn(`Fehler beim Parsen der Zahl: ${text}`);
+                        }
+                    }
+					
+                    // Padding of quotes with additional ones (if needed)
+                    text = text.replace(/"/g, '""');
+                    // When text contains commas or line breaks it will be set in quotes
+                    if (text.includes(delimiter) || text.includes('\n') || text.includes('"')) {
+                        return `"${text}"`;
+                    }
+                    return text;
+                });
+                csv += rowData.join(delimiter) + '\n'; // join the field in this row by using the delimiter
+            });
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(csv)
+                .then(() => {
+                    alert('Copied data to clipboard.');
+                })
+                .catch(err => {
+                    console.error('Failed to copy table "' + tableId + '"', err);
+                    alert('Failed to copy table "' + tableId + '"');
+                });
+        }
+    </script>
+    <title>µTTA Measurement Report - {{ report_id }}</title>
+    <style>
+        /* Allgemeine Stile und Layout-Optimierung für große Bildschirme (bis 1600px) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            /* Zentriert den Inhalt und setzt die maximale Breite auf 1600px */
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Kopfzeile */
+        .header {
+            display: flex;
+			background-color: #ffffff;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .logo-placeholder {
+            width: 180px;
+            height: 80px;
+            line-height: 80px; /* Vertikale Zentrierung des Platzhaltertextes */
+            text-align: center;
+            background-color: #404040;
+            color: #666;
+            border: 0px solid #ccc;
+            font-size: 0.8em;
+        }
+        
+        .header-title {
+            text-align: center;
+            font-size: 2em;
+            color: #002857;
+            flex-grow: 1; /* Nimmt den verbleibenden Platz ein */
+        }
+        
+        /* Kapitel (Collapsible Elemente) */
+        details {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        summary {
+            font-size: 1.25em;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 0;
+            outline: none; /* Entfernt den Fokusrahmen in einigen Browsern */
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        /* Bilder über die gesamte Breite des Containers */
+        .full-width-image {
+            width: 100%;
+            height: auto;
+            display: block; /* Entfernt möglichen zusätzlichen Platz unter dem Bild */
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            box-sizing: border-box; /* Stellt sicher, dass border innerhalb der 100% Breite liegt */
+        }
+        /* Sorgt dafür, dass jedes Bild innerhalb von #test-setup-container die volle Breite nutzt */
+        .image-scaler img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+
+        /* Flexbox weicht einem extrem mächtigen CSS-Grid */
+        .image-scaler {
+            display: grid;
+            gap: 20px; /* Abstand zwischen den Spalten/Zeilen im Grid */
+            margin: 15px 0;
+            width: 100%;
+        }
+
+        /* Die 3 wählbaren Layout-Klassen */
+        .image-scaler.grid-1 { 
+            grid-template-columns: 1fr; 
+            gap: 40px; /* Größerer Abstand zwischen den Zeilen im 1-spaltigen Layout */
+        }
+        .image-scaler.grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .image-scaler.grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+        /* Styling für die Bild-Karten im Report */
+        .report-figure {
+            margin: 0;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            background-color: #fcfcfc; /* Ganz leichter Hintergrund zur optischen Gruppierung */
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Minimaler Schatten für bessere Abgrenzung */
+        }
+
+        .report-figure img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px; /* Rundet auch die Ecken des Bildes leicht ab */
+        }
+
+        /* Styling für die Bildunterschrift im Report */
+        .report-figure figcaption {
+            margin-top: 10px;
+            font-size: 0.9em;
+            font-style: italic;
+            color: #444;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+        }
+        
+        .report-content p {
+            line-height: 1.6;
+            color: #444;
+        }
+
+        /* Tabelle-Stile */
+        .data-table {
+            /*width: 70%;*/
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+		.zth-table {
+            width: 40%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+		.zth-table th, .zth-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+		.zth-table th {
+            background-color: #404040;
+            color: #FFFFFF;
+        }
+		.zth-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+		.copy-button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            vertical-align: middle;
+        }
+        .copy-button:hover {
+            background-color: #45a049;
+        }
+		
+		.table-wrapper {
+            display: flex;
+            align-items: flex-start; /* Elemente oben ausrichten */
+            gap: 20px; /* Abstand zwischen Tabelle und Button */
+        }
+        .table-container {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            /* Flex-Eigenschaft, damit die Tabelle den verfügbaren Platz einnimmt */
+            flex-grow: 1; 
+            min-width: 0; /* to avoid overflow */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="header">
+        <div class="logo-placeholder">{{TitleImageLeft}}</div>
+        <h1 class="header-title">µTTA Measurement Report</h1>
+        <div class="logo-placeholder">{{TitleImageRight}}</img></div>
+    </div>
+    
+    <div class="report-content">
+		{% set ns = namespace(chapter_no = 1) %}
+        <details open>
+            <summary>{{ns.chapter_no}}. TSP Calibration Measurement</summary>
+            <details open>
+                <summary>{{ns.chapter_no}}.1. TSP Voltages</summary>
+                <div class="channel-info-block">
+                    {{U_Diode_Plot | safe}}		<!-- Here is the Full Measurement Plot of diode voltages -->
+                </div>
+            </details>
+            <details open>
+                <summary>{{ns.chapter_no}}.2. Thermocouples</summary>
+                <div class="channel-info-block">
+                    {{Temperature_Plot | safe}}		<!-- Here is the Full Measurement Plot of thermocouples -->
+                </div>
+            </details>
+            <details open>
+                <summary>{{ns.chapter_no}}.3. Detected Temperature Steps</summary>
+                <div class="channel-info-block">
+                    <div class="table-wrapper">
+                        <div class="table-container">
+                        <table class="data-table" id="tksheet_table">
+                            <thead>
+                                <tr>
+                                    {% for header in Step_Table_Header %}
+                                        <th>{{ header }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in Step_Table %}
+                                <tr>
+                                    {% for cell in row %}
+                                        {# Da hier bereits formatierte Strings ankommen, reicht die direkte Ausgabe #}
+                                        <td>{{ cell if cell is not none and cell != '' else '&nbsp;' | safe }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        </div>
+                        {% if not PDF_Printable_Report%}
+                        <button class="copy-button" onclick="copyTableToClipboard('Cal_result_{{ ch_key }}')">Copy as CSV</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </details>
+            
+        </details>
+        <!-- Dynamic generation of chapters per channel -->
+        {% for ch_key, ch_data in Channels.items() %}
+            {# Check if the channel is active (not 'Off' or 'DUMMY'-channel) #}
+            {% if ch_data['Name'] != "OFF" %}
+                
+                {# Increment the chapter number for each loop iteration #}
+                {% set ns.chapter_no = ns.chapter_no + 1 %}
+                
+                <details open>
+                    <summary>{{ ns.chapter_no }}. Details for Channel: {{ ch_data['Name'] }}</summary>
+                    <details open>
+                        <summary>{{ns.chapter_no}}.1. Calibration Summary</summary>
+                    
+                        <div class="channel-info-block">
+                            <p><strong>Channel-ID:</strong> {{ ch_data['Name'] }}</p>
+                            <div class="table-wrapper">
+                                <div class="table-container">
+                                    <!-- Channel specific calibration data -->
+                                    <table class="data-table" id='Cal_result_{{ ch_key }}'>
+                                        <thead>
+                                            <tr><th>Parameter</th><th>Value</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td>Offset</td><td>{{'%.4f' | format(ch_data['Offset'] * 1000|float)}} mV</td></tr>
+                                            <tr><td>Linear Gain</td><td>{{ '%.4f' | format(ch_data['LinGain'] * 1000) }} mV/K</td></tr>
+                                            <tr><td>Quadratic Gain</td><td>{{ '%.4f' | format(ch_data['QuadGain'] * 1000) }} mV²/K</td></tr>
+                                            <tr><td>Coefficient of determination</td><td>{{ '%.4f' | format(ch_data['R2']) }}</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% if not PDF_Printable_Report%}
+                                <button class="copy-button" onclick="copyTableToClipboard('Cal_result_{{ ch_key }}')">Copy as CSV</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>{{ns.chapter_no}}.2. Temperature Interpolation Plot</summary>
+                        {{ch_data['Temp_Plot'] | safe}}		<!-- Here is the Interpolation Step Plot -->
+                    </details>
+
+                </details>
+                
+            {% endif %}
+        {% endfor %}
+
+        {% set ns.chapter_no = ns.chapter_no + 1 %}
+        <details>
+            <summary>{{ns.chapter_no}}. Measurement Information</summary>
+            <details>
+                <summary>{{ns.chapter_no}}.1 Setup Information</summary>
+                <div class="table-wrapper">
+                    <div class="table-container">
+                        <table class="data-table" id="setup_info">
+                            <thead>
+                                <tr><th>Parameter</th><th>Value</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Device Name</td><td>{{ Measurement_Info['DeviceVersion'] }}</td></tr>
+                                <tr><td>File Version</td><td>{{ Measurement_Info['FileVersion'] }}</td></tr>
+                                <tr><td>Sense Current</td><td>{{'%.3f' | format(I_Sense*1000|float) }} mA</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if not PDF_Printable_Report%}
+                    <button class="copy-button" onclick="copyTableToClipboard('setup_info')">Copy as CSV</button>
+                    {% endif %}
+                </div>	
+            </details>
+            <details>
+			<summary>{{ns.chapter_no}}.2 Timing Information</summary>
+                <div class="table-wrapper">
+                    <div class="table-container">
+                        <table class="data-table" id="timing_info">
+                            <thead>
+                                <tr><th>Parameter</th><th>Value</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Start Date</td><td>{{ Measurement_Info['StartDate'] }}</td></tr>
+                                <tr><td>Start Time</td><td>{{ Measurement_Info['StartTime'] }}</td></tr>
+                                <tr><td>PreHeating Time</td><td>{{ T_Preheat }} s</td></tr>
+                                <tr><td>Heating Time</td><td>{{ T_Heating }} s</td></tr>
+                                <tr><td>Cooling Time</td><td>{{ T_Cooling }} s</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if not PDF_Printable_Report%}
+                    <button class="copy-button" onclick="copyTableToClipboard('timing_info')">Copy as CSV</button>
+                    {% endif %}
+                </div>
+            </details>		
+        </details>
+
+        {% if Test_Setup_Photo == True%}
+        <details open>
+            {% set ns.chapter_no = ns.chapter_no + 1 %}
+            <summary>{{ns.chapter_no}}. Test Setup</summary>
+            
+            <div class="image-scaler {{ Test_Setup_Layout }}">
+                {{ Test_Setup_HTML | safe }}
+            </div>
+        </details>
+		{% endif %}
+		
+    </div>
+</div>
+</body>
+</html>
