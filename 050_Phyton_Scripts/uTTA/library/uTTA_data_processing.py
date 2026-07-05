@@ -33,7 +33,8 @@ import numpy as np
 import numpy.dtypes  
 from scipy.optimize import nnls
 from scipy.ndimage import gaussian_filter
-from scipy.signal import find_peaks          
+from scipy.signal import find_peaks   
+from typing import Any       
 import matplotlib.ticker as ticker
 import library.uTTA_data_import as uTTA_data_import
 import library.uTTA_data_export as uTTA_data_export
@@ -285,9 +286,9 @@ class UttaZthProcessing:
             for ch_idx in range(0, num_adc):
                 tc_int[ch_idx, :] = np.interp(timebase_int, timebase_tc, self.tc[ch_idx, :])
         else:
-            timebase_int = []
-            adc_int = []
-            tc_int = []
+            timebase_int = np.array([])
+            adc_int = np.zeros((0, 0), numpy.float32)
+            tc_int = np.zeros((0, 0), numpy.float32)
 
         self.time_interp = timebase_int
         self.adc_interp = adc_int
@@ -676,6 +677,17 @@ class UttaZthProcessing:
             None
             '''
         utta_report.export(self, outfilename, root_window)
+
+    def html_calibration_report(self, outfilename: str, root_window:ttk.Window, cal_results:dict[str,dict[str,Any]]):
+        ''' Generates an HTML measurement report for a TSP calibration measurement. 
+
+        Args:
+            outfilename (string)    : Path of the final report file
+            parent (ttk.Window): The reference to the parent GUI
+        Returns:
+            None
+            '''
+        utta_report.export_calibration_report(self, outfilename, root_window, cal_results)
     
     ###################################################
     ######## PLOTTING #################################
