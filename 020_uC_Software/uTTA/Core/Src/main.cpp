@@ -262,12 +262,15 @@ void DoMeasurement(void)
 		}
 
 		// check if the file already exists, abort the measurement if the file is already there
-		EvalLFSError(lfs_file_open(&littlefs, &file, DUT_Name, LFS_O_RDONLY));
-		if(LFS_ret<0){
+		LFS_ret = lfs_file_open(&littlefs, &file, DUT_Name, LFS_O_RDONLY);
+		if((uint8_t)LFS_ret !=254){
 			ErrorResponse(ERRC_FILE_SYSTEM, (uint8_t)LFS_ret);
 			FlagMeasurementState = Meas_State_Idle;
 			EvalLFSError(lfs_file_close(&littlefs, &file));
 			break;
+		}
+		else{	// Clean the flag after this test
+			LFS_ret = 0;
 		}
 
 		LL_GPIO_SetOutputPin(PWSTG_PWR_EN_DO_GPIO_Port, PWSTG_PWR_EN_DO_Pin);		// turn on the power of the gate driver
