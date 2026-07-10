@@ -229,12 +229,13 @@ class UttaZthProcessing:
         with open(filename, 'w') as configfile:
             config.write(configfile)
 
-    def import_data(self, file_nam: str) ->bool:
+    def import_data(self, file_nam:str, raw_mode:int=0) ->bool:
         """Imports the data from a utta measurement file (*.umf) an preprocesses the data into a usable format.
         The data will be stored within the class
 
         Args:
             file_nam (str): Path to the measurement file
+            raw_mode (int, optional): Set this flag to 1 to output unscaled ADC values instead. Defaults to 0.
 
         Returns:
             bool: True when import was completed without errors
@@ -242,7 +243,7 @@ class UttaZthProcessing:
         retval = False
         self.flag_import_successful = False
         if len(file_nam) > 1:
-            self.time_full, adc, self.tc, self.meta_data = uTTA_data_import.read_measurement_file(file_nam, 0, logger=self.logger)
+            self.time_full, adc, self.tc, self.meta_data = uTTA_data_import.read_measurement_file(file_nam, raw_mode, logger=self.logger)
             if len(self.time_full) > 0:
                 self.udiode_full = adc[0:3, :]
                 self.current_full = adc[3, :]
