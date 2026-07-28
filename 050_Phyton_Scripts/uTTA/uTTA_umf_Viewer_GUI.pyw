@@ -29,6 +29,8 @@ class UmfViewerApp(ttk.Window):
 
         self.utta_data = udProc.UttaZthProcessing(self.logger)
 
+        self.raw_mode = 0
+
         matplotlib.rcParams['axes.labelsize'] = 9
         matplotlib.rcParams['legend.fontsize'] = 9
         matplotlib.rcParams['font.size'] = 11
@@ -100,7 +102,7 @@ class UmfViewerApp(ttk.Window):
         # defines a flexible mapping of callback functions (which return data and plot configurations) to the subplots
 
         # (Axis-Index, Config Callback function)
-        if not  self.utta_data.meta_data.FlagTSPCalibrationFile:
+        if not  self.utta_data.meta_data.FlagTSPCalibrationFile and self.raw_mode  == 0:
             if self.view_plots.cols < 2:
                 self.view_plots.add_column()
                 
@@ -112,6 +114,9 @@ class UmfViewerApp(ttk.Window):
             self.view_plots.add_plot_mapping(row=2, col=0, config_func=self.utta_data.add_thermocouple_plot)
         else:
             self.view_plots.delete_column(1)
+            self.view_plots.add_plot_mapping(row=0, col=0, config_func=self.utta_data.add_input_tsp_measure_curve_plot)
+            self.view_plots.add_plot_mapping(row=1, col=0, config_func=self.utta_data.add_input_current_measure_curve_plot)
+            self.view_plots.add_plot_mapping(row=2, col=0, config_func=self.utta_data.add_thermocouple_plot)
 
     def update_all_plots(self):
 
@@ -144,7 +149,7 @@ class UmfViewerApp(ttk.Window):
                                f"{self.utta_data.meta_data.Channels["TSP2"]["LinGain"] * 1000:.2f}mV/K\n")
 
             MetaString += f"\nSense Current:\t{self.utta_data.meta_data.Isense * 1000:.2f} mA\n"
-            if not self.utta_data.meta_data.FlagTSPCalibrationFile:
+            if not self.utta_data.meta_data.FlagTSPCalibrationFile and self.raw_mode == 0:
                 MetaString += f"Heating Current:\t{self.utta_data.i_heat:.3f} A\n"
                 MetaString += f"Heating Power:\t{self.utta_data.p_heat:.3f} W\n"
             
@@ -161,8 +166,10 @@ class UmfViewerApp(ttk.Window):
         measfilename = udProc.select_file("Select the measurement file",
                                           (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
         if len(measfilename) > 0:  # check if string is not empty
+
+            
             DataFile, data_file_no_ext, file_path = udProc.split_file_path(measfilename)
-            self.utta_data.import_data(measfilename)
+            self.utta_data.import_data(measfilename, raw_mode=self.raw_mode)
             if self.utta_data.flag_import_successful:
 
                 self.lbl_helpbar.configure(text=f"File: {DataFile} was successfully imported.", bootstyle="inverse-success")
@@ -170,7 +177,7 @@ class UmfViewerApp(ttk.Window):
 
                 self.view_plots.clear_decorations()
 
-                if not self.utta_data.meta_data.FlagTSPCalibrationFile:
+                if not self.utta_data.meta_data.FlagTSPCalibrationFile and self.raw_mode==0:
                     self.utta_data.calculate_cooling_curve()
 
                     self.utta_data.calculate_tsp_start_voltages()
