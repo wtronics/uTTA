@@ -203,12 +203,12 @@ def read_measurement_file_30up(lines:list[str], flag_raw_value_mode:int,
                         meas_meta_data.Measurement["StartDate"] = str(cells[1])
                         logger.info("Measurement Started " + meas_meta_data.Measurement["StartDate"] + " " + meas_meta_data.Measurement["StartTime"])
                     case 'CH1 Name':
-                        meas_meta_data.Channels["TSP0"] = get_channel_data(0, cells, logger)
+                        meas_meta_data.Channels["TSP0"] = __get_channel_data(0, cells, logger)
 
                     case 'CH2 Name':
-                        meas_meta_data.Channels["TSP1"] = get_channel_data(1, cells, logger)
+                        meas_meta_data.Channels["TSP1"] = __get_channel_data(1, cells, logger)
                     case 'CH3 Name':
-                        meas_meta_data.Channels["TSP2"] = get_channel_data(2, cells, logger)
+                        meas_meta_data.Channels["TSP2"] = __get_channel_data(2, cells, logger)
                     case '#CAL_DAC_ISEN':  # ISense DAC Calibration needs to be divided by 1000000 because values are in µA
                         meas_meta_data.CalData["CAL_DAC_ISEN"] = {"Offset": float(cells[1]) / 1000000.0,
                                                                   "LinGain": float(cells[2]) / 1000000.0,
@@ -316,7 +316,7 @@ def read_measurement_file_30up(lines:list[str], flag_raw_value_mode:int,
 
     return timebase_total, adc, temp, meas_meta_data
 
-def get_channel_data(tsp_no:int, cells:List[str], logger:logging.Logger|None=None) -> dict[str,Any]:
+def __get_channel_data(tsp_no:int, cells:List[str], logger:logging.Logger|None=None) -> dict[str,Any]:
     """Parsing function to retrieve channel TSP calibration data from the measurement file.
 
     Args:
