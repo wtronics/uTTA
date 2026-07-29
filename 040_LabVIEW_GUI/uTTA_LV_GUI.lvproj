@@ -154,8 +154,7 @@
 		</Item>
 		<Item Name="uTTA_Main.vi" Type="VI" URL="../uTTA/uTTA_Main.vi"/>
 		<Item Name="uTTA_Main_Temperature_Control.vi" Type="VI" URL="../uTTA/uTTA_Main_Temperature_Control.vi"/>
-		<Item Name="uTTA_Main_V2.vi" Type="VI" URL="../uTTA/uTTA_Main_V2.vi"/>
-		<Item Name="uTTA_GetLiveMeasureStatus_V2.vi" Type="VI" URL="../uTTA/Measurement_Window/SubVi/uTTA_GetLiveMeasureStatus_V2.vi"/>
+		<Item Name="Untitled 1 (SubVI).vi" Type="VI" URL="../../060_Example_Measurement_Data/Private/Calibration/Untitled 1 (SubVI).vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
@@ -231,6 +230,12 @@
 				<Item Name="LVCursorListTypeDef.ctl" Type="VI" URL="/&lt;vilib&gt;/Utility/miscctls.llb/LVCursorListTypeDef.ctl"/>
 				<Item Name="NI_AALPro.lvlib" Type="Library" URL="/&lt;vilib&gt;/Analysis/NI_AALPro.lvlib"/>
 				<Item Name="Range Limits for Type.vim" Type="VI" URL="/&lt;vilib&gt;/numeric/Range Limits for Type.vim"/>
+				<Item Name="NI_PID_pid.lvlib" Type="Library" URL="/&lt;vilib&gt;/addons/control/pid/NI_PID_pid.lvlib"/>
+				<Item Name="NI_PID_autopid.lvlib" Type="Library" URL="/&lt;vilib&gt;/addons/control/pid/NI_PID_autopid.lvlib"/>
+				<Item Name="PID autotuning parameters.ctl" Type="VI" URL="/&lt;vilib&gt;/addons/control/pid/autopid.llb/PID autotuning parameters.ctl"/>
+				<Item Name="PID Table (Ultimate Gain and Frequency - Ziegler Nichols).vi" Type="VI" URL="/&lt;vilib&gt;/addons/control/pid/autopid.llb/PID Table (Ultimate Gain and Frequency - Ziegler Nichols).vi"/>
+				<Item Name="PID Online (Relay Feedback).vi" Type="VI" URL="/&lt;vilib&gt;/addons/control/pid/autopid.llb/PID Online (Relay Feedback).vi"/>
+				<Item Name="NI_Matrix.lvlib" Type="Library" URL="/&lt;vilib&gt;/Analysis/Matrix/NI_Matrix.lvlib"/>
 			</Item>
 			<Item Name="user.lib" Type="Folder">
 				<Item Name="String to 1D Array__ogtk.vi" Type="VI" URL="/&lt;userlib&gt;/_OpenG.lib/string/string.llb/String to 1D Array__ogtk.vi"/>
