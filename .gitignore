@@ -23,3 +23,4 @@
 *.log
 *.ini
 /050_Phyton_Scripts/uTTA/.venv
+050_Phyton_Scripts/uTTA/install_log.txt
