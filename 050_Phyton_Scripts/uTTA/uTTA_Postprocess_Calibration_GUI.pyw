@@ -173,7 +173,7 @@ class CalApp(ttk.Window):
 
         screen_dpi = self.winfo_fpixels('1i')
         geometry = self.winfo_geometry()
-        print("DPI: " + str(screen_dpi) + " Geometry: " + str(geometry))
+        print(f"DPI: {screen_dpi} Geometry: {geometry}")
         
         self.paned = ttk.Panedwindow(self, orient=tk.HORIZONTAL)
         self.paned.pack(fill=tk.BOTH, expand=True)
