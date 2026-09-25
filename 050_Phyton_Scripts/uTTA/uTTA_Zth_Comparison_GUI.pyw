@@ -31,7 +31,7 @@ class ZthData():
 
         print(f"reading file {self.filepath}")
 
-        fil_import = genfromtxt(self.filepath, delimiter='\t', dtype=float, names=True)
+        fil_import = genfromtxt(self.filepath, delimiter="\t", dtype=float, names=True)
         cols = fil_import.dtype.names
 
         # find the index at which the real measurement data on the monitor channels (without interpolation) starts
@@ -57,20 +57,20 @@ class ZthComparatorApp(ttk.Window):
         self.title("uTTA Zth Comparison GUI")
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
         self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
-        screen_dpi = self.winfo_fpixels('1i')
+        screen_dpi = self.winfo_fpixels("1i")
         geometry = self.winfo_geometry()
 
         self.files_selected = 0
         self.file_data :dict = {}
         self.plots :list = []
 
-        matplotlib.rcParams['axes.labelsize'] = 9
-        matplotlib.rcParams['legend.fontsize'] = 9
-        matplotlib.rcParams['font.size'] = 11
-        matplotlib.rcParams['xtick.labelsize'] = 9
-        matplotlib.rcParams['ytick.labelsize'] = 9
+        matplotlib.rcParams["axes.labelsize"] = 9
+        matplotlib.rcParams["legend.fontsize"] = 9
+        matplotlib.rcParams["font.size"] = 11
+        matplotlib.rcParams["xtick.labelsize"] = 9
+        matplotlib.rcParams["ytick.labelsize"] = 9
 
-        self.iconbitmap(r'library/uTTA_Icon.ico')
+        self.iconbitmap(r"library/uTTA_Icon.ico")
         print(f"DPI: {screen_dpi}, Geometry: {geometry}")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
 
@@ -102,7 +102,7 @@ class ZthComparatorApp(ttk.Window):
                                  page_up_down_select_row=True, height=230, 
                                  total_columns=2, row_index_width=30)
         self.files_sheet.pack(fill=tk.X, padx=10, pady=10)
-        self.files_sheet.enable_bindings(('single_select', 'edit_cell')) # type: ignore
+        self.files_sheet.enable_bindings(("single_select", "edit_cell")) # type: ignore
         self.files_sheet.extra_bindings("edit_cell", self.after_cell_edit)
         self.files_sheet.headers(tab_heading)
         self.files_sheet.set_all_column_widths(200)
@@ -132,11 +132,11 @@ class ZthComparatorApp(ttk.Window):
         self.plots = self.fig.subplots(3, 1)
 
         for plot in self.plots:
-            plot.set_xscale('log')
+            plot.set_xscale("log")
             plot.xaxis.set_major_locator(LogLocator(base=10.0, subs=[1.0], numticks=999))
-            plot.grid(True , axis='both', which='major', ls="-", color='black') 
-            plot.grid(True , axis='x', which="minor", ls="-", alpha=0.5)
-            plot.set_yscale('log')
+            plot.grid(True , axis="both", which="major", ls="-", color="black") 
+            plot.grid(True , axis="x", which="minor", ls="-", alpha=0.5)
+            plot.set_yscale("log")
         
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frm_plot_area)
         
@@ -162,11 +162,11 @@ class ZthComparatorApp(ttk.Window):
     def add_measurement_file_callback(self):
 
         if self.files_selected < 5:
-            FileNam = udpc.select_file('Open a t3i-File',
-                                (('T3I Intermediate Files', '*.t3i'), ('All files', '*.*')))
+            FileNam = udpc.select_file("Open a t3i-File",
+                                (("T3I Intermediate Files", "*.t3i"), ("All files", "*.*")))
             DataFile, DataFileNoExt, FilePath = udpc.split_file_path(FileNam)
             if DataFile in self.file_data.keys():
-                self.lbl_helpbar.configure(text="This file was already imported. Each file can only be imported once!\n", style='danger.Inverse.TLabel')
+                self.lbl_helpbar.configure(text="This file was already imported. Each file can only be imported once!\n", style="danger.Inverse.TLabel")
             else:
                 if len( DataFile)>1:
                     self.files_sheet.insert_row(idx=0)
@@ -189,7 +189,7 @@ class ZthComparatorApp(ttk.Window):
                     self.update_widgets()
 
         else:
-            self.lbl_helpbar.configure(text="There were already 5 files selected for comparison.\n", style='danger.Inverse.TLabel')
+            self.lbl_helpbar.configure(text="There were already 5 files selected for comparison.\n", style="danger.Inverse.TLabel")
 
     def delete_measurement_file_callback(self):
         row_number = None
@@ -238,11 +238,11 @@ class ZthComparatorApp(ttk.Window):
             if shown_plots > 0: 
                 for plot in self.plots:
                     plot.xaxis.set_major_locator(LogLocator(base=10.0, subs=[1.0], numticks=999))
-                    plot.grid(True , axis='both', which='major', ls="-", color='black') 
-                    plot.grid(True , axis='both', which="minor", alpha=0.7)
+                    plot.grid(True , axis="both", which="major", ls="-", color="black") 
+                    plot.grid(True , axis="both", which="minor", alpha=0.7)
                     plot.set_xlabel("Time / [s]")
                     plot.set_ylabel("Zth / [K/W]")
-                    plot.legend(loc='lower right' )
+                    plot.legend(loc="lower right" )
 
         self.canvas.draw()
         self.update()
