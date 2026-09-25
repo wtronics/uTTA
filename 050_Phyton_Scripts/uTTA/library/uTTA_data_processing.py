@@ -1045,18 +1045,17 @@ def find_static_states(indata:list|np.ndarray, threshold: float=0.01, min_length
             end_idx +=1
     return ranges
 
-def find_nearest(arr: np.ndarray, value: float):
-    """Find the index of the closed element witin an numpy array which matches the searched value
+def find_nearest(arr: np.ndarray, value: float) -> np.intp:
+    """Finds the index of the element in an array that is closest to a specified value.
 
     Args:
-        arr (np.ndarray): The array to be searched through
-        value (float): The value to be searched for
+        arr (np.ndarray): One-dimensional array to search through.
+        value (float): Target value to search for.
 
     Returns:
-        int: The index of the closest value
-    """    
-
-    idx = int(np.abs(arr - value).argmin())
+        np.intp: Index of the array element closest to value.
+    """
+    idx = (np.abs(arr - value)).argmin()
     return idx
 
 def select_file(heading: str, file_filter: tuple):
