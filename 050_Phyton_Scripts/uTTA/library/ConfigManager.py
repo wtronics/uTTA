@@ -35,13 +35,32 @@ https://creativecommons.org/licenses/by-nc-sa/4.0/
 
 import configparser
 from pathlib import Path
-import ttkbootstrap as ttk
 from typing import Any
+import ttkbootstrap as ttk
+
 
 class ConfigSection:
     """Generic container object that holds GUI variables as dynamic attributes."""
+
     def __getattr__(self, name: str) -> Any:
-        return self.__dict__[name]
+        """ Retrieves a section attribute dynamically from the internal attribute dictionary.
+
+        Args:
+            name (str): Name of the requested attribute.
+
+        Returns:
+            Any: Value of the attribute stored in the internal dictionary.
+        
+        Raises:
+            AttributeError: If the requested attribute does not exist.
+        """
+        try:
+            return self.__dict__[name]
+        except KeyError as err:
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{name}'"
+            ) from err
+
 
 class ConfigManager:
     """Manages application configurations using a central schema definition.
@@ -59,49 +78,48 @@ class ConfigManager:
         ...     ('Settings', 'Calibration_File_Path', ttk.StringVar, 'cal_file_path', 'C:/default.cal'),
         ...     ('Communication', 'COM_Port', ttk.StringVar, 'com_port', 'COM3')
         ... ]
-        >>> cfg = ConfigManager("settings.ini", schema=schema)
+        >>> cfg = ConfigManager("settings.ini", scheme=schema)
         >>> cfg.load()
         >>> entry = ttk.Entry(master, textvariable=cfg.Settings.cal_file_path)
     """
 
-    def __init__(self, filepath: str | Path, scheme: list[tuple]):
-        """Initializes the ConfigManager and dynamically creates section objects and variables.
+    def __init__(self,
+                 filepath: str | Path,
+                 scheme: list[tuple[str, str, type, str, Any]]) -> None:
+        """ Initializes the ConfigManager and dynamically creates section objects and variables.
 
         Args:
-            filepath (str | Path): The path to the target INI file.
-            scheme (list[tuple]): A list of 5-tuples defining the configuration layout:
+            filepath (str | Path): Path to the target INI file.
+            scheme (list[tuple[str, str, type, str, Any]]): List of 5-tuples defining the configuration layout:
                 - Section (str): INI section name.
                 - INI_Key (str): INI key name.
                 - TkVarType (type): Tkinter variable type (e.g., ttk.StringVar, ttk.BooleanVar).
                 - AttributeName (str): Name used for dot-notation access.
                 - DefaultValue (Any): Fallback value if option is missing or file doesn't exist.
         """
-
         self.filepath = Path(filepath)
         self.scheme = scheme
         self.config = configparser.ConfigParser()
 
         # Dynamically create sections and variables as objects and attributes
         for section, key, var_type, attr_name, default in self.scheme:
-            # Create the section in case it doesn't exist (e.g. 'Settings')
+            # Create the section in case it does not exist (e.g. 'Settings')
             if not hasattr(self, section):
                 setattr(self, section, ConfigSection())
-            
-            # get the current section object
+
+            # Get the current section object
             section_obj = getattr(self, section)
-            
-            # Append the tkinter variable as attributes to the sections-object
-            # equals: section_obj.cal_file_path = ttk.StringVar(value=default)
+
+            # Append the tkinter variable as attributes to the section object
+            # Equivalent to: section_obj.cal_file_path = ttk.StringVar(value=default)
             setattr(section_obj, attr_name, var_type(value=default))
 
-
-    def load(self):
+    def load(self) -> None:
         """Reads the INI file from disk and populates the Tkinter variables.
 
         If the file does not exist, the operation is skipped, and the 
         default fallback values defined in the schema remain active.
-        """     
-
+        """
         if not self.filepath.exists():
             return
 
@@ -109,7 +127,7 @@ class ConfigManager:
 
         for section, key, var_type, attr_name, default in self.scheme:
             if self.config.has_option(section, key):
-                # Read the right type from the ini-file
+                # Read the appropriate variable type from the INI file
                 if var_type is ttk.BooleanVar:
                     val = self.config.getboolean(section, key, fallback=default)
                 elif var_type is ttk.IntVar:
@@ -119,12 +137,12 @@ class ConfigManager:
                 else:
                     val = self.config.get(section, key, fallback=default)
 
-                # Set the attribute via the section and set the value
+                # Access the attribute via the section and set its new value
                 section_obj = getattr(self, section)
                 var = getattr(section_obj, attr_name)
                 var.set(val)
 
-    def save(self):
+    def save(self) -> None:
         """Retrieves current values from the Tkinter variables and writes them to the INI file.
 
         Creates missing sections and missing parent directories automatically before saving.
@@ -139,7 +157,7 @@ class ConfigManager:
 
             self.config.set(section, key, val)
 
-        # Make sure the target folder exists before saving. e.g. in case the ini file is stored in some subfolder
+        # Ensure the target directory exists before saving
         self.filepath.parent.mkdir(parents=True, exist_ok=True)
 
         with open(self.filepath, "w", encoding="utf-8") as f:
