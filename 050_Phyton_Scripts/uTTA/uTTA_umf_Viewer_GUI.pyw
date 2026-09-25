@@ -8,7 +8,7 @@ import logging
 
 matplotlib.use("TkAgg")
 
-DataFile = ''
+DataFile = ""
 Debug_LoggingLevel = logging.INFO
 
 class UmfViewerApp(ttk.Window):
@@ -17,12 +17,12 @@ class UmfViewerApp(ttk.Window):
         # self.hdpi = False
 
         self.logger = logging.getLogger(__name__)
-        logging.basicConfig(filename=f'{__file__.replace('.pyw','.log')}', level=logging.WARNING, format='%(asctime)s  %(levelname)s | %(message)s')     # %(module)s::%(funcName)s |
-        logging.getLogger('__main__').setLevel(Debug_LoggingLevel)
+        logging.basicConfig(filename=f"{__file__.replace(".pyw",".log")}", level=logging.WARNING, format="%(asctime)s  %(levelname)s | %(message)s")     # %(module)s::%(funcName)s |
+        logging.getLogger("__main__").setLevel(Debug_LoggingLevel)
         self.title("uTTA umf-Viewer")
         self.geometry("1480x1000")
         self.minsize(1480, 1000)
-        screen_dpi = self.winfo_fpixels('1i')
+        screen_dpi = self.winfo_fpixels("1i")
         geometry = self.winfo_geometry()
         print(f"DPI: {screen_dpi}, Geometry: {geometry}")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # window closing event
@@ -31,11 +31,11 @@ class UmfViewerApp(ttk.Window):
 
         self.raw_mode = 0
 
-        matplotlib.rcParams['axes.labelsize'] = 9
-        matplotlib.rcParams['legend.fontsize'] = 9
-        matplotlib.rcParams['font.size'] = 11
-        matplotlib.rcParams['xtick.labelsize'] = 9
-        matplotlib.rcParams['ytick.labelsize'] = 9
+        matplotlib.rcParams["axes.labelsize"] = 9
+        matplotlib.rcParams["legend.fontsize"] = 9
+        matplotlib.rcParams["font.size"] = 11
+        matplotlib.rcParams["xtick.labelsize"] = 9
+        matplotlib.rcParams["ytick.labelsize"] = 9
 
         self.paned = ttk.Panedwindow(self, orient=tk.HORIZONTAL)
         self.paned.pack(fill=tk.BOTH, expand=True)
@@ -60,7 +60,7 @@ class UmfViewerApp(ttk.Window):
 
         # self.meas_meta_dummy = ttk.Frame(master=self.frm_meas_data, width=336, height=846, style="info.TFrame")
         # self.meas_meta_dummy.place(x=7, y=7)
-        self.meas_meta_data = ttk.Label(master=self.frm_meas_data, anchor="w", style="inverse-info", wraplength=330)
+        self.meas_meta_data = ttk.Label(master=self.frm_meas_data, anchor=tk.W, style="inverse-info", wraplength=330)
         self.meas_meta_data.configure(text="")
         self.meas_meta_data.pack(fill=tk.X, padx=10, pady=10)
 
@@ -72,10 +72,10 @@ class UmfViewerApp(ttk.Window):
         self.frm_right.pack(fill=tk.X, padx=10, pady=10)
 
         # Helper Bar Frame
-        self.frm_help_bar = ttk.Frame(master=self.frm_right, style='info.TFrame')
+        self.frm_help_bar = ttk.Frame(master=self.frm_right, style="info.TFrame")
         self.frm_help_bar.pack(fill=tk.X, padx=10, pady=10)
 
-        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor="w", style="inverse-info", wraplength=1080)
+        self.lbl_helpbar = ttk.Label(master=self.frm_help_bar, anchor=tk.W, style="inverse-info", wraplength=1080)
         self.lbl_helpbar.pack(fill=tk.X, padx=10, pady=10)
         self.lbl_helpbar.configure(text="Welcome to the umf-Viewer GUI. Click 'Measurement File' and import a measurement")
 
@@ -83,12 +83,12 @@ class UmfViewerApp(ttk.Window):
         self.frm_plot_area = ttk.Frame(master=self.frm_right)
         self.frm_plot_area.pack(fill=tk.BOTH, padx=10, pady=10)
 
-        matplotlib.rcParams['axes.labelsize'] = 8
-        matplotlib.rcParams['legend.fontsize'] = 7
-        #matplotlib.rcParams['axes.grid'] = 'both'
-        matplotlib.rcParams['font.size'] = 11
-        matplotlib.rcParams['xtick.labelsize'] = 8
-        matplotlib.rcParams['ytick.labelsize'] = 8
+        matplotlib.rcParams["axes.labelsize"] = 8
+        matplotlib.rcParams["legend.fontsize"] = 7
+        #matplotlib.rcParams["axes.grid"] = "both"
+        matplotlib.rcParams["font.size"] = 11
+        matplotlib.rcParams["xtick.labelsize"] = 8
+        matplotlib.rcParams["ytick.labelsize"] = 8
 
         self.view_plots = udPlot.UttaPlotData(self.frm_plot_area, (990, 850), 3, 2)
         self.paned.add(self.frm_right)
@@ -164,7 +164,7 @@ class UmfViewerApp(ttk.Window):
     def read_measurement_file_callback(self):
         global DataFile
         measfilename = udProc.select_file("Select the measurement file",
-                                          (('uTTA Measurement Files', '*.umf'), ('Text-Files', '*.txt'), ('All files', '*.*')))
+                                          (("uTTA Measurement Files", "*.umf"), ("Text-Files", "*.txt"), ("All files", "*.*")))
         if len(measfilename) > 0:  # check if string is not empty
 
             
@@ -184,7 +184,7 @@ class UmfViewerApp(ttk.Window):
 
                     self.utta_data.interpolate_zth_curve_start()
 
-                    self.view_plots.add_vertical_line(row=2, col=1, x=0.0, color='red', linestyle='--', linewidth=2, label='Zero Current Time')
+                    self.view_plots.add_vertical_line(row=2, col=1, x=0.0, color="red", linestyle="--", linewidth=2, label="Zero Current Time")
                     
                 self._setup_plot_mapping()
 
