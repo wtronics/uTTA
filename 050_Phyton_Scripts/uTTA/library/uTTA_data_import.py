@@ -413,9 +413,9 @@ def __get_channel_data(ch_index: int, cells: List[str], logger: logging.Logger) 
         logger.warning(f"Channel {ch_index + 1} has an empty name string.")
 
     try:
-        offset = float(cells[2])
-        linear = float(cells[3])
-        quadratic = float(cells[4])
+        offset = float(cells[2]) / 1000000.0
+        linear = float(cells[3]) / 1000000.0
+        quadratic = float(cells[4]) / 1000000.0
         status = int(cells[5])
 
         if not (0 <= status <=2):
